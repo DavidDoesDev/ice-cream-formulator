@@ -62,6 +62,12 @@
   background: var(--color-accent);
 }
 
+.pintRow {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-end;
+}
+
 .cqOuter {
   container-type: inline-size;
   resize: horizontal;
