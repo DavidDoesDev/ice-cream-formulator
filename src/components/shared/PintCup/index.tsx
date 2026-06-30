@@ -22,37 +22,44 @@ const LAYERS: { key: keyof MacroRatios; color: string }[] = [
 // Cup geometry — based on a real 16oz pint container:
 // nearly square body, very slight taper, chunky flat lid with overhang
 const VW = 100;
-const VH = 100;          // square-ish body (height ≈ width)
+const VH = 100;
 const BASE_INSET = 5;    // barely tapered — sides nearly vertical
-const LID_H = 16;        // lid ≈ 13% of total visual height
+const CORNER_R = 2;      // bottom corner rounding radius
+const LID_H = 16;
 const LID_W = VW * 1.2;
 const LID_X = (VW - LID_W) / 2;
-const LID_GAP = 3;
+const LID_GAP = 8;
+
+// Trapezoid path with rounded bottom corners, sharp top corners.
+// The taper is so slight (5/100) that we approximate the bottom arcs as right-angle turns.
+const CUP_PATH = [
+  `M 0,0`,
+  `L ${VW},0`,
+  `L ${VW - BASE_INSET},${VH - CORNER_R}`,
+  `A ${CORNER_R},${CORNER_R} 0 0,1 ${VW - BASE_INSET - CORNER_R},${VH}`,
+  `L ${BASE_INSET + CORNER_R},${VH}`,
+  `A ${CORNER_R},${CORNER_R} 0 0,1 ${BASE_INSET},${VH - CORNER_R}`,
+  `Z`,
+].join(" ");
 
 // At height y (0=top, VH=bottom), compute the left x and width of the cup wall
 function cupGeomAtY(y: number) {
-  const t = y / VH; // 0 at top, 1 at bottom
+  const t = y / VH;
   const leftX = BASE_INSET * t;
   const width = VW - 2 * leftX;
   return { leftX, width };
 }
 
-// Clip path corners: rim is full width at top, base is inset at bottom
-const CUP_CLIP = `0,0 ${VW},0 ${VW - BASE_INSET},${VH} ${BASE_INSET},${VH}`;
-
 export function PintCup({ ratios, size = "full" }: PintCupProps) {
   const total = Object.values(ratios).reduce((a, b) => a + b, 0);
 
-  // Build layers bottom-to-top, accumulating yOffset from the bottom
   const layers: { key: string; color: string; points: string }[] = [];
   let yFloor = VH;
 
   for (const { key, color } of LAYERS) {
     const fraction = total > 0 ? ratios[key as keyof MacroRatios] / total : 0;
     const h = fraction * VH;
-    if (h < 0.5) {
-      continue;
-    }
+    if (h < 0.5) continue;
     const yCeil = yFloor - h;
     const bottom = cupGeomAtY(yFloor);
     const top = cupGeomAtY(yCeil);
@@ -79,7 +86,7 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
       >
         <defs>
           <clipPath id="pint-cup-clip">
-            <polygon points={CUP_CLIP} />
+            <path d={CUP_PATH} />
           </clipPath>
         </defs>
 
@@ -95,8 +102,8 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
         </g>
 
         {/* Cup outline drawn on top */}
-        <polygon
-          points={CUP_CLIP}
+        <path
+          d={CUP_PATH}
           fill="none"
           stroke="var(--color-border)"
           strokeWidth="1.5"
@@ -108,6 +115,7 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
           y={-(LID_H + LID_GAP)}
           width={LID_W}
           height={LID_H}
+          rx={CORNER_R}
           fill="none"
           stroke="var(--color-border)"
           strokeWidth="1.5"
