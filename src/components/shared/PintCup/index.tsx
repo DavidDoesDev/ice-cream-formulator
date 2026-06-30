@@ -19,11 +19,15 @@ const LAYERS: { key: keyof MacroRatios; color: string }[] = [
   { key: "alcohol", color: "var(--color-macro-alcohol)" },
 ];
 
-// Cup geometry: rim spans full viewBox width; base is narrower
+// Cup geometry — based on a real 16oz pint container:
+// nearly square body, very slight taper, chunky flat lid with overhang
 const VW = 100;
-const VH = 140;
-const BASE_INSET = 14; // how much the base is inset from each rim edge
-const LID_H = 8; // lid height above the cup rim
+const VH = 100;          // square-ish body (height ≈ width)
+const BASE_INSET = 5;    // barely tapered — sides nearly vertical
+const LID_H = 16;        // lid ≈ 13% of total visual height
+const LID_W = VW * 1.2;
+const LID_X = (VW - LID_W) / 2;
+const LID_GAP = 3;
 
 // At height y (0=top, VH=bottom), compute the left x and width of the cup wall
 function cupGeomAtY(y: number) {
@@ -67,7 +71,7 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
   return (
     <div className={`${styles.cup} ${size === "mini" ? styles.mini : styles.full}`}>
       <svg
-        viewBox={`0 ${-LID_H} ${VW} ${VH + LID_H}`}
+        viewBox={`${LID_X} ${-(LID_H + LID_GAP)} ${LID_W} ${VH + LID_H + LID_GAP}`}
         xmlns="http://www.w3.org/2000/svg"
         className={styles.svg}
         aria-label="Formula macro composition"
@@ -98,11 +102,11 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
           strokeWidth="1.5"
         />
 
-        {/* Lid — stroked rectangle sitting on the rim, not part of fill zone */}
+        {/* Lid — wider than the cup with a gap above the rim */}
         <rect
-          x={0}
-          y={-LID_H}
-          width={VW}
+          x={LID_X}
+          y={-(LID_H + LID_GAP)}
+          width={LID_W}
           height={LID_H}
           fill="none"
           stroke="var(--color-border)"
