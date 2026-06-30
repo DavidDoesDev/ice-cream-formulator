@@ -23,6 +23,7 @@ const LAYERS: { key: keyof MacroRatios; color: string }[] = [
 const VW = 100;
 const VH = 140;
 const BASE_INSET = 14; // how much the base is inset from each rim edge
+const LID_H = 8; // lid height above the cup rim
 
 // At height y (0=top, VH=bottom), compute the left x and width of the cup wall
 function cupGeomAtY(y: number) {
@@ -66,7 +67,7 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
   return (
     <div className={`${styles.cup} ${size === "mini" ? styles.mini : styles.full}`}>
       <svg
-        viewBox={`0 0 ${VW} ${VH}`}
+        viewBox={`0 ${-LID_H} ${VW} ${VH + LID_H}`}
         xmlns="http://www.w3.org/2000/svg"
         className={styles.svg}
         aria-label="Formula macro composition"
@@ -92,6 +93,17 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
         {/* Cup outline drawn on top */}
         <polygon
           points={CUP_CLIP}
+          fill="none"
+          stroke="var(--color-border)"
+          strokeWidth="1.5"
+        />
+
+        {/* Lid — stroked rectangle sitting on the rim, not part of fill zone */}
+        <rect
+          x={0}
+          y={-LID_H}
+          width={VW}
+          height={LID_H}
           fill="none"
           stroke="var(--color-border)"
           strokeWidth="1.5"
