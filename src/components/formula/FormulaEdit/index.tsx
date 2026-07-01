@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useFormula } from "@/hooks/useFormula";
-import { computeRatios, MACRO_BOUNDS, type FormulaState, type MacroRatios } from "@/lib/formula-engine";
+import { computeRatios, computeSliderBounds, type FormulaState, type MacroRatios } from "@/lib/formula-engine";
 import styles from "./FormulaEdit.module.scss";
 
 const SLIDERS: { key: keyof MacroRatios; label: string; color: string }[] = [
@@ -23,6 +23,7 @@ interface FormulaEditProps {
 export function FormulaEdit({ initial, onDone, onCancel }: FormulaEditProps) {
   const local = useFormula(initial);
   const ratios = computeRatios(local.state);
+  const baseRatios = computeRatios(initial);
 
   const handleSlider = useCallback(
     (key: keyof MacroRatios, rawValue: number) => {
@@ -42,8 +43,8 @@ export function FormulaEdit({ initial, onDone, onCancel }: FormulaEditProps) {
     <div className={styles.root}>
       <div className={styles.sliders}>
         {SLIDERS.map(({ key, label, color }) => {
-          const [min, max] = MACRO_BOUNDS[key];
-          const effectiveMin = key === "alcohol" || key === "emulsifier" ? 0 : min;
+          const [min, max] = computeSliderBounds(key, baseRatios[key]);
+          const effectiveMin = min;
           const current = ratios[key];
           const currentPct = current * 100;
 
@@ -53,7 +54,7 @@ export function FormulaEdit({ initial, onDone, onCancel }: FormulaEditProps) {
                 <span className={styles.sliderLabel}>{label}</span>
                 <span className={styles.sliderValue}>
                   {currentPct.toFixed(1)}%
-                  {local.state.conflict && current < min && (
+                  {local.state.conflict && current < effectiveMin && (
                     <span className={styles.conflict}>!</span>
                   )}
                 </span>

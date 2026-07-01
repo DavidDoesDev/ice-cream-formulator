@@ -44,6 +44,33 @@ export const MACRO_BOUNDS: Record<keyof MacroRatios, [number, number]> = {
   water: [0.45, 0.75],
 };
 
+// How far above/below the archetype target each slider is allowed to roam.
+const MACRO_TOLERANCE: Record<keyof MacroRatios, number> = {
+  fat: 0.04,
+  sugar: 0.03,
+  nonfatSolids: 0.02,
+  stabilizer: 0.002,
+  emulsifier: 0.001,
+  alcohol: 0.03,
+  water: 0.06,
+};
+
+/**
+ * Returns [min, max] for a slider given the archetype's target ratio for that macro.
+ * Centered on the target with MACRO_TOLERANCE, clamped to MACRO_BOUNDS.
+ * For zero-target macros (alcohol, emulsifier) the lower bound stays at 0.
+ */
+export function computeSliderBounds(
+  macro: keyof MacroRatios,
+  target: number
+): [number, number] {
+  const [absMin, absMax] = MACRO_BOUNDS[macro];
+  const tol = MACRO_TOLERANCE[macro];
+  const lo = target === 0 ? 0 : Math.max(absMin, target - tol);
+  const hi = target === 0 ? Math.min(absMax, tol) : Math.min(absMax, target + tol);
+  return [lo, hi];
+}
+
 const MACRO_KEYS: (keyof MacroRatios)[] = [
   "fat",
   "sugar",
