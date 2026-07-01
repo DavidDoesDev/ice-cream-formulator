@@ -1,3 +1,71 @@
+"use client";
+
+import { useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
+import Link from "next/link";
+import { ARCHETYPES } from "@/data/archetypes";
+import type { Archetype } from "@/data/types";
+import { ArchetypeTile } from "@/components/shared/ArchetypeTile";
+import { SearchModule } from "@/components/shared/SearchModule";
+import { matchTemplate, type MatchResult } from "@/lib/template-matcher";
+import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
+import { saveFormula } from "@/lib/persistence";
+import styles from "./page.module.scss";
+
+function NewFormulaInner() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const autoFocus = params.get("focus") === "search";
+
+  const launchArchetype = useCallback(
+    (archetype: Archetype) => {
+      const id = generateFormulaId();
+      const state = bootstrapFromArchetype(archetype);
+      const now = Date.now();
+      saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state });
+      router.push(`/formula/${id}`);
+    },
+    [router]
+  );
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      const results: MatchResult[] = matchTemplate(query);
+      sessionStorage.setItem("icf:pending-match", JSON.stringify({ results: results.slice(0, 5), query }));
+      router.push("/new/explain");
+    },
+    [router]
+  );
+
+  return (
+    <main className={styles.main}>
+      <header className={styles.header}>
+        <Link href="/" className={styles.back}>← Back</Link>
+        <h1 className={styles.title}>New formula</h1>
+      </header>
+
+      <div className={styles.search}>
+        <SearchModule onSubmit={handleSearch} autoFocus={autoFocus} />
+      </div>
+
+      <div className={styles.grid}>
+        {ARCHETYPES.map((archetype) => (
+          <ArchetypeTile
+            key={archetype.id}
+            archetype={archetype}
+            onClick={launchArchetype}
+          />
+        ))}
+      </div>
+    </main>
+  );
+}
+
 export default function NewFormula() {
-  return <main style={{ padding: "2rem" }}>Template selector — coming soon</main>;
+  return (
+    <Suspense>
+      <NewFormulaInner />
+    </Suspense>
+  );
 }

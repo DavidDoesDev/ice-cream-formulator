@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import styles from "./PintCup.module.scss";
 import type { MacroRatios } from "@/lib/formula-engine";
 
@@ -51,6 +52,8 @@ function cupGeomAtY(y: number) {
 }
 
 export function PintCup({ ratios, size = "full" }: PintCupProps) {
+  const uid = useId().replace(/:/g, "-");
+  const clipId = `pint-cup-clip${uid}`;
   const total = Object.values(ratios).reduce((a, b) => a + b, 0);
 
   const layers: { key: string; color: string; points: string }[] = [];
@@ -85,12 +88,12 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
         role="img"
       >
         <defs>
-          <clipPath id="pint-cup-clip">
+          <clipPath id={clipId}>
             <path d={CUP_PATH} />
           </clipPath>
         </defs>
 
-        <g clipPath="url(#pint-cup-clip)">
+        <g clipPath={`url(#${clipId})`}>
           {layers.map(({ key, color, points }) => (
             <polygon
               key={key}

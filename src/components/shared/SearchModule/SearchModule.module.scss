@@ -1,0 +1,99 @@
+.module {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--duration-default) var(--ease-jelly);
+}
+
+.module.expanded {
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--color-text);
+  outline: none;
+  min-width: 0;
+}
+
+.input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.submit {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-surface);
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-fast) var(--ease-jelly),
+              opacity var(--duration-fast);
+}
+
+.submit:hover {
+  transform: scale(1.1);
+}
+
+.submit:active {
+  transform: scale(0.92);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4);
+  animation: chipsFadeIn var(--duration-default) var(--ease-jelly);
+}
+
+@keyframes chipsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chip {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--duration-fast), transform var(--duration-fast) var(--ease-jelly);
+}
+
+.chip:hover {
+  background: var(--color-border);
+}
+
+.chip:active {
+  transform: scale(0.95);
+}
