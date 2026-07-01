@@ -140,13 +140,14 @@ export default function FormulaWorkspace() {
   const [saved, setSaved] = useState<SavedFormula | null>(null);
 
   useEffect(() => {
+    if (!params?.id) return;
     const formula = loadFormula(params.id);
     if (!formula) {
       router.replace("/");
       return;
     }
     setSaved(formula);
-  }, [params.id, router]);
+  }, [params?.id, router]);
 
   if (!saved) {
     return (

@@ -69,9 +69,11 @@
 }
 
 .slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
   appearance: none;
   width: 24px;
   height: 24px;
+  margin-top: -9px;
   border-radius: 50%;
   background: var(--color-surface);
   border: 2px solid var(--macro-color, var(--color-accent));
