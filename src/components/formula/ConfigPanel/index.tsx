@@ -65,7 +65,7 @@ export function ConfigPanel({
   };
 
   const showAlcohol = recipe.smartMixes.some(
-    (m) => m.kind === "alcohol" && m.presetId !== "alcohol-empty" && m.grams > 0,
+    (m) => m.kind === "alcohol" && m.presetId !== "alcohol-empty",
   );
 
   return (

@@ -1,8 +1,12 @@
 "use client";
 
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useFormula } from "@/hooks/useFormula";
 import { computeRatios, computeSliderBounds, type FormulaState, type MacroRatios } from "@/lib/formula-engine";
+import { solveRecipe } from "@/lib/recipe-solver";
+import { getPresetById } from "@/data/mix-presets";
+import { getIngredientById } from "@/data/ingredients";
+import type { Recipe } from "@/data/types";
 import styles from "./FormulaEdit.module.scss";
 
 const SLIDERS: { key: keyof MacroRatios; label: string; color: string }[] = [
@@ -16,12 +20,14 @@ const SLIDERS: { key: keyof MacroRatios; label: string; color: string }[] = [
 
 interface FormulaEditProps {
   initial: FormulaState;
-  onDone: (state: FormulaState) => void;
+  recipe: Recipe;
+  onDone: (state: FormulaState, recipe: Recipe) => void;
   onCancel: () => void;
 }
 
-export function FormulaEdit({ initial, onDone, onCancel }: FormulaEditProps) {
+export function FormulaEdit({ initial, recipe, onDone, onCancel }: FormulaEditProps) {
   const local = useFormula(initial);
+  const [localRecipe, setLocalRecipe] = useState(recipe);
   const ratios = computeRatios(local.state);
   const baseRatios = computeRatios(initial);
 
@@ -29,10 +35,40 @@ export function FormulaEdit({ initial, onDone, onCancel }: FormulaEditProps) {
     (key: keyof MacroRatios, rawValue: number) => {
       local.adjustRatio(key, rawValue / 100);
     },
-    [local]
+    [local],
   );
 
-  // Ingredients that are "specialty" — have more than one non-zero non-water macro
+  // Run solver when a slider is committed (pointer released).
+  // finalPct is the slider's value at release (percentage × 100).
+  // We override the committed key in the current ratios so the solver
+  // reflects the committed value even if React state is 1 tick stale.
+  const handleSliderCommit = useCallback(
+    (key: keyof MacroRatios, finalPct: number) => {
+      const baseRatiosNow = computeRatios(local.state);
+      const committed: MacroRatios = { ...baseRatiosNow, [key]: finalPct / 100 };
+
+      // Auto-activate vodka when alcohol slider first crosses above zero
+      const mixesToSolve = (key === "alcohol" && finalPct > 0)
+        ? localRecipe.smartMixes.map((m) =>
+            m.kind === "alcohol" && m.presetId === "alcohol-empty"
+              ? { ...m, presetId: "alcohol-vodka" }
+              : m,
+          )
+        : localRecipe.smartMixes;
+
+      const solved = solveRecipe(
+        committed,
+        local.state.yieldGrams,
+        localRecipe.additionalIngredients,
+        mixesToSolve,
+        getPresetById,
+        (id) => getIngredientById(id)?.macros,
+      );
+      setLocalRecipe((prev) => ({ ...prev, smartMixes: solved }));
+    },
+    [local.state, localRecipe],
+  );
+
   const specialty = local.state.ingredients.filter((ing) => {
     const keys = Object.keys(ing.macros) as (keyof typeof ing.macros)[];
     const nonWaterNonZero = keys.filter((k) => k !== "water" && ing.macros[k] > 0);
@@ -68,6 +104,7 @@ export function FormulaEdit({ initial, onDone, onCancel }: FormulaEditProps) {
                   step={0.1}
                   value={currentPct}
                   onChange={(e) => handleSlider(key, parseFloat(e.target.value))}
+                  onPointerUp={(e) => handleSliderCommit(key, parseFloat(e.currentTarget.value))}
                 />
                 <div
                   className={styles.sliderFill}
@@ -124,7 +161,7 @@ export function FormulaEdit({ initial, onDone, onCancel }: FormulaEditProps) {
         <button
           className={styles.doneBtn}
           type="button"
-          onClick={() => onDone(local.state)}
+          onClick={() => onDone(local.state, localRecipe)}
         >
           Done
         </button>

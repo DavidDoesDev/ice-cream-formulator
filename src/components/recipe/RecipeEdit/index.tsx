@@ -90,7 +90,10 @@ export function RecipeEdit({ recipe, initialNotes, onDone, onCancel, onOpenIngre
       <div className={styles.ingredientList}>
         <p className={styles.sectionLabel}>Smart Mixes</p>
 
-        {local.smartMixes.map((mix) => (
+        {local.smartMixes.map((mix) => {
+          const preset = getPresetById(mix.presetId);
+          const displayLabel = preset?.name ?? mix.label;
+          return (
           <div
             key={mix.kind}
             className={`${styles.ingredientCard} ${isAlcoholEmpty(mix) ? styles.inactive : ""}`}
@@ -98,7 +101,7 @@ export function RecipeEdit({ recipe, initialNotes, onDone, onCancel, onOpenIngre
             <div className={styles.cardMain}>
               <div className={styles.cardLeft}>
                 <div className={styles.cardInfo}>
-                  <span className={styles.ingName}>{mix.label}</span>
+                  <span className={styles.ingName}>{displayLabel}</span>
                   <span className={styles.mixKind}>{mix.kind}</span>
                 </div>
               </div>
@@ -137,7 +140,8 @@ export function RecipeEdit({ recipe, initialNotes, onDone, onCancel, onOpenIngre
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {(local.additionalIngredients.length > 0 || true) && (
