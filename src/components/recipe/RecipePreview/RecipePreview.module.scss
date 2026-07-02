@@ -74,6 +74,23 @@
   padding: var(--space-5);
 }
 
+.mixSection {
+  margin-bottom: var(--space-4);
+}
+
+.mixSection:last-child {
+  margin-bottom: 0;
+}
+
+.mixLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-2) 0;
+}
+
 .ingredientRow {
   display: flex;
   justify-content: space-between;

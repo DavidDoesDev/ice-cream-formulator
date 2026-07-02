@@ -1,28 +1,33 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useFormulaContext } from "@/context/FormulaContext";
-import { setYield } from "@/lib/formula-engine";
+import { useState, useCallback, useMemo } from "react";
+import type { Recipe } from "@/data/types";
+import { getPresetById } from "@/data/mix-presets";
+import { getIngredientById } from "@/data/ingredients";
 import styles from "./RecipePreview.module.scss";
 
 interface RecipePreviewProps {
+  recipe: Recipe;
   notes: string;
   onEdit: () => void;
   onToggleView: () => void;
   onConfig: () => void;
 }
 
-export function RecipePreview({ notes, onEdit, onToggleView, onConfig }: RecipePreviewProps) {
-  const { state, setYield: setCtxYield } = useFormulaContext();
-  const totalGrams = state.ingredients.reduce((s, i) => s + i.grams, 0);
-  const displayYield = Math.round(totalGrams / 10) * 10 || state.yieldGrams;
+export function RecipePreview({ recipe, notes, onEdit, onToggleView, onConfig }: RecipePreviewProps) {
+  // Original yield = sum of all smart mix grams + additional ingredient grams
+  const originalYield = useMemo(() => {
+    const smartTotal = recipe.smartMixes.reduce((s, m) => s + m.grams, 0);
+    const addTotal = recipe.additionalIngredients.reduce((s, a) => s + a.grams, 0);
+    return Math.round((smartTotal + addTotal) / 10) * 10 || 1000;
+  }, [recipe]);
+
+  const [displayYield, setDisplayYield] = useState(originalYield);
+  const scale = displayYield / (originalYield || 1);
 
   const adjustYield = useCallback(
-    (delta: number) => {
-      const next = Math.max(100, displayYield + delta);
-      setCtxYield(next);
-    },
-    [displayYield, setCtxYield]
+    (delta: number) => setDisplayYield((prev) => Math.max(100, prev + delta)),
+    [],
   );
 
   return (
@@ -38,19 +43,39 @@ export function RecipePreview({ notes, onEdit, onToggleView, onConfig }: RecipeP
 
       <div className={styles.ingredientList}>
         <p className={styles.sectionLabel}>Ingredients</p>
-        {state.ingredients.map((ing) => (
-          <div
-            key={ing.id}
-            className={`${styles.ingredientRow} ${ing.state === "excluded" ? styles.excluded : ""}`}
-          >
-            <span className={styles.ingName}>
-              {ing.name}
-              {ing.state === "excluded" && <span className={styles.excludedTag}>excluded</span>}
-              {ing.state === "pinned" && <span className={styles.pinnedTag}>pinned</span>}
-            </span>
-            <span className={styles.ingGrams}>{ing.grams.toFixed(1)}g</span>
-          </div>
-        ))}
+
+        {recipe.smartMixes.map((mix) => {
+          if (mix.presetId === "alcohol-empty" || mix.grams === 0) return null;
+          const preset = getPresetById(mix.presetId);
+          if (!preset || preset.ingredients.length === 0) return null;
+
+          return (
+            <div key={mix.kind} className={styles.mixSection}>
+              <p className={styles.mixLabel}>{mix.label}</p>
+              {preset.ingredients.map(({ ingredientId, proportion }) => {
+                const ing = getIngredientById(ingredientId);
+                const grams = proportion * mix.grams * scale;
+                return (
+                  <div key={ingredientId} className={styles.ingredientRow}>
+                    <span className={styles.ingName}>{ing?.name ?? ingredientId}</span>
+                    <span className={styles.ingGrams}>{grams.toFixed(1)}g</span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+
+        {recipe.additionalIngredients.map((ai) => {
+          const ing = getIngredientById(ai.ingredientId);
+          const grams = ai.grams * scale;
+          return (
+            <div key={ai.ingredientId} className={styles.ingredientRow}>
+              <span className={styles.ingName}>{ing?.name ?? ai.ingredientId}</span>
+              <span className={styles.ingGrams}>{grams.toFixed(1)}g</span>
+            </div>
+          );
+        })}
       </div>
 
       {notes && (

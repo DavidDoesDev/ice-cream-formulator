@@ -12,7 +12,9 @@ import { RecipePreview } from "@/components/recipe/RecipePreview";
 import { RecipeEdit } from "@/components/recipe/RecipeEdit";
 import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
+import { seedRecipe } from "@/lib/recipe-seeder";
 import type { FormulaState, Ingredient } from "@/lib/formula-engine";
+import type { Recipe, StyleCategory } from "@/data/types";
 import styles from "./page.module.scss";
 
 type WorkspaceView = "formula" | "recipe";
@@ -31,8 +33,11 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [ingredientSelector, setIngredientSelector] = useState<IngredientSelectorState | null>(null);
   const [notes, setNotes] = useState("");
   const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
+  const [recipe, setRecipe] = useState<Recipe>(
+    saved.recipe ?? seedRecipe(saved.style as StyleCategory),
+  );
 
-  // Auto-save whenever committed state changes
+  // Auto-save whenever committed state or recipe changes
   useEffect(() => {
     saveFormula({
       ...saved,
@@ -40,8 +45,9 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
       style: meta.style,
       updatedAt: Date.now(),
       state,
+      recipe,
     });
-  }, [state, meta, saved]);
+  }, [state, meta, saved, recipe]);
 
   const openIngredientSelector = useCallback(
     (context: string, onAdd: (ingredient: Ingredient) => void) => {
@@ -59,12 +65,12 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   );
 
   const handleRecipeDone = useCallback(
-    (newState: FormulaState, newNotes: string) => {
-      reset(newState);
+    (newRecipe: Recipe, newNotes: string) => {
+      setRecipe(newRecipe);
       setNotes(newNotes);
       setMode("preview");
     },
-    [reset]
+    [],
   );
 
   if (showConfig) {
@@ -107,6 +113,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
       )}
       {view === "recipe" && mode === "preview" && (
         <RecipePreview
+          recipe={recipe}
           notes={notes}
           onEdit={() => setMode("edit")}
           onToggleView={() => setView("formula")}
@@ -115,7 +122,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
       )}
       {view === "recipe" && mode === "edit" && (
         <RecipeEdit
-          initial={state}
+          recipe={recipe}
           initialNotes={notes}
           onDone={handleRecipeDone}
           onCancel={() => setMode("preview")}

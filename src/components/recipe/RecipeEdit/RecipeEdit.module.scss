@@ -30,6 +30,25 @@
   overflow: hidden;
 }
 
+.ingredientCard.inactive {
+  opacity: 0.45;
+}
+
+.mixKind {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.inactiveLabel {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
 .cardMain {
   display: flex;
   align-items: center;
