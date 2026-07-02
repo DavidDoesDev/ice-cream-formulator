@@ -1,32 +1,34 @@
 import { describe, it, expect } from "vitest";
 import { formatPercent, formatGrams } from "./measure";
 
-// Precision zones (from PRD "Precision" section):
-//   percent >= 5      -> 1 decimal
-//   2 <= percent < 5  -> 2 decimals
-//   percent < 2       -> 3 decimals
+// Normalized-width precision (constant ~character count):
+//   percent < 10   -> 2 decimals
+//   10 <= p < 100  -> 1 decimal
+//   percent >= 100 -> 0 decimals
 // Expected strings below are the spec, not recomputed from the implementation.
 
 describe("formatPercent", () => {
-  it("shows 1 decimal for values at or above 5%", () => {
-    expect(formatPercent(16)).toBe("16.0");
-  });
-
-  it("shows 2 decimals for values in the 2%–5% band", () => {
+  it("shows 2 decimals below 10%", () => {
+    expect(formatPercent(0.4)).toBe("0.40");
     expect(formatPercent(3)).toBe("3.00");
+    expect(formatPercent(9.99)).toBe("9.99");
   });
 
-  it("shows 3 decimals for values below 2%", () => {
-    expect(formatPercent(0.4)).toBe("0.400");
+  it("shows 1 decimal from 10% up to 100%", () => {
+    expect(formatPercent(10)).toBe("10.0");
+    expect(formatPercent(16)).toBe("16.0");
+    expect(formatPercent(99.9)).toBe("99.9");
   });
 
-  it("places the zone boundaries at 2% and 5% inclusive-below", () => {
-    // exactly 5% belongs to the 1-decimal zone; just under 5% is still 2 decimals
-    expect(formatPercent(5)).toBe("5.0");
-    expect(formatPercent(4.999)).toBe("5.00");
-    // exactly 2% belongs to the 2-decimal zone; just under 2% is 3 decimals
-    expect(formatPercent(2)).toBe("2.00");
-    expect(formatPercent(1.999)).toBe("1.999");
+  it("shows whole numbers at 100% and above", () => {
+    expect(formatPercent(100)).toBe("100");
+  });
+
+  it("places the zone boundaries at 10 and 100 inclusive-below", () => {
+    expect(formatPercent(9.99)).toBe("9.99");   // just under 10 -> 2 decimals
+    expect(formatPercent(10)).toBe("10.0");     // exactly 10 -> 1 decimal
+    expect(formatPercent(99.9)).toBe("99.9");   // just under 100 -> 1 decimal
+    expect(formatPercent(100)).toBe("100");     // exactly 100 -> 0 decimals
   });
 });
 

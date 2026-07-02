@@ -79,8 +79,8 @@ Bring all five screens into alignment with the mockups, and make one structural 
 
 A pure formatting module with two functions, used everywhere a percentage or gram value is displayed:
 
-- **Percentage:** value ≥ 5 → 1 decimal; 2 ≤ value < 5 → 2 decimals; value < 2 → 3 decimals.
-- **Grams:** value < 5 → 2 decimals; 5 ≤ value < 10 → 1 decimal; value ≥ 10 → 0 decimals.
+- **Percentage:** normalized to a constant character width — value < 10 → 2 decimals; 10 ≤ value < 100 → 1 decimal; value ≥ 100 → 0 decimals.
+- **Grams:** value < 5 → 2 decimals; 5 ≤ value < 10 → 1 decimal; value ≥ 10 → 0 decimals (whole grams once weighable).
 
 Breakpoints are constants that may be tuned later. This is the highest-value new deep module: pure input→output, trivially testable.
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import styles from "./PintCup.module.scss";
 import type { MacroRatios } from "@/lib/formula-engine";
 
@@ -10,12 +10,16 @@ interface PintCupProps {
   width?: number;
 }
 
-// Layer order bottom-to-top in the cup
+// Layer order bottom-to-top: water on the bottom, then the non-water macros in
+// their usual size order — biggest just above the waterline, smallest at the top.
+// Fixed (not per-formula): sugar ≥ fat ≥ milk solids ≥ stabilizer ≥ emulsifier ≥ alcohol.
+// Colors keep their original bottom-to-top sequence (mint, gold, peach, …) so the
+// gradient is unchanged even though the macros are reordered.
 const LAYERS: { key: keyof MacroRatios; color: string }[] = [
   { key: "water", color: "var(--color-bg)" },
-  { key: "nonfatSolids", color: "var(--color-macro-nonfat)" },
-  { key: "sugar", color: "var(--color-macro-sugar)" },
-  { key: "fat", color: "var(--color-macro-fat)" },
+  { key: "sugar", color: "var(--color-macro-nonfat)" },
+  { key: "fat", color: "var(--color-macro-sugar)" },
+  { key: "nonfatSolids", color: "var(--color-macro-fat)" },
   { key: "stabilizer", color: "var(--color-macro-stabilizer)" },
   { key: "emulsifier", color: "var(--color-macro-emulsifier)" },
   { key: "alcohol", color: "var(--color-macro-alcohol)" },
@@ -54,6 +58,38 @@ function cupGeomAtY(y: number) {
   return { leftX, width };
 }
 
+// --- Living waterline ---
+// A single, smooth S: one sine wave whose wavelength ≈ the cup width, so the
+// surface shows just one gentle crest and one trough. Rather than drifting at a
+// constant rate, its phase *sways* (a sine of time) so the wave glides fastest
+// mid-swing and eases to a near-stop at each turn — like liquid settling.
+const WATER_MAX_AMP = 4;    // total vertical reach; drives the headroom band
+const WAVELENGTH = 115;     // slightly wider than the cup → under one full wave, so
+                            // exactly one crest + one trough show (a clean single S)
+const AMP = 3;              // crest/trough height — defined but still shallow
+const DRIFT_AMP = 1.8;      // how far the wave sways, in radians (eased)
+const DRIFT_SPEED = 1.0;    // sway rate, rad/s
+const BOB_AMP = 0.6;        // slow whole-surface rise/fall
+const BOB_SPEED = 1.2;      // rad/s
+const K = (2 * Math.PI) / WAVELENGTH;
+
+function waterlineY(x: number, meanY: number, t: number): number {
+  const phase = DRIFT_AMP * Math.sin(DRIFT_SPEED * t);
+  const bob = BOB_AMP * Math.sin(BOB_SPEED * t);
+  return meanY + bob + AMP * Math.sin(K * x + phase);
+}
+
+// Closed region between the waterline (top) and the cup floor — the water body.
+function waterPath(meanY: number, t: number): string {
+  const x0 = -2;
+  const x1 = VW + 2;
+  let d = `M ${x0},${VH} L ${x0},${waterlineY(x0, meanY, t).toFixed(3)}`;
+  for (let x = x0 + 2; x <= x1; x += 2) {
+    d += ` L ${x},${waterlineY(x, meanY, t).toFixed(3)}`;
+  }
+  return `${d} L ${x1},${VH} Z`;
+}
+
 export function PintCup({ ratios, size = "full", width }: PintCupProps) {
   const uid = useId().replace(/:/g, "-");
   const clipId = `pint-cup-clip${uid}`;
@@ -80,6 +116,39 @@ export function PintCup({ ratios, size = "full", width }: PintCupProps) {
     layers.push({ key, color, points });
     yFloor = yCeil;
   }
+
+  // The waterline animates only when there is a water band with a layer above it
+  // and enough room to bob without clipping the rim or the floor.
+  const waterFraction = total > 0 ? ratios.water / total : 0;
+  const waterMeanY = VH - waterFraction * VH;
+  const waterIdx = layers.findIndex((l) => l.key === "water");
+  const aboveColor = waterIdx >= 0 ? layers[waterIdx + 1]?.color : undefined;
+  const waterColor = waterIdx >= 0 ? layers[waterIdx].color : undefined;
+  const hasWave =
+    waterIdx >= 0 &&
+    !!aboveColor &&
+    waterMeanY > WATER_MAX_AMP &&
+    waterMeanY < VH - WATER_MAX_AMP;
+
+  const waterRef = useRef<SVGPathElement>(null);
+
+  useEffect(() => {
+    const el = waterRef.current;
+    if (!hasWave || !el) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.setAttribute("d", waterPath(waterMeanY, 0));
+      return;
+    }
+
+    let raf = 0;
+    const tick = () => {
+      el.setAttribute("d", waterPath(waterMeanY, performance.now() / 1000));
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [hasWave, waterMeanY]);
 
   const sizeStyle = width
     ? { width: `${width}px`, height: `${Math.round(width * ASPECT)}px` }
@@ -112,6 +181,15 @@ export function PintCup({ ratios, size = "full", width }: PintCupProps) {
               className={styles.layer}
             />
           ))}
+
+          {hasWave && (
+            <>
+              {/* Extend the layer above the water down to the trough line so the
+                  waterline can dip without revealing a gap. */}
+              <rect x={-2} y={waterMeanY} width={VW + 4} height={WATER_MAX_AMP} fill={aboveColor} />
+              <path ref={waterRef} d={waterPath(waterMeanY, 0)} fill={waterColor} />
+            </>
+          )}
         </g>
 
         {/* Cup outline drawn on top */}

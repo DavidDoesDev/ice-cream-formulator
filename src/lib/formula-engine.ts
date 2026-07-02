@@ -40,7 +40,7 @@ export const MACRO_BOUNDS: Record<keyof MacroRatios, [number, number]> = {
   nonfatSolids: [0.0, 0.14], // 0% valid for sorbets
   stabilizer: [0.0, 0.008],  // 0–0.8%: full expression, down to none
   emulsifier: [0.0, 0.006],  // 0–0.6%: full expression, down to none
-  alcohol: [0.0, 0.12],
+  alcohol: [0.0, 0.06],      // 0–6%: past ~6% by weight it won't freeze scoopable
   water: [0.45, 0.80],       // raised: high-water sorbets
 };
 
@@ -53,7 +53,7 @@ const MACRO_TOLERANCE: Record<keyof MacroRatios, number> = {
   nonfatSolids: 0.02,
   stabilizer: 0.008,
   emulsifier: 0.006,
-  alcohol: 0.04,
+  alcohol: 0.06,   // full range from any start, so it can always return to 0
   water: 0.06,
 };
 

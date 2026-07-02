@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Menu, Share2 } from "lucide-react";
+import { Menu, Share2, Settings } from "lucide-react";
 import { FormulaProvider } from "@/context/FormulaContext";
 import { useFormulaContext } from "@/context/FormulaContext";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
@@ -224,7 +224,7 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
               onClick={() => setShowConfig(true)}
               aria-label="Settings"
             >
-              ⚙
+              <Settings size={20} strokeWidth={2} />
             </button>
           </>
         ) : (

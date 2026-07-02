@@ -20,10 +20,12 @@ const MACRO_LABELS: Record<string, string> = {
   alcohol: "Alcohol",
 };
 
+// Swatches match the PintCup layer colors (which keep the original bottom-to-top
+// gradient), so the key lines up with the pint bands — not the semantic macro hues.
 const MACRO_COLORS: Record<string, string> = {
-  fat: "var(--color-macro-fat)",
-  sugar: "var(--color-macro-sugar)",
-  nonfatSolids: "var(--color-macro-nonfat)",
+  fat: "var(--color-macro-sugar)",
+  sugar: "var(--color-macro-nonfat)",
+  nonfatSolids: "var(--color-macro-fat)",
   stabilizer: "var(--color-macro-stabilizer)",
   emulsifier: "var(--color-macro-emulsifier)",
   alcohol: "var(--color-macro-alcohol)",
