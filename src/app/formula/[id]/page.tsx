@@ -148,7 +148,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
           />
         ) : (
           <>
-            {view === "formula" && mode === "preview" && <FormulaPreview />}
+            {view === "formula" && mode === "preview" && <FormulaPreview recipe={recipe} />}
             {view === "formula" && mode === "edit" && (
               <FormulaEdit
                 ref={formulaEditRef}

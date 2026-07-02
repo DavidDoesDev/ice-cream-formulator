@@ -7,6 +7,7 @@ import type { MacroRatios } from "@/lib/formula-engine";
 interface PintCupProps {
   ratios: MacroRatios;
   size?: "full" | "mini";
+  width?: number;
 }
 
 // Layer order bottom-to-top in the cup
@@ -30,6 +31,8 @@ const LID_H = 16;
 const LID_W = VW * 1.2;
 const LID_X = (VW - LID_W) / 2;
 const LID_GAP = 8;
+// Natural aspect ratio of the viewBox: height / width
+const ASPECT = (VH + LID_H + LID_GAP) / LID_W;
 
 // Trapezoid path with rounded bottom corners, sharp top corners.
 // The taper is so slight (5/100) that we approximate the bottom arcs as right-angle turns.
@@ -51,7 +54,7 @@ function cupGeomAtY(y: number) {
   return { leftX, width };
 }
 
-export function PintCup({ ratios, size = "full" }: PintCupProps) {
+export function PintCup({ ratios, size = "full", width }: PintCupProps) {
   const uid = useId().replace(/:/g, "-");
   const clipId = `pint-cup-clip${uid}`;
   const total = Object.values(ratios).reduce((a, b) => a + b, 0);
@@ -78,8 +81,15 @@ export function PintCup({ ratios, size = "full" }: PintCupProps) {
     yFloor = yCeil;
   }
 
+  const sizeStyle = width
+    ? { width: `${width}px`, height: `${Math.round(width * ASPECT)}px` }
+    : undefined;
+
   return (
-    <div className={`${styles.cup} ${size === "mini" ? styles.mini : styles.full}`}>
+    <div
+      className={`${styles.cup} ${width ? "" : size === "mini" ? styles.mini : styles.full}`}
+      style={sizeStyle}
+    >
       <svg
         viewBox={`${LID_X} ${-(LID_H + LID_GAP)} ${LID_W} ${VH + LID_H + LID_GAP}`}
         xmlns="http://www.w3.org/2000/svg"

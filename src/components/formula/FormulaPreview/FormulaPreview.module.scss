@@ -17,7 +17,7 @@
 
 .macroRow {
   display: grid;
-  grid-template-columns: 16px 1fr 1fr auto;
+  grid-template-columns: 16px 1fr auto;
   align-items: center;
   gap: var(--space-3);
 }
@@ -29,24 +29,14 @@
   flex-shrink: 0;
 }
 
+.macroSwatchOutline {
+  border: 1.5px solid var(--color-text-secondary);
+}
+
 .macroName {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-text);
-}
-
-.macroBar {
-  height: 6px;
-  background: var(--color-border);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-
-.macroFill {
-  display: block;
-  height: 100%;
-  border-radius: var(--radius-pill);
-  transition: width var(--duration-default) var(--ease-jelly);
 }
 
 .macroPct {
