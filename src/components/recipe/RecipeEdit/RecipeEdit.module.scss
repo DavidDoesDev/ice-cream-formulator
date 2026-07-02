@@ -4,14 +4,9 @@
   gap: var(--space-6);
 }
 
-.sectionLabel {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
-  margin: 0 0 var(--space-3) 0;
+.section {
+  display: flex;
+  flex-direction: column;
 }
 
 .ingredientList {
@@ -30,42 +25,14 @@
   overflow: hidden;
 }
 
-.ingredientCard.inactive {
-  opacity: 0.45;
-}
-
-.mixKind {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.inactiveLabel {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  font-style: italic;
-}
-
 .cardMain {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
 }
 
-.cardLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex: 1;
-  min-width: 0;
-}
-
-.swipeHandle {
+.menuHandle {
   flex-shrink: 0;
   font-size: 18px;
   font-weight: 700;
@@ -78,44 +45,17 @@
   line-height: 1;
 }
 
-.cardInfo {
+.ingName {
   flex: 1;
   min-width: 0;
-}
-
-.ingName {
-  display: block;
   font-size: 15px;
+  font-weight: 600;
   color: var(--color-text);
-  font-weight: 500;
-  margin-bottom: var(--space-1);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.ingStates {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.stateBtn {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  padding: 2px var(--space-2);
-  cursor: pointer;
-  transition: background var(--duration-fast), color var(--duration-fast);
-}
-
-.stateBtn.stateBtnActive {
-  background: var(--color-accent);
-  color: var(--color-surface);
-  border-color: var(--color-accent);
 }
 
 .gramStepper {
@@ -190,24 +130,22 @@
   color: var(--color-text-secondary);
 }
 
-.swipeActions {
+.rowActions {
   display: flex;
   border-top: 1px solid var(--color-border);
-  animation: swipeReveal var(--duration-fast) var(--ease-jelly);
+  animation: rowReveal var(--duration-fast) var(--ease-jelly);
 }
 
-@keyframes swipeReveal {
+@keyframes rowReveal {
   from {
-    height: 0;
     opacity: 0;
   }
   to {
-    height: auto;
     opacity: 1;
   }
 }
 
-.swipeMoreBtn {
+.rowCloseBtn {
   flex: 1;
   font-family: var(--font-display);
   font-size: 14px;
@@ -221,16 +159,16 @@
   transition: background var(--duration-fast);
 }
 
-.swipeMoreBtn:hover {
+.rowCloseBtn:hover {
   background: var(--color-bg);
 }
 
-.swipeDeleteBtn {
+.rowRemoveBtn {
   flex: 1;
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
-  color: #e05c2e;
+  color: var(--color-accent);
   background: none;
   border: none;
   padding: var(--space-3);
@@ -238,14 +176,16 @@
   transition: background var(--duration-fast);
 }
 
-.swipeDeleteBtn:hover {
-  background: color-mix(in srgb, #e05c2e 8%, transparent);
+.rowRemoveBtn:hover {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
 }
 
 .addBtn {
   font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--color-accent);
   background: none;
   border: 1px dashed var(--color-border);
@@ -253,17 +193,12 @@
   padding: var(--space-3) var(--space-4);
   cursor: pointer;
   width: 100%;
-  text-align: left;
+  text-align: center;
   transition: background var(--duration-fast);
 }
 
 .addBtn:hover {
   background: color-mix(in srgb, var(--color-accent) 5%, transparent);
-}
-
-.notesSection {
-  display: flex;
-  flex-direction: column;
 }
 
 .notesInput {

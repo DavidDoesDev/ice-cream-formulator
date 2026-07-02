@@ -1,13 +1,25 @@
 "use client";
 
 import { useState, useCallback, forwardRef, useImperativeHandle } from "react";
-import type { Recipe, AdditionalIngredient } from "@/data/types";
+import type { Recipe, AdditionalIngredient, SmartMixKind, SmartMix } from "@/data/types";
 import type { Ingredient, FormulaState } from "@/lib/formula-engine";
 import { getIngredientById } from "@/data/ingredients";
 import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
 import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById } from "@/data/mix-presets";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import styles from "./RecipeEdit.module.scss";
+
+// Sugar and stabilizer are fixed-proportion systems shown as one grouped card;
+// everything else (milk, cream, eggs, water, alcohol, additions) is an individual
+// ingredient. Grouped cards use the system label; singles use the ingredient name.
+const GROUPED_KINDS: SmartMixKind[] = ["sugar", "stabilizer"];
+const isGrouped = (kind: SmartMixKind) => GROUPED_KINDS.includes(kind);
+
+function mixLabel(mix: SmartMix): string {
+  if (isGrouped(mix.kind)) return mix.label;
+  return getPresetById(mix.presetId)?.name ?? mix.label;
+}
 
 interface RecipeEditProps {
   recipe: Recipe;
@@ -24,7 +36,7 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
   function RecipeEdit({ recipe, initialNotes, onDone, onOpenIngredientSelector }, ref) {
     const [local, setLocal] = useState(recipe);
     const [notes, setNotes] = useState(initialNotes);
-    const [swipeOpen, setSwipeOpen] = useState<string | null>(null);
+    const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
     useImperativeHandle(ref, () => ({
       commit: () => {
@@ -38,11 +50,11 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
       },
     }), [local, notes, recipe, onDone]);
 
-    const setMixGrams = useCallback((kind: string, grams: number) => {
+    const setMixGrams = useCallback((presetId: string, grams: number) => {
       setLocal((prev) => ({
         ...prev,
         smartMixes: prev.smartMixes.map((m) =>
-          m.kind === kind ? { ...m, grams: Math.max(0, grams) } : m,
+          m.presetId === presetId ? { ...m, grams: Math.max(0, grams) } : m,
         ),
       }));
     }, []);
@@ -82,7 +94,7 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
         const newAdditionals = prev.additionalIngredients.filter((a) => a.ingredientId !== ingredientId);
         return rebalanceWithAdditionals(prev, newAdditionals);
       });
-      setSwipeOpen(null);
+      setMenuOpen(null);
     }, [rebalanceWithAdditionals]);
 
     const handleAddIngredient = useCallback(() => {
@@ -98,35 +110,25 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
       });
     }, [onOpenIngredientSelector]);
 
-    const isAlcoholEmpty = (mix: typeof local.smartMixes[0]) =>
-      mix.kind === "alcohol" && mix.presetId === "alcohol-empty";
+    // Empty-by-default mixes (unset alcohol / emulsifier) don't belong in the list.
+    const activeMixes = local.smartMixes.filter(
+      (m) => (getPresetById(m.presetId)?.ingredients.length ?? 0) > 0,
+    );
 
     return (
       <div className={styles.root}>
-        <div className={styles.ingredientList}>
-          <p className={styles.sectionLabel}>Smart Mixes</p>
-
-          {local.smartMixes.map((mix) => {
-            const preset = getPresetById(mix.presetId);
-            const displayLabel = preset?.name ?? mix.label;
-            return (
-            <div
-              key={mix.kind}
-              className={`${styles.ingredientCard} ${isAlcoholEmpty(mix) ? styles.inactive : ""}`}
-            >
-              <div className={styles.cardMain}>
-                <div className={styles.cardLeft}>
-                  <div className={styles.cardInfo}>
-                    <span className={styles.ingName}>{displayLabel}</span>
-                    <span className={styles.mixKind}>{mix.kind}</span>
-                  </div>
-                </div>
-                {!isAlcoholEmpty(mix) && (
+        <div className={styles.section}>
+          <SectionHeader role="ingredients" label="Ingredients" />
+          <div className={styles.ingredientList}>
+            {activeMixes.map((mix) => (
+              <div key={mix.presetId} className={styles.ingredientCard}>
+                <div className={styles.cardMain}>
+                  <span className={styles.ingName}>{mixLabel(mix)}</span>
                   <div className={styles.gramStepper}>
                     <button
                       className={styles.stepBtn}
                       type="button"
-                      onClick={() => setMixGrams(mix.kind, mix.grams - 10)}
+                      onClick={() => setMixGrams(mix.presetId, mix.grams - 10)}
                     >
                       −
                     </button>
@@ -137,7 +139,7 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                         value={Math.round(mix.grams)}
                         onChange={(e) => {
                           const val = parseFloat(e.target.value);
-                          if (!isNaN(val)) setMixGrams(mix.kind, val);
+                          if (!isNaN(val)) setMixGrams(mix.presetId, val);
                         }}
                         min={0}
                         step={10}
@@ -147,44 +149,29 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                     <button
                       className={styles.stepBtn}
                       type="button"
-                      onClick={() => setMixGrams(mix.kind, mix.grams + 10)}
+                      onClick={() => setMixGrams(mix.presetId, mix.grams + 10)}
                     >
                       +
                     </button>
                   </div>
-                )}
-                {isAlcoholEmpty(mix) && (
-                  <span className={styles.inactiveLabel}>not set</span>
-                )}
+                </div>
               </div>
-            </div>
-            );
-          })}
-        </div>
-
-        {(local.additionalIngredients.length > 0 || true) && (
-          <div className={styles.ingredientList}>
-            <p className={styles.sectionLabel}>Additional Ingredients</p>
+            ))}
 
             {local.additionalIngredients.map((ai) => {
-              const catalogIng = getIngredientById(ai.ingredientId);
-              const label = catalogIng?.name ?? ai.ingredientId;
+              const label = getIngredientById(ai.ingredientId)?.name ?? ai.ingredientId;
               return (
                 <div key={ai.ingredientId} className={styles.ingredientCard}>
                   <div className={styles.cardMain}>
-                    <div className={styles.cardLeft}>
-                      <button
-                        className={styles.swipeHandle}
-                        type="button"
-                        onClick={() => setSwipeOpen((p) => (p === ai.ingredientId ? null : ai.ingredientId))}
-                        aria-label="More options"
-                      >
-                        ···
-                      </button>
-                      <div className={styles.cardInfo}>
-                        <span className={styles.ingName}>{label}</span>
-                      </div>
-                    </div>
+                    <button
+                      className={styles.menuHandle}
+                      type="button"
+                      onClick={() => setMenuOpen((p) => (p === ai.ingredientId ? null : ai.ingredientId))}
+                      aria-label="More options"
+                    >
+                      ···
+                    </button>
+                    <span className={styles.ingName}>{label}</span>
                     <div className={styles.gramStepper}>
                       <button
                         className={styles.stepBtn}
@@ -217,17 +204,17 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                     </div>
                   </div>
 
-                  {swipeOpen === ai.ingredientId && (
-                    <div className={styles.swipeActions}>
+                  {menuOpen === ai.ingredientId && (
+                    <div className={styles.rowActions}>
                       <button
-                        className={styles.swipeMoreBtn}
+                        className={styles.rowCloseBtn}
                         type="button"
-                        onClick={() => setSwipeOpen(null)}
+                        onClick={() => setMenuOpen(null)}
                       >
                         Close
                       </button>
                       <button
-                        className={styles.swipeDeleteBtn}
+                        className={styles.rowRemoveBtn}
                         type="button"
                         onClick={() => removeAdditional(ai.ingredientId)}
                       >
@@ -240,13 +227,13 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
             })}
 
             <button className={styles.addBtn} type="button" onClick={handleAddIngredient}>
-              + Add ingredient
+              Add ingredient
             </button>
           </div>
-        )}
+        </div>
 
-        <div className={styles.notesSection}>
-          <label className={styles.sectionLabel} htmlFor="recipe-notes">Notes</label>
+        <div className={styles.section}>
+          <SectionHeader role="notes" label="Notes" />
           <textarea
             id="recipe-notes"
             className={styles.notesInput}
