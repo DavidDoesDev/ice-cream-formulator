@@ -39,8 +39,8 @@ export function RecipePreview({ recipe, notes }: RecipePreviewProps) {
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     drag.current = { startY: e.clientY, startYield: displayYield };
     e.currentTarget.setPointerCapture(e.pointerId);
-    // Suppress text selection across the page for the duration of the scrub.
-    document.body.style.userSelect = "none";
+    // Page-wide scrub state: no text selection, up/down cursor everywhere.
+    document.body.classList.add("scrubbing");
   }, [displayYield]);
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!drag.current) return;
@@ -50,14 +50,14 @@ export function RecipePreview({ recipe, notes }: RecipePreviewProps) {
   }, []);
   const endDrag = useCallback((e: React.PointerEvent) => {
     drag.current = null;
-    document.body.style.userSelect = "";
+    document.body.classList.remove("scrubbing");
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
   }, []);
 
-  // Safety: if unmounted mid-drag, restore selection.
-  useEffect(() => () => { document.body.style.userSelect = ""; }, []);
+  // Safety: if unmounted mid-drag, clear the scrub state.
+  useEffect(() => () => { document.body.classList.remove("scrubbing"); }, []);
 
   // Flatten every mix + addition to individual ingredients, merged and scaled.
   const rows = useMemo(() => {

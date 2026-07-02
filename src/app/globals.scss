@@ -69,3 +69,18 @@ body {
 a {
   color: var(--color-accent);
 }
+
+/* Active vertical scrub (e.g. yield): no selection anywhere, up/down cursor everywhere. */
+body.scrubbing {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.scrubbing,
+body.scrubbing * {
+  cursor: ns-resize !important;
+}
+
+body.scrubbing ::selection {
+  background: transparent;
+}
