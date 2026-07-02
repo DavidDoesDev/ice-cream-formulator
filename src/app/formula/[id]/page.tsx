@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Menu, Share2, Settings } from "lucide-react";
+import Link from "next/link";
+import { Menu, Share2, Settings, Home } from "lucide-react";
 import { FormulaProvider } from "@/context/FormulaContext";
 import { useFormulaContext } from "@/context/FormulaContext";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
@@ -33,6 +34,7 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
   const [view, setView] = useState<WorkspaceView>("formula");
   const [mode, setMode] = useState<WorkspaceMode>("preview");
   const [showConfig, setShowConfig] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [ingredientSelector, setIngredientSelector] = useState<IngredientSelectorState | null>(null);
   const [notes, setNotes] = useState("");
   const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
@@ -109,9 +111,27 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
       ← Back
     </button>
   ) : mode === "preview" ? (
-    <button className={styles.headerBtn} type="button" aria-label="Menu">
-      <Menu size={20} strokeWidth={2} />
-    </button>
+    <div className={styles.menuWrap}>
+      <button
+        className={styles.headerBtn}
+        type="button"
+        aria-label="Menu"
+        onClick={() => setMenuOpen((o) => !o)}
+      >
+        <Menu size={20} strokeWidth={2} />
+      </button>
+      {menuOpen && (
+        <>
+          <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
+          <div className={styles.menu}>
+            <Link href="/" className={styles.menuItem} onClick={() => setMenuOpen(false)}>
+              <Home size={16} strokeWidth={2} />
+              Home
+            </Link>
+          </div>
+        </>
+      )}
+    </div>
   ) : (
     <div className={styles.headerSlot} />
   );
