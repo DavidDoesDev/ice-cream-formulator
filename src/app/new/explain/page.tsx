@@ -31,9 +31,9 @@ export default function ExplainPage() {
     if (!pending) return;
     const archetype = pending.results[0].archetype;
     const id = generateFormulaId();
-    const state = bootstrapFromArchetype(archetype);
+    const { state, recipe } = bootstrapFromArchetype(archetype);
     const now = Date.now();
-    saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state });
+    saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state, recipe });
     sessionStorage.removeItem("icf:pending-match");
     router.push(`/formula/${id}`);
   }, [pending, router]);

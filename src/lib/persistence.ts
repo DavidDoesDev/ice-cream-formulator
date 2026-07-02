@@ -1,4 +1,5 @@
 import type { FormulaState } from "./formula-engine";
+import type { Recipe } from "@/data/types";
 
 export interface SavedFormula {
   id: string;
@@ -7,6 +8,7 @@ export interface SavedFormula {
   createdAt: number;
   updatedAt: number;
   state: FormulaState;
+  recipe: Recipe;
 }
 
 const PREFIX = "icf:formula:";

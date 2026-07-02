@@ -21,9 +21,9 @@ function NewFormulaInner() {
   const launchArchetype = useCallback(
     (archetype: Archetype) => {
       const id = generateFormulaId();
-      const state = bootstrapFromArchetype(archetype);
+      const { state, recipe } = bootstrapFromArchetype(archetype);
       const now = Date.now();
-      saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state });
+      saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state, recipe });
       router.push(`/formula/${id}`);
     },
     [router]
