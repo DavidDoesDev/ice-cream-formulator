@@ -78,6 +78,7 @@
   border: 2px solid var(--macro-color, var(--color-accent));
   box-shadow: 0 2px 8px color-mix(in srgb, var(--color-text) 15%, transparent);
   transition: transform var(--duration-fast) var(--ease-jelly);
+  margin-top: -9px;
 }
 
 .slider:active::-webkit-slider-thumb {
