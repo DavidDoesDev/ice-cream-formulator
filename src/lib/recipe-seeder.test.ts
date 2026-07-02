@@ -1,9 +1,29 @@
 import { describe, it, expect } from "vitest";
 import { seedRecipe } from "./recipe-seeder";
+import { getPresetById } from "@/data/mix-presets";
 import type { SmartMixKind } from "@/data/types";
 
 function kinds(recipe: ReturnType<typeof seedRecipe>): SmartMixKind[] {
   return recipe.smartMixes.map((m) => m.kind);
+}
+
+// The catalog ingredient ids carried by every mix of a given kind.
+function ingredientsOfKind(
+  recipe: ReturnType<typeof seedRecipe>,
+  kind: SmartMixKind,
+): string[] {
+  return recipe.smartMixes
+    .filter((m) => m.kind === kind)
+    .flatMap((m) => getPresetById(m.presetId)?.ingredients.map((i) => i.ingredientId) ?? []);
+}
+
+// A "single" component is a mix carrying exactly one catalog ingredient.
+function isSingleIngredientKind(
+  recipe: ReturnType<typeof seedRecipe>,
+  kind: SmartMixKind,
+): boolean {
+  const mixes = recipe.smartMixes.filter((m) => m.kind === kind);
+  return mixes.length > 0 && mixes.every((m) => getPresetById(m.presetId)?.ingredients.length === 1);
 }
 
 function preset(recipe: ReturnType<typeof seedRecipe>, kind: SmartMixKind): string | undefined {
@@ -17,12 +37,13 @@ function preset(recipe: ReturnType<typeof seedRecipe>, kind: SmartMixKind): stri
 describe("seedRecipe(philadelphia)", () => {
   const recipe = seedRecipe("philadelphia");
 
-  it("includes milk, sugar, stabilizer, alcohol, emulsifier — no eggs, no liquid", () => {
-    expect(kinds(recipe).sort()).toEqual(["alcohol", "emulsifier", "milk", "stabilizer", "sugar"]);
+  it("includes two milks (whole + cream), sugar, stabilizer, alcohol, emulsifier — no eggs, no liquid", () => {
+    expect(kinds(recipe).sort()).toEqual(["alcohol", "emulsifier", "milk", "milk", "stabilizer", "sugar"]);
   });
 
-  it("milk uses milk-standard preset", () => {
-    expect(preset(recipe, "milk")).toBe("milk-standard");
+  it("splits the milk base into individual ingredients (whole milk + cream), not one blend", () => {
+    expect(isSingleIngredientKind(recipe, "milk")).toBe(true);
+    expect(ingredientsOfKind(recipe, "milk").sort()).toEqual(["cream-35", "whole-milk"]);
   });
 
   it("sugar uses sugar-sucrose preset", () => {
@@ -45,8 +66,13 @@ describe("seedRecipe(philadelphia)", () => {
 describe("seedRecipe(custard)", () => {
   const recipe = seedRecipe("custard");
 
-  it("includes milk, eggs, sugar, stabilizer, alcohol, emulsifier — no liquid", () => {
-    expect(kinds(recipe).sort()).toEqual(["alcohol", "eggs", "emulsifier", "milk", "stabilizer", "sugar"]);
+  it("includes two milks, eggs, sugar, stabilizer, alcohol, emulsifier — no liquid", () => {
+    expect(kinds(recipe).sort()).toEqual(["alcohol", "eggs", "emulsifier", "milk", "milk", "stabilizer", "sugar"]);
+  });
+
+  it("splits the milk base into individual whole milk + cream", () => {
+    expect(isSingleIngredientKind(recipe, "milk")).toBe(true);
+    expect(ingredientsOfKind(recipe, "milk").sort()).toEqual(["cream-35", "whole-milk"]);
   });
 
   it("eggs uses eggs-yolks preset", () => {
@@ -65,12 +91,13 @@ describe("seedRecipe(custard)", () => {
 describe("seedRecipe(gelato)", () => {
   const recipe = seedRecipe("gelato");
 
-  it("includes milk, sugar, stabilizer, alcohol, emulsifier — no eggs by default, no liquid", () => {
-    expect(kinds(recipe).sort()).toEqual(["alcohol", "emulsifier", "milk", "stabilizer", "sugar"]);
+  it("includes three milks (whole, cream, milk powder), sugar, stabilizer, alcohol, emulsifier", () => {
+    expect(kinds(recipe).sort()).toEqual(["alcohol", "emulsifier", "milk", "milk", "milk", "stabilizer", "sugar"]);
   });
 
-  it("milk uses milk-milk-heavy preset", () => {
-    expect(preset(recipe, "milk")).toBe("milk-milk-heavy");
+  it("splits the milk base into individual whole milk, cream, and milk powder", () => {
+    expect(isSingleIngredientKind(recipe, "milk")).toBe(true);
+    expect(ingredientsOfKind(recipe, "milk").sort()).toEqual(["cream-35", "skim-milk-powder", "whole-milk"]);
   });
 });
 
@@ -87,8 +114,9 @@ describe("seedRecipe(sherbet)", () => {
     expect(k).toContain("liquid");
   });
 
-  it("milk uses milk-small-cream preset", () => {
-    expect(preset(recipe, "milk")).toBe("milk-small-cream");
+  it("splits the milk base into individual whole milk + light cream", () => {
+    expect(isSingleIngredientKind(recipe, "milk")).toBe(true);
+    expect(ingredientsOfKind(recipe, "milk").sort()).toEqual(["cream-18", "whole-milk"]);
   });
 
   it("liquid uses liquid-water preset", () => {
@@ -121,8 +149,9 @@ describe("seedRecipe(vegan)", () => {
     expect(kinds(recipe)).toContain("milk");
   });
 
-  it("milk uses milk-plant-based preset", () => {
-    expect(preset(recipe, "milk")).toBe("milk-plant-based");
+  it("splits the plant base into individual coconut cream + oat milk", () => {
+    expect(isSingleIngredientKind(recipe, "milk")).toBe(true);
+    expect(ingredientsOfKind(recipe, "milk").sort()).toEqual(["coconut-cream", "oat-milk"]);
   });
 });
 

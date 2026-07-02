@@ -89,6 +89,32 @@ const STAB_NONE = preset("stab-none", "stabilizer", "None", [
 // Milk Mix presets
 // ---------------------------------------------------------------------------
 
+// Single-ingredient milk-family components. Milk, cream, etc. are individual
+// items (decision A) — each its own solver column — rather than a locked blend.
+const MILK_WHOLE = preset("milk-whole", "milk", "Whole Milk (3.6% Fat)", [
+  { ingredientId: "whole-milk", proportion: 1.0 },
+]);
+
+const CREAM_HEAVY = preset("cream-heavy", "milk", "Heavy Cream (40% Fat)", [
+  { ingredientId: "cream-35", proportion: 1.0 },
+]);
+
+const CREAM_LIGHT = preset("cream-light", "milk", "Light Cream (18% Fat)", [
+  { ingredientId: "cream-18", proportion: 1.0 },
+]);
+
+const MILK_POWDER = preset("milk-powder", "milk", "Skim Milk Powder", [
+  { ingredientId: "skim-milk-powder", proportion: 1.0 },
+]);
+
+const MILK_COCONUT_CREAM = preset("milk-coconut-cream", "milk", "Coconut Cream", [
+  { ingredientId: "coconut-cream", proportion: 1.0 },
+]);
+
+const MILK_OAT = preset("milk-oat", "milk", "Oat Milk", [
+  { ingredientId: "oat-milk", proportion: 1.0 },
+]);
+
 const MILK_STANDARD = preset("milk-standard", "milk", "Standard", [
   { ingredientId: "whole-milk", proportion: 0.60 },
   { ingredientId: "cream-35", proportion: 0.40 },
@@ -191,6 +217,12 @@ export const MIX_PRESETS: MixPreset[] = [
   STAB_CORNSTARCH,
   STAB_CREMODAN,
   STAB_NONE,
+  MILK_WHOLE,
+  CREAM_HEAVY,
+  CREAM_LIGHT,
+  MILK_POWDER,
+  MILK_COCONUT_CREAM,
+  MILK_OAT,
   MILK_STANDARD,
   MILK_MSNF_BOOSTED,
   MILK_MILK_HEAVY,

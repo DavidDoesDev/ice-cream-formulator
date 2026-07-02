@@ -16,7 +16,8 @@ export function seedRecipe(style: StyleCategory): Recipe {
   switch (style) {
     case "philadelphia":
       smartMixes = [
-        mix("milk", "Milk Mix", "milk-standard"),
+        mix("milk", "Whole Milk", "milk-whole"),
+        mix("milk", "Heavy Cream", "cream-heavy"),
         SUGAR,
         STAB_MODERNIST,
         ALCOHOL,
@@ -25,7 +26,8 @@ export function seedRecipe(style: StyleCategory): Recipe {
 
     case "custard":
       smartMixes = [
-        mix("milk", "Milk Mix", "milk-standard"),
+        mix("milk", "Whole Milk", "milk-whole"),
+        mix("milk", "Heavy Cream", "cream-heavy"),
         mix("eggs", "Egg Mix", "eggs-yolks"),
         SUGAR,
         STAB_NONE,
@@ -35,7 +37,9 @@ export function seedRecipe(style: StyleCategory): Recipe {
 
     case "gelato":
       smartMixes = [
-        mix("milk", "Milk Mix", "milk-milk-heavy"),
+        mix("milk", "Whole Milk", "milk-whole"),
+        mix("milk", "Heavy Cream", "cream-heavy"),
+        mix("milk", "Skim Milk Powder", "milk-powder"),
         SUGAR,
         STAB_MODERNIST,
         ALCOHOL,
@@ -44,7 +48,8 @@ export function seedRecipe(style: StyleCategory): Recipe {
 
     case "sherbet":
       smartMixes = [
-        mix("milk", "Milk Mix", "milk-small-cream"),
+        mix("milk", "Whole Milk", "milk-whole"),
+        mix("milk", "Light Cream", "cream-light"),
         mix("liquid", "Liquid Mix", "liquid-water"),
         SUGAR,
         STAB_MODERNIST,
@@ -63,7 +68,8 @@ export function seedRecipe(style: StyleCategory): Recipe {
 
     case "vegan":
       smartMixes = [
-        mix("milk", "Milk Mix", "milk-plant-based"),
+        mix("milk", "Coconut Cream", "milk-coconut-cream"),
+        mix("milk", "Oat Milk", "milk-oat"),
         SUGAR,
         STAB_MODERNIST,
         ALCOHOL,
