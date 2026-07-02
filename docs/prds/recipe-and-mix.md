@@ -1,3 +1,5 @@
+> **Update (UI redesign):** Several Recipe Edit / Recipe Preview / Config UI decisions below are superseded by `docs/prds/ui-mockup-alignment.md`. Most notably, Recipe Edit no longer shows Smart Mixes as opaque collapsed cards — milk, cream, egg components, water, and alcohol become individual rows, while Sugar System and Stabilizer System remain grouped. The two-way Mix↔Recipe sync and the solver's core algorithm are retained and extended, not replaced.
+
 ## Problem Statement
 
 The current Recipe view shows virtual macro blocks (`_base-fat`, `_base-sugar`, `_base-water`, etc.) — internal modeling constructs that have no meaning in a kitchen. A recipe should list the real ingredients a person actually buys and weighs: whole milk, heavy cream, sucrose, skim milk powder, carrageenan. The app currently conflates two distinct concepts:
