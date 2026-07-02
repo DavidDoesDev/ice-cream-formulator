@@ -35,23 +35,23 @@ export interface FormulaState {
 }
 
 export const MACRO_BOUNDS: Record<keyof MacroRatios, [number, number]> = {
-  sugar: [0.08, 0.22],
-  fat: [0.06, 0.22],
-  nonfatSolids: [0.08, 0.14],
+  sugar: [0.08, 0.38],       // raised: sorbets can have 30-35% sugar
+  fat: [0.0, 0.22],          // 0% valid for sorbets
+  nonfatSolids: [0.0, 0.14], // 0% valid for sorbets
   stabilizer: [0.002, 0.006],
   emulsifier: [0.001, 0.003],
-  alcohol: [0.0, 0.08],
-  water: [0.45, 0.75],
+  alcohol: [0.0, 0.12],
+  water: [0.45, 0.80],       // raised: high-water sorbets
 };
 
 // How far above/below the archetype target each slider is allowed to roam.
 const MACRO_TOLERANCE: Record<keyof MacroRatios, number> = {
   fat: 0.04,
-  sugar: 0.03,
+  sugar: 0.04,
   nonfatSolids: 0.02,
   stabilizer: 0.002,
   emulsifier: 0.001,
-  alcohol: 0.03,
+  alcohol: 0.04,
   water: 0.06,
 };
 
@@ -68,7 +68,7 @@ export function computeSliderBounds(
   const tol = MACRO_TOLERANCE[macro];
   const lo = target === 0 ? 0 : Math.max(absMin, target - tol);
   const hi = target === 0 ? Math.min(absMax, tol) : Math.min(absMax, target + tol);
-  return [lo, hi];
+  return [lo, Math.max(lo, hi)]; // guard against inversion when target exceeds absMax
 }
 
 const MACRO_KEYS: (keyof MacroRatios)[] = [

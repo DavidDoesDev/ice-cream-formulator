@@ -84,6 +84,11 @@ export function FormulaEdit({ initial, recipe, onDone, onCancel }: FormulaEditPr
           const current = ratios[key];
           const currentPct = current * 100;
 
+          const clampedPct = Math.min(currentPct, max * 100);
+          const fillPct = max > effectiveMin
+            ? Math.max(0, Math.min(100, ((clampedPct - effectiveMin * 100) / ((max - effectiveMin) * 100)) * 100))
+            : 0;
+
           return (
             <div key={key} className={styles.sliderRow}>
               <div className={styles.sliderHeader}>
@@ -102,17 +107,16 @@ export function FormulaEdit({ initial, recipe, onDone, onCancel }: FormulaEditPr
                   min={effectiveMin * 100}
                   max={max * 100}
                   step={0.1}
-                  value={currentPct}
+                  value={clampedPct}
                   onChange={(e) => handleSlider(key, parseFloat(e.target.value))}
                   onPointerUp={(e) => handleSliderCommit(key, parseFloat(e.currentTarget.value))}
                 />
-                <div
-                  className={styles.sliderFill}
-                  style={{
-                    width: `${((currentPct - effectiveMin * 100) / ((max - effectiveMin) * 100)) * 100}%`,
-                    background: color,
-                  }}
-                />
+                <div className={styles.sliderFillWrap}>
+                  <div
+                    className={styles.sliderFill}
+                    style={{ width: `${fillPct}%`, background: color }}
+                  />
+                </div>
               </div>
               <div className={styles.sliderBounds}>
                 <span>{(effectiveMin * 100).toFixed(0)}%</span>

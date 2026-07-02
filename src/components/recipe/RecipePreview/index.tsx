@@ -49,10 +49,11 @@ export function RecipePreview({ recipe, notes, onEdit, onToggleView, onConfig }:
           const preset = getPresetById(mix.presetId);
           if (!preset || preset.ingredients.length === 0) return null;
 
-          const displayLabel = preset.name;
           return (
             <div key={mix.kind} className={styles.mixSection}>
-              <p className={styles.mixLabel}>{displayLabel}</p>
+              {preset.ingredients.length > 1 && (
+                <p className={styles.mixLabel}>{preset.name}</p>
+              )}
               {preset.ingredients.map(({ ingredientId, proportion }) => {
                 const ing = getIngredientById(ingredientId);
                 const grams = proportion * mix.grams * scale;

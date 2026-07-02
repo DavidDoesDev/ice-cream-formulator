@@ -62,9 +62,9 @@ const SUGAR_NATURAL = preset("sugar-natural", "sugar", "Natural Sweeteners", [
 // Stabilizer Mix presets
 // ---------------------------------------------------------------------------
 
-const STAB_MODERNIST = preset("stab-modernist", "stabilizer", "Modernist Cuisine", [
-  { ingredientId: "locust-bean-gum", proportion: 0.50 },
-  { ingredientId: "carrageenan", proportion: 0.25 },
+const STAB_MODERNIST = preset("stab-modernist", "stabilizer", "LBG + Carrageenan + Guar", [
+  { ingredientId: "locust-bean-gum", proportion: 0.40 },
+  { ingredientId: "carrageenan", proportion: 0.35 },
   { ingredientId: "guar-gum", proportion: 0.25 },
 ]);
 
