@@ -1,5 +1,37 @@
 import type { MacroRatios, IngredientMacros } from "@/lib/formula-engine";
 
+export type SmartMixKind = "milk" | "liquid" | "sugar" | "stabilizer" | "eggs" | "alcohol";
+
+export interface MixPresetIngredient {
+  ingredientId: string;
+  proportion: number; // fraction of mix's total grams; all entries in a preset sum to 1.0
+}
+
+export interface MixPreset {
+  id: string;
+  kind: SmartMixKind;
+  name: string;
+  ingredients: MixPresetIngredient[];
+  effectiveMacros: IngredientMacros; // weighted sum of sub-ingredient macros × proportions
+}
+
+export interface SmartMix {
+  kind: SmartMixKind;
+  label: string; // display name; for alcohol matches the selected ingredient name
+  presetId: string;
+  grams: number;
+}
+
+export interface AdditionalIngredient {
+  ingredientId: string;
+  grams: number;
+}
+
+export interface Recipe {
+  smartMixes: SmartMix[];
+  additionalIngredients: AdditionalIngredient[];
+}
+
 export type StyleCategory =
   | "philadelphia"
   | "custard"
