@@ -1,5 +1,5 @@
 import type { MacroRatios, IngredientMacros } from "./formula-engine";
-import type { SmartMix, AdditionalIngredient, MixPreset } from "@/data/types";
+import type { SmartMix, AdditionalIngredient, MixPreset, Recipe } from "@/data/types";
 
 const MACROS: (keyof IngredientMacros)[] = [
   "fat", "sugar", "nonfatSolids", "stabilizer", "emulsifier", "alcohol", "water",
@@ -35,6 +35,46 @@ function matTVec(A: number[][], v: number[]): number[] {
 
 function frobeniusSq(A: number[][]): number {
   return A.reduce((s, row) => s + row.reduce((s2, v) => s2 + v * v, 0), 0);
+}
+
+/**
+ * Compute MacroRatios from a Recipe's current gram assignments.
+ * Used for Recipe → Mix sync: when smart mix grams change, derive updated Mix ratios.
+ */
+export function computeRatiosFromRecipe(
+  recipe: Recipe,
+  getPreset: (id: string) => MixPreset | undefined,
+  resolveIngredient: (id: string) => IngredientMacros | undefined = () => undefined,
+): MacroRatios {
+  const zero: MacroRatios = {
+    fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0,
+    emulsifier: 0, alcohol: 0, water: 0,
+  };
+
+  let totalGrams = 0;
+  const total = { ...zero };
+
+  for (const mix of recipe.smartMixes) {
+    if (mix.grams <= 0) continue;
+    const preset = getPreset(mix.presetId);
+    if (!preset) continue;
+    const m = preset.effectiveMacros;
+    for (const k of MACROS) total[k] += m[k] * mix.grams;
+    totalGrams += mix.grams;
+  }
+
+  for (const { ingredientId, grams } of recipe.additionalIngredients) {
+    if (grams <= 0) continue;
+    const m = resolveIngredient(ingredientId);
+    if (!m) continue;
+    for (const k of MACROS) total[k] += m[k] * grams;
+    totalGrams += grams;
+  }
+
+  if (totalGrams === 0) return zero;
+  const result = { ...zero };
+  for (const k of MACROS) result[k] = total[k] / totalGrams;
+  return result;
 }
 
 /**

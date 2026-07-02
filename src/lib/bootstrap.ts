@@ -1,5 +1,5 @@
 import type { Archetype, Recipe } from "@/data/types";
-import type { FormulaState, Ingredient, IngredientMacros } from "@/lib/formula-engine";
+import type { FormulaState, Ingredient, IngredientMacros, MacroRatios } from "@/lib/formula-engine";
 import { seedRecipe } from "./recipe-seeder";
 import { solveRecipe } from "./recipe-solver";
 import { getPresetById } from "@/data/mix-presets";
@@ -65,6 +65,36 @@ export function bootstrapFromArchetype(
   const recipe: Recipe = { smartMixes: solvedMixes, additionalIngredients: [] };
 
   return { state, recipe };
+}
+
+/**
+ * Build a FormulaState from a MacroRatios snapshot.
+ * Used for Recipe → Mix sync: when recipe grams change, rebuild the FormulaState
+ * macro blocks so the Mix sliders reflect the new composition.
+ */
+export function stateFromRatios(ratios: MacroRatios, yieldGrams: number): FormulaState {
+  const ingredients: Ingredient[] = [];
+
+  for (const block of MACRO_BLOCKS) {
+    const ratio = ratios[block.key as keyof MacroRatios];
+    if (!ratio || ratio <= 0) continue;
+
+    const macros: IngredientMacros = {
+      fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0,
+      emulsifier: 0, alcohol: 0, water: 0,
+      [block.key]: 1.0,
+    };
+
+    ingredients.push({
+      id: block.id,
+      name: block.name,
+      state: "normal",
+      grams: ratio * yieldGrams,
+      macros,
+    });
+  }
+
+  return { ingredients, yieldGrams, conflict: false };
 }
 
 export function generateFormulaId(): string {

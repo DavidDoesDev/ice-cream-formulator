@@ -2,14 +2,17 @@
 
 import { useState, useCallback } from "react";
 import type { Recipe, AdditionalIngredient } from "@/data/types";
-import type { Ingredient } from "@/lib/formula-engine";
+import type { Ingredient, FormulaState } from "@/lib/formula-engine";
 import { getIngredientById } from "@/data/ingredients";
+import { computeRatiosFromRecipe } from "@/lib/recipe-solver";
+import { stateFromRatios } from "@/lib/bootstrap";
+import { getPresetById } from "@/data/mix-presets";
 import styles from "./RecipeEdit.module.scss";
 
 interface RecipeEditProps {
   recipe: Recipe;
   initialNotes: string;
-  onDone: (recipe: Recipe, notes: string) => void;
+  onDone: (recipe: Recipe, state: FormulaState, notes: string) => void;
   onCancel: () => void;
   onOpenIngredientSelector: (onAdd: (ingredient: Ingredient) => void) => void;
 }
@@ -216,7 +219,15 @@ export function RecipeEdit({ recipe, initialNotes, onDone, onCancel, onOpenIngre
         <button
           className={styles.doneBtn}
           type="button"
-          onClick={() => onDone(local, notes)}
+          onClick={() => {
+            const yieldGrams = [
+              ...local.smartMixes.map((m) => m.grams),
+              ...local.additionalIngredients.map((a) => a.grams),
+            ].reduce((s, g) => s + g, 0) || recipe.smartMixes.reduce((s, m) => s + m.grams, 0) || 1000;
+            const ratios = computeRatiosFromRecipe(local, getPresetById, (id) => getIngredientById(id)?.macros);
+            const newState = stateFromRatios(ratios, yieldGrams);
+            onDone(local, newState, notes);
+          }}
         >
           Done
         </button>

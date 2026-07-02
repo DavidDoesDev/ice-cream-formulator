@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { solveRecipe } from "./recipe-solver";
+import { solveRecipe, computeRatiosFromRecipe } from "./recipe-solver";
 import type { MacroRatios } from "./formula-engine";
-import type { SmartMix, AdditionalIngredient } from "@/data/types";
+import type { SmartMix, AdditionalIngredient, Recipe } from "@/data/types";
 import { getPresetById } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 
@@ -172,5 +172,84 @@ describe("solveRecipe — Philadelphia macro satisfaction", () => {
 
   it("achieved stabilizer ratio is within 0.3pp of target", () => {
     expect(Math.abs(computedRatios().stabilizer - PHILLY_TARGETS.stabilizer)).toBeLessThan(0.003);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeRatiosFromRecipe
+// ---------------------------------------------------------------------------
+
+describe("computeRatiosFromRecipe", () => {
+  it("single pure-sugar mix at 1000g → sugar ratio = 1.0", () => {
+    const recipe: Recipe = {
+      smartMixes: [{ kind: "sugar", label: "Sugar Mix", presetId: "sugar-sucrose", grams: 1000 }],
+      additionalIngredients: [],
+    };
+    const ratios = computeRatiosFromRecipe(recipe, getPresetById);
+    expect(ratios.sugar).toBeCloseTo(1.0, 4);
+    expect(ratios.fat).toBeCloseTo(0, 4);
+    expect(ratios.water).toBeCloseTo(0, 4);
+  });
+
+  it("pure-water mix at 500g + pure-sugar mix at 500g → water=0.5, sugar=0.5", () => {
+    const recipe: Recipe = {
+      smartMixes: [
+        { kind: "liquid", label: "Water", presetId: "liquid-water", grams: 500 },
+        { kind: "sugar", label: "Sugar", presetId: "sugar-sucrose", grams: 500 },
+      ],
+      additionalIngredients: [],
+    };
+    const ratios = computeRatiosFromRecipe(recipe, getPresetById);
+    expect(ratios.water).toBeCloseTo(0.5, 4);
+    expect(ratios.sugar).toBeCloseTo(0.5, 4);
+  });
+
+  it("all grams = 0 → returns all-zero ratios", () => {
+    const recipe: Recipe = {
+      smartMixes: [
+        { kind: "sugar", label: "Sugar", presetId: "sugar-sucrose", grams: 0 },
+        { kind: "liquid", label: "Water", presetId: "liquid-water", grams: 0 },
+      ],
+      additionalIngredients: [],
+    };
+    const ratios = computeRatiosFromRecipe(recipe, getPresetById);
+    expect(ratios.fat).toBe(0);
+    expect(ratios.sugar).toBe(0);
+    expect(ratios.water).toBe(0);
+  });
+
+  it("alcohol-empty preset (all-zero macros) contributes nothing to ratios", () => {
+    const recipe: Recipe = {
+      smartMixes: [
+        { kind: "sugar", label: "Sugar", presetId: "sugar-sucrose", grams: 800 },
+        { kind: "alcohol", label: "Alcohol", presetId: "alcohol-empty", grams: 200 },
+      ],
+      additionalIngredients: [],
+    };
+    const ratios = computeRatiosFromRecipe(recipe, getPresetById);
+    // alcohol-empty has no macros — its grams still count toward total mass
+    expect(ratios.sugar).toBeCloseTo(0.8, 4);
+  });
+
+  it("unknown presetId skips that mix without throwing", () => {
+    const recipe: Recipe = {
+      smartMixes: [
+        { kind: "sugar", label: "Sugar", presetId: "sugar-sucrose", grams: 1000 },
+        { kind: "milk", label: "Bad Mix", presetId: "does-not-exist", grams: 500 },
+      ],
+      additionalIngredients: [],
+    };
+    expect(() => computeRatiosFromRecipe(recipe, getPresetById)).not.toThrow();
+  });
+
+  it("additional ingredients contribute their macro ratios proportionally", () => {
+    const recipe: Recipe = {
+      smartMixes: [],
+      additionalIngredients: [
+        { ingredientId: "sucrose", grams: 1000 },
+      ],
+    };
+    const ratios = computeRatiosFromRecipe(recipe, getPresetById, resolveIngredient);
+    expect(ratios.sugar).toBeCloseTo(1.0, 3);
   });
 });

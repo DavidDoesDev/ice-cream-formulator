@@ -57,20 +57,22 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   );
 
   const handleFormulaDone = useCallback(
-    (newState: FormulaState) => {
+    (newState: FormulaState, newRecipe: Recipe) => {
       reset(newState);
+      setRecipe(newRecipe);
       setMode("preview");
     },
-    [reset]
+    [reset],
   );
 
   const handleRecipeDone = useCallback(
-    (newRecipe: Recipe, newNotes: string) => {
+    (newRecipe: Recipe, newState: FormulaState, newNotes: string) => {
       setRecipe(newRecipe);
+      reset(newState);
       setNotes(newNotes);
       setMode("preview");
     },
-    [],
+    [reset],
   );
 
   if (showConfig) {
@@ -107,6 +109,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
       {view === "formula" && mode === "edit" && (
         <FormulaEdit
           initial={state}
+          recipe={recipe}
           onDone={handleFormulaDone}
           onCancel={() => setMode("preview")}
         />
