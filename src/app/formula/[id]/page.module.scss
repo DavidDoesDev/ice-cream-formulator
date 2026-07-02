@@ -1,7 +1,7 @@
 .main {
   max-width: 640px;
   margin: 0 auto;
-  padding: var(--space-10) var(--space-6) var(--space-24);
+  padding: 0 var(--space-6);
 }
 
 .loading {
@@ -12,45 +12,112 @@
 
 .header {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-4);
-  margin-bottom: var(--space-8);
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  margin-bottom: var(--space-6);
 }
 
-.back {
-  font-size: 15px;
-  font-weight: 500;
+
+.headerBtn {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
   color: var(--color-text-secondary);
-  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  min-width: 40px;
   transition: color var(--duration-fast);
-  flex-shrink: 0;
 }
 
-.back:hover {
+.headerBtn:hover {
   color: var(--color-text);
 }
 
-.title {
-  font-size: 24px;
-  font-weight: 800;
+.headerTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
   color: var(--color-text);
-  margin: 0;
+  text-align: center;
   flex: 1;
-  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding: 0 var(--space-2);
 }
 
-.styleTag {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+.headerTitleEdit {
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-text-secondary);
-  flex-shrink: 0;
+}
+
+.headerSlot {
+  min-width: 40px;
 }
 
 .content {
   position: relative;
+  padding-bottom: 76px;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 640px;
+  height: 60px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  z-index: 100;
+}
+
+.barLeft {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  min-width: 64px;
+}
+
+.barRight {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  min-width: 64px;
+  text-align: right;
+}
+
+.barCenter {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-surface);
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: var(--space-3) var(--space-6);
+  cursor: pointer;
+}
+
+.barSlot {
+  min-width: 64px;
 }

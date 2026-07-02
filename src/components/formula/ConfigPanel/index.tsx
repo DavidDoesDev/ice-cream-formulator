@@ -30,7 +30,6 @@ interface ConfigPanelProps {
   onNameChange: (name: string) => void;
   onStyleChange: (style: string) => void;
   onPresetChange: (kind: SmartMixKind, presetId: string) => void;
-  onBack: () => void;
   onOpenIngredientSelector: (context: string, onAdd: (ingredient: Ingredient) => void) => void;
 }
 
@@ -41,7 +40,6 @@ export function ConfigPanel({
   onNameChange,
   onStyleChange,
   onPresetChange,
-  onBack,
   onOpenIngredientSelector,
 }: ConfigPanelProps) {
   const [name, setName] = useState(formulaName);
@@ -70,13 +68,6 @@ export function ConfigPanel({
 
   return (
     <div className={styles.root}>
-      <div className={styles.header}>
-        <button className={styles.backBtn} type="button" onClick={onBack}>
-          ← Back
-        </button>
-        <h2 className={styles.title}>Settings</h2>
-      </div>
-
       <div className={styles.sections}>
         <div className={styles.section}>
           <label className={styles.fieldLabel} htmlFor="formula-name">Formula name</label>

@@ -9,12 +9,9 @@ import styles from "./RecipePreview.module.scss";
 interface RecipePreviewProps {
   recipe: Recipe;
   notes: string;
-  onEdit: () => void;
-  onToggleView: () => void;
-  onConfig: () => void;
 }
 
-export function RecipePreview({ recipe, notes, onEdit, onToggleView, onConfig }: RecipePreviewProps) {
+export function RecipePreview({ recipe, notes }: RecipePreviewProps) {
   // Original yield = sum of all smart mix grams + additional ingredient grams
   const originalYield = useMemo(() => {
     const smartTotal = recipe.smartMixes.reduce((s, m) => s + m.grams, 0);
@@ -87,17 +84,6 @@ export function RecipePreview({ recipe, notes, onEdit, onToggleView, onConfig }:
         </div>
       )}
 
-      <div className={styles.actions}>
-        <button className={styles.toggleBtn} type="button" onClick={onToggleView}>
-          Switch to Formula
-        </button>
-        <button className={styles.configBtn} type="button" onClick={onConfig} aria-label="Settings">
-          ⚙
-        </button>
-        <button className={styles.editBtn} type="button" onClick={onEdit}>
-          Edit recipe
-        </button>
-      </div>
     </div>
   );
 }

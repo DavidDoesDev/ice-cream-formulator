@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { FormulaProvider } from "@/context/FormulaContext";
 import { useFormulaContext } from "@/context/FormulaContext";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
 import { FormulaPreview } from "@/components/formula/FormulaPreview";
-import { FormulaEdit } from "@/components/formula/FormulaEdit";
+import { FormulaEdit, type FormulaEditHandle } from "@/components/formula/FormulaEdit";
 import { RecipePreview } from "@/components/recipe/RecipePreview";
-import { RecipeEdit } from "@/components/recipe/RecipeEdit";
+import { RecipeEdit, type RecipeEditHandle } from "@/components/recipe/RecipeEdit";
 import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
 import { seedRecipe } from "@/lib/recipe-seeder";
@@ -39,6 +38,9 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [recipe, setRecipe] = useState<Recipe>(
     saved.recipe ?? seedRecipe(saved.style as StyleCategory),
   );
+
+  const formulaEditRef = useRef<FormulaEditHandle>(null);
+  const recipeEditRef = useRef<RecipeEditHandle>(null);
 
   // Auto-save whenever committed state or recipe changes
   useEffect(() => {
@@ -101,19 +103,75 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     [reset],
   );
 
-  if (showConfig) {
-    return (
+  const headerLeft = showConfig ? (
+    <button className={styles.headerBtn} type="button" onClick={() => setShowConfig(false)}>
+      ← Back
+    </button>
+  ) : mode === "preview" ? (
+    <button className={styles.headerBtn} type="button" aria-label="Menu">
+      ≡
+    </button>
+  ) : (
+    <div className={styles.headerSlot} />
+  );
+
+  const headerRight = (!showConfig && mode === "preview") ? (
+    <button className={styles.headerBtn} type="button" aria-label="Share" style={{ textAlign: "right" }}>
+      ⬆
+    </button>
+  ) : (
+    <div className={styles.headerSlot} />
+  );
+
+  const headerTitle = showConfig ? "Settings" : meta.name;
+
+  return (
+    <>
+      <header className={styles.header}>
+        {headerLeft}
+        <span className={`${styles.headerTitle} ${mode === "edit" && !showConfig ? styles.headerTitleEdit : ""}`}>
+          {headerTitle}
+        </span>
+        {headerRight}
+      </header>
+
       <div className={styles.content}>
-        <ConfigPanel
-          formulaName={meta.name}
-          formulaStyle={meta.style}
-          recipe={recipe}
-          onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
-          onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
-          onPresetChange={handlePresetChange}
-          onBack={() => setShowConfig(false)}
-          onOpenIngredientSelector={openIngredientSelector}
-        />
+        {showConfig ? (
+          <ConfigPanel
+            formulaName={meta.name}
+            formulaStyle={meta.style}
+            recipe={recipe}
+            onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
+            onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
+            onPresetChange={handlePresetChange}
+            onOpenIngredientSelector={openIngredientSelector}
+          />
+        ) : (
+          <>
+            {view === "formula" && mode === "preview" && <FormulaPreview />}
+            {view === "formula" && mode === "edit" && (
+              <FormulaEdit
+                ref={formulaEditRef}
+                initial={state}
+                recipe={recipe}
+                onDone={handleFormulaDone}
+              />
+            )}
+            {view === "recipe" && mode === "preview" && (
+              <RecipePreview recipe={recipe} notes={notes} />
+            )}
+            {view === "recipe" && mode === "edit" && (
+              <RecipeEdit
+                ref={recipeEditRef}
+                recipe={recipe}
+                initialNotes={notes}
+                onDone={handleRecipeDone}
+                onOpenIngredientSelector={(onAdd) => openIngredientSelector("general", onAdd)}
+              />
+            )}
+          </>
+        )}
+
         {ingredientSelector && (
           <IngredientSelector
             context={ingredientSelector.context}
@@ -122,53 +180,57 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
           />
         )}
       </div>
-    );
-  }
 
-  return (
-    <div className={styles.content}>
-      {view === "formula" && mode === "preview" && (
-        <FormulaPreview
-          onEdit={() => setMode("edit")}
-          onToggleView={() => setView("recipe")}
-          onConfig={() => setShowConfig(true)}
-        />
-      )}
-      {view === "formula" && mode === "edit" && (
-        <FormulaEdit
-          initial={state}
-          recipe={recipe}
-          onDone={handleFormulaDone}
-          onCancel={() => setMode("preview")}
-        />
-      )}
-      {view === "recipe" && mode === "preview" && (
-        <RecipePreview
-          recipe={recipe}
-          notes={notes}
-          onEdit={() => setMode("edit")}
-          onToggleView={() => setView("formula")}
-          onConfig={() => setShowConfig(true)}
-        />
-      )}
-      {view === "recipe" && mode === "edit" && (
-        <RecipeEdit
-          recipe={recipe}
-          initialNotes={notes}
-          onDone={handleRecipeDone}
-          onCancel={() => setMode("preview")}
-          onOpenIngredientSelector={(onAdd) => openIngredientSelector("general", onAdd)}
-        />
-      )}
-
-      {ingredientSelector && (
-        <IngredientSelector
-          context={ingredientSelector.context}
-          onAdd={ingredientSelector.onAdd}
-          onDismiss={() => setIngredientSelector(null)}
-        />
-      )}
-    </div>
+      <div className={styles.bottomBar}>
+        {showConfig ? (
+          <>
+            <div className={styles.barSlot} />
+            <button className={styles.barCenter} type="button" onClick={() => setShowConfig(false)}>
+              Done
+            </button>
+            <div className={styles.barSlot} />
+          </>
+        ) : mode === "preview" ? (
+          <>
+            <button className={styles.barLeft} type="button" onClick={() => setMode("edit")}>
+              Edit
+            </button>
+            <button
+              className={styles.barCenter}
+              type="button"
+              onClick={() => setView(view === "formula" ? "recipe" : "formula")}
+            >
+              {view === "formula" ? "View Recipe" : "View Formula"}
+            </button>
+            <button
+              className={styles.barRight}
+              type="button"
+              onClick={() => setShowConfig(true)}
+              aria-label="Settings"
+            >
+              ⚙
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              className={styles.barLeft}
+              type="button"
+              onClick={() => {
+                if (view === "formula") formulaEditRef.current?.commit();
+                else recipeEditRef.current?.commit();
+              }}
+            >
+              Done
+            </button>
+            <div className={styles.barSlot} />
+            <button className={styles.barRight} type="button" onClick={() => setMode("preview")}>
+              Cancel
+            </button>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -197,11 +259,6 @@ export default function FormulaWorkspace() {
 
   return (
     <main className={styles.main}>
-      <header className={styles.header}>
-        <Link href="/" className={styles.back}>← Home</Link>
-        <h1 className={styles.title}>{saved.name}</h1>
-        <span className={styles.styleTag}>{saved.style}</span>
-      </header>
       <FormulaProvider initial={saved.state}>
         <WorkspaceContent saved={saved} />
       </FormulaProvider>

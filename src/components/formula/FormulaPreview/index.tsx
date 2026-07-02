@@ -26,13 +26,7 @@ const MACRO_COLORS: Record<string, string> = {
 
 const MACRO_ORDER = ["fat", "sugar", "nonfatSolids", "stabilizer", "emulsifier", "alcohol", "water"];
 
-interface FormulaPreviewProps {
-  onEdit: () => void;
-  onToggleView: () => void;
-  onConfig: () => void;
-}
-
-export function FormulaPreview({ onEdit, onToggleView, onConfig }: FormulaPreviewProps) {
+export function FormulaPreview() {
   const { state, ratios } = useFormulaContext();
 
   const included = state.ingredients.filter((i) => i.state !== "excluded");
@@ -79,17 +73,6 @@ export function FormulaPreview({ onEdit, onToggleView, onConfig }: FormulaPrevie
         </div>
       )}
 
-      <div className={styles.actions}>
-        <button className={styles.toggleBtn} type="button" onClick={onToggleView}>
-          Switch to Recipe
-        </button>
-        <button className={styles.configBtn} type="button" onClick={onConfig} aria-label="Settings">
-          ⚙
-        </button>
-        <button className={styles.editBtn} type="button" onClick={onEdit}>
-          Edit formula
-        </button>
-      </div>
     </div>
   );
 }
