@@ -30,6 +30,42 @@ const milkStandardMix = (): SmartMix =>
 const stabModernistMix = (): SmartMix =>
   ({ kind: "stabilizer", label: "Stabilizer Mix", presetId: "stab-modernist", grams: 0 });
 
+const wholeMilkMix = (): SmartMix =>
+  ({ kind: "milk", label: "Whole Milk", presetId: "milk-whole", grams: 0 });
+
+const creamHeavyMix = (): SmartMix =>
+  ({ kind: "milk", label: "Heavy Cream", presetId: "cream-heavy", grams: 0 });
+
+// ---------------------------------------------------------------------------
+// Individual milk columns (decision A): whole milk + cream solved independently.
+// The fat/nonfat/water targets together should pin a sensible split — both
+// components positive, no lurch to all-cream — without any regularization.
+// ---------------------------------------------------------------------------
+
+describe("solveRecipe — independent whole-milk + cream columns", () => {
+  const mixes = [wholeMilkMix(), creamHeavyMix(), sugarMix(), stabModernistMix(), alcoholEmptyMix()];
+  const target: MacroRatios = {
+    fat: 0.14, sugar: 0.16, nonfatSolids: 0.09, stabilizer: 0.003,
+    emulsifier: 0, alcohol: 0, water: 0.607,
+  };
+  const result = solveRecipe(target, 1000, [], mixes, getPresetById, resolveIngredient);
+  const gramsOf = (presetId: string) => result.find((m) => m.presetId === presetId)!.grams;
+
+  it("assigns positive grams to both whole milk and cream", () => {
+    expect(gramsOf("milk-whole")).toBeGreaterThan(50);
+    expect(gramsOf("cream-heavy")).toBeGreaterThan(50);
+  });
+
+  it("achieves the fat target within 2pp", () => {
+    const ratios = computeRatiosFromRecipe(
+      { smartMixes: result, additionalIngredients: [] },
+      getPresetById,
+      resolveIngredient,
+    );
+    expect(Math.abs(ratios.fat - target.fat)).toBeLessThan(0.02);
+  });
+});
+
 // Achievable targets for [milk-standard, sugar-sucrose, stab-modernist].
 // milk-standard: fat=16.16%, sugar=3.68%, MSNF=3.14%, water=77.02%
 // With fat=12% → x_milk≈743g, x_stab=4g, x_sugar≈253g (fills yield).
