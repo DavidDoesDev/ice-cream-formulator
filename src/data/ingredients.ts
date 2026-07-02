@@ -41,6 +41,13 @@ export const INGREDIENTS: CatalogIngredient[] = [
     macros: { fat: 0.82, sugar: 0, nonfatSolids: 0.02, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.16 },
   },
   {
+    id: "brown-butter",
+    name: "Brown Butter",
+    description: "Butter cooked until the water evaporates and the milk solids caramelize. Nutty and intensely flavored.",
+    category: "dairy",
+    macros: { fat: 0.80, sugar: 0, nonfatSolids: 0.18, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.02 },
+  },
+  {
     id: "skim-milk-powder",
     name: "Skim Milk Powder",
     description: "Concentrated milk solids with no fat. The standard way to boost MSNF in a formula.",
@@ -178,6 +185,13 @@ export const INGREDIENTS: CatalogIngredient[] = [
     id: "hazelnut-paste",
     name: "Hazelnut Paste",
     description: "Pure roasted hazelnut paste, no sugar added. Intensely nutty and rich.",
+    category: "inclusion",
+    macros: { fat: 0.62, sugar: 0.05, nonfatSolids: 0.24, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.02 },
+  },
+  {
+    id: "pistachio-paste",
+    name: "Pistachio Paste",
+    description: "Pure roasted pistachio paste, no sugar added. Delicate, slightly savory, and intensely green.",
     category: "inclusion",
     macros: { fat: 0.62, sugar: 0.05, nonfatSolids: 0.24, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.02 },
   },
