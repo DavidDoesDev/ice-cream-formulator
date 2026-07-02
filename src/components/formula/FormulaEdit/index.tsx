@@ -141,8 +141,10 @@ export function FormulaEdit({ initial, recipe, onDone, onCancel }: FormulaEditPr
                     className={styles.sliderFill}
                     style={{
                       width: `${fillPct}%`,
-                      background: color,
-                      transition: (isDraggingThis || springKey !== key) ? "none" : undefined,
+                      backgroundColor: color,
+                      transition: (!isDraggingThis && springKey === key)
+                        ? "width 0.35s var(--ease-jelly)"
+                        : "none",
                     }}
                   />
                 </div>
