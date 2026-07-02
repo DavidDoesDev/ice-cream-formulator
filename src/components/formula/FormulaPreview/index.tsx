@@ -2,20 +2,22 @@
 
 import { useMemo } from "react";
 import { PintCup } from "@/components/shared/PintCup";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import { useFormulaContext } from "@/context/FormulaContext";
 import { getPresetById } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
+import { formatPercent } from "@/lib/measure";
 import type { Recipe } from "@/data/types";
 import styles from "./FormulaPreview.module.scss";
 
+// Fat first; water omitted. Labels are the design's standard forms, uppercased via CSS.
 const MACRO_LABELS: Record<string, string> = {
   fat: "Fat",
   sugar: "Sugar",
-  nonfatSolids: "Milk solids",
+  nonfatSolids: "Nonfat Solids",
   stabilizer: "Stabilizer",
   emulsifier: "Emulsifier",
   alcohol: "Alcohol",
-  water: "Water",
 };
 
 const MACRO_COLORS: Record<string, string> = {
@@ -25,10 +27,9 @@ const MACRO_COLORS: Record<string, string> = {
   stabilizer: "var(--color-macro-stabilizer)",
   emulsifier: "var(--color-macro-emulsifier)",
   alcohol: "var(--color-macro-alcohol)",
-  water: "var(--color-bg)",
 };
 
-const MACRO_ORDER = ["fat", "sugar", "nonfatSolids", "stabilizer", "emulsifier", "alcohol", "water"];
+const MACRO_ORDER = ["fat", "sugar", "nonfatSolids", "stabilizer", "emulsifier", "alcohol"];
 
 interface FormulaPreviewProps {
   recipe: Recipe;
@@ -71,35 +72,39 @@ export function FormulaPreview({ recipe }: FormulaPreviewProps) {
 
   return (
     <div className={styles.root}>
-      <div className={styles.cupRow}>
-        <PintCup ratios={ratios} width={240} />
-      </div>
+      <div className={styles.composition}>
+        <SectionHeader role="composition" label="Composition" />
+        <div className={styles.cupRow}>
+          <PintCup ratios={ratios} width={240} />
+        </div>
 
-      <div className={styles.macroBreakdown}>
-        {MACRO_ORDER.map((key) => {
-          const pct = ratios[key as keyof typeof ratios];
-          if (pct < 0.001) return null;
-          const isWater = key === "water";
-          return (
-            <div key={key} className={styles.macroRow}>
-              <span
-                className={`${styles.macroSwatch} ${isWater ? styles.macroSwatchOutline : ""}`}
-                style={isWater ? undefined : { background: MACRO_COLORS[key] }}
-              />
-              <span className={styles.macroName}>{MACRO_LABELS[key]}</span>
-              <span className={styles.macroPct}>{(pct * 100).toFixed(1)}%</span>
-            </div>
-          );
-        })}
+        <div className={styles.macroGrid}>
+          {MACRO_ORDER.map((key) => {
+            const pct = ratios[key as keyof typeof ratios] * 100;
+            if (pct < 0.001) return null;
+            return (
+              <div key={key} className={styles.macroCell}>
+                <span
+                  className={styles.macroSwatch}
+                  style={{ background: MACRO_COLORS[key] }}
+                />
+                <span className={styles.macroPct}>{formatPercent(pct)}%</span>
+                <span className={styles.macroName}>{MACRO_LABELS[key]}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {totalGrams > 0 && (
         <div className={styles.ingredientList}>
-          <p className={styles.sectionLabel}>Ingredients</p>
+          <SectionHeader role="ingredients" label="Ingredients" />
           {ingredientRows.map((row) => (
             <div key={row.id} className={styles.ingredientRow}>
               <span className={styles.ingName}>{row.name}</span>
-              <span className={styles.ingPct}>{((row.grams / totalGrams) * 100).toFixed(1)}%</span>
+              <span className={styles.ingPct}>
+                {formatPercent((row.grams / totalGrams) * 100)}%
+              </span>
             </div>
           ))}
         </div>

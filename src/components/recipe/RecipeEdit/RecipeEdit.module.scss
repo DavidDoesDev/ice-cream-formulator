@@ -133,6 +133,8 @@
   border: 1px solid var(--color-border);
   font-size: 18px;
   font-weight: 400;
+  line-height: 1;
+  padding: 0;
   color: var(--color-text);
   cursor: pointer;
   display: flex;
@@ -145,26 +147,46 @@
   transform: scale(0.9);
 }
 
-.gramInput {
-  width: 56px;
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-text);
+.gramField {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: var(--space-1) var(--space-2);
-  text-align: right;
-  outline: none;
+  transition: border-color var(--duration-fast);
 }
 
-.gramInput:focus {
+.gramField:focus-within {
   border-color: var(--color-accent);
+}
+
+.gramInput {
+  width: 46px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: right;
+  outline: none;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.gramInput::-webkit-outer-spin-button,
+.gramInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
 }
 
 .gramUnit {
   font-size: 13px;
+  font-weight: 700;
   color: var(--color-text-secondary);
 }
 

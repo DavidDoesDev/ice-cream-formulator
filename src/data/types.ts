@@ -1,6 +1,6 @@
 import type { MacroRatios, IngredientMacros } from "@/lib/formula-engine";
 
-export type SmartMixKind = "milk" | "liquid" | "sugar" | "stabilizer" | "eggs" | "alcohol";
+export type SmartMixKind = "milk" | "liquid" | "sugar" | "stabilizer" | "eggs" | "alcohol" | "emulsifier";
 
 export interface MixPresetIngredient {
   ingredientId: string;

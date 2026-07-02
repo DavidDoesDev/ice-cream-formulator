@@ -38,19 +38,21 @@ export const MACRO_BOUNDS: Record<keyof MacroRatios, [number, number]> = {
   sugar: [0.08, 0.38],       // raised: sorbets can have 30-35% sugar
   fat: [0.0, 0.22],          // 0% valid for sorbets
   nonfatSolids: [0.0, 0.14], // 0% valid for sorbets
-  stabilizer: [0.002, 0.006],
-  emulsifier: [0.001, 0.003],
+  stabilizer: [0.0, 0.008],  // 0–0.8%: full expression, down to none
+  emulsifier: [0.0, 0.006],  // 0–0.6%: full expression, down to none
   alcohol: [0.0, 0.12],
   water: [0.45, 0.80],       // raised: high-water sorbets
 };
 
 // How far above/below the archetype target each slider is allowed to roam.
+// The micro-macros (stabilizer, emulsifier) span their whole range from any start
+// so they're expressive rather than pinned near the archetype.
 const MACRO_TOLERANCE: Record<keyof MacroRatios, number> = {
   fat: 0.04,
   sugar: 0.04,
   nonfatSolids: 0.02,
-  stabilizer: 0.002,
-  emulsifier: 0.001,
+  stabilizer: 0.008,
+  emulsifier: 0.006,
   alcohol: 0.04,
   water: 0.06,
 };
@@ -142,6 +144,31 @@ export function removeIngredient(state: FormulaState, id: string): FormulaState 
   return { ...state, ingredients: state.ingredients.filter((i) => i.id !== id) };
 }
 
+const MACRO_BLOCK_NAMES: Record<keyof MacroRatios, string> = {
+  fat: "Fat",
+  sugar: "Sugar",
+  nonfatSolids: "Milk solids",
+  stabilizer: "Stabilizer",
+  emulsifier: "Emulsifier",
+  alcohol: "Alcohol",
+  water: "Water",
+};
+
+// A pure single-macro block: contributes exactly `macro` at 100%. Mirrors the
+// blocks seeded by bootstrap so a macro can be introduced when the state has none.
+function makeMacroBlock(macro: keyof MacroRatios, grams: number): Ingredient {
+  const zero: IngredientMacros = {
+    fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0,
+  };
+  return {
+    id: `_base-${macro}`,
+    name: MACRO_BLOCK_NAMES[macro],
+    state: "normal",
+    grams,
+    macros: { ...zero, [macro]: 1 },
+  };
+}
+
 export function adjustRatio(
   state: FormulaState,
   macro: keyof MacroRatios,
@@ -164,8 +191,6 @@ export function adjustRatio(
   const anchors = normals.filter((i) => i.macros[macro] === 0);
   const pinned = included.filter((i) => i.state === "pinned");
 
-  if (carriers.length === 0) return { ...state, conflict: true };
-
   const currentCarrierMacro = carriers.reduce((sum, i) => sum + i.grams * i.macros[macro], 0);
   const currentCarrierGrams = carriers.reduce((sum, i) => sum + i.grams, 0);
 
@@ -176,6 +201,22 @@ export function adjustRatio(
   const otherMacroContrib =
     anchors.reduce((sum, i) => sum + i.grams * i.macros[macro], 0) +
     pinned.reduce((sum, i) => sum + i.grams * i.macros[macro], 0);
+
+  // Zero-mass carriers cannot be grown by scaling (0 × k = 0). When the macro has
+  // no mass yet — an absent block or one at zero grams — inject grams into a pure
+  // single-macro carrier (creating the block if none exists), holding others fixed.
+  if (currentCarrierGrams < 1e-9) {
+    if (clamped <= 1e-12) return { ...state, conflict: false };
+    const carrier = carriers[0];
+    const coeff = carrier ? carrier.macros[macro] : 1;
+    if (coeff <= clamped) return { ...state, conflict: true };
+    const injected = (clamped * otherGrams - otherMacroContrib) / (coeff - clamped);
+    if (injected < 0) return { ...state, conflict: true };
+    const ingredients = carrier
+      ? state.ingredients.map((i) => (i.id === carrier.id ? { ...i, grams: injected } : i))
+      : [...state.ingredients, makeMacroBlock(macro, injected)];
+    return { ...state, ingredients, conflict: false };
+  }
 
   // Find scale factor k such that:
   //   (k * currentCarrierMacro + otherMacroContrib) / (k * currentCarrierGrams + otherGrams) = clamped

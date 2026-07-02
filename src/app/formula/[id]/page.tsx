@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { Menu, Share2 } from "lucide-react";
 import { FormulaProvider } from "@/context/FormulaContext";
 import { useFormulaContext } from "@/context/FormulaContext";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
@@ -27,7 +28,7 @@ interface IngredientSelectorState {
   onAdd: (ingredient: Ingredient) => void;
 }
 
-function WorkspaceContent({ saved }: { saved: SavedFormula }) {
+function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew?: boolean }) {
   const { state, reset } = useFormulaContext();
   const [view, setView] = useState<WorkspaceView>("formula");
   const [mode, setMode] = useState<WorkspaceMode>("preview");
@@ -109,27 +110,32 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     </button>
   ) : mode === "preview" ? (
     <button className={styles.headerBtn} type="button" aria-label="Menu">
-      ≡
+      <Menu size={20} strokeWidth={2} />
     </button>
   ) : (
     <div className={styles.headerSlot} />
   );
 
   const headerRight = (!showConfig && mode === "preview") ? (
-    <button className={styles.headerBtn} type="button" aria-label="Share" style={{ textAlign: "right" }}>
-      ⬆
+    <button className={`${styles.headerBtn} ${styles.headerBtnRight}`} type="button" aria-label="Share">
+      <Share2 size={20} strokeWidth={2} />
     </button>
   ) : (
     <div className={styles.headerSlot} />
   );
 
-  const headerTitle = showConfig ? "Settings" : meta.name;
+  const headerTitle = showConfig ? (isNew ? "New Formula" : "Settings") : meta.name;
+  const isPreviewTitle = !showConfig && mode === "preview";
 
   return (
     <>
       <header className={styles.header}>
         {headerLeft}
-        <span className={`${styles.headerTitle} ${mode === "edit" && !showConfig ? styles.headerTitleEdit : ""}`}>
+        <span
+          className={`${styles.headerTitle} ${
+            mode === "edit" && !showConfig ? styles.headerTitleEdit : ""
+          } ${isPreviewTitle ? styles.headerTitleUpper : ""}`}
+        >
           {headerTitle}
         </span>
         {headerRight}
@@ -185,9 +191,19 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
         {showConfig ? (
           <>
             <div className={styles.barSlot} />
-            <button className={styles.barCenter} type="button" onClick={() => setShowConfig(false)}>
-              Done
-            </button>
+            {isNew ? (
+              <button
+                className={`${styles.barCenter} ${styles.barCreate}`}
+                type="button"
+                onClick={() => setShowConfig(false)}
+              >
+                CREATE
+              </button>
+            ) : (
+              <button className={styles.barCenter} type="button" onClick={() => setShowConfig(false)}>
+                Done
+              </button>
+            )}
             <div className={styles.barSlot} />
           </>
         ) : mode === "preview" ? (

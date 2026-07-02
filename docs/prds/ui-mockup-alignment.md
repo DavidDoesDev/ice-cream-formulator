@@ -97,6 +97,8 @@ The solver's math is unchanged in character — it is already column-based over 
 - The solver accepts optional **per-component proportion targets**. A Specific Ingredient slider on Formula Edit sets a target proportion for that component's column; the solver honors it while solving the remaining columns for the macro targets. Absent a target, a component solves freely as today.
 - Non-negativity and yield conservation guarantees are preserved.
 
+**Independence of single components (decision A).** Single components (whole milk, cream, egg yolk, water, alcohol, additionals) are *not* ratio-locked — only the grouped systems (sugar, stabilizer) hold fixed internal proportions. When a macro slider is dragged, the solver may move single components **independently** to hit the target (e.g. trade whole-milk against cream for fat), and the user may also hand-edit any single component's grams directly. To keep this predictable rather than lurching to extremes, the solver **prefers the minimal change from the components' current grams** (regularize toward current state) instead of solving from scratch. Targets that cannot be reconciled surface the existing out-of-balance / Rebalance warning.
+
 Recipe → Mix sync (recompute macro ratios from current grams) extends to iterate components uniformly.
 
 ### Recipe notes

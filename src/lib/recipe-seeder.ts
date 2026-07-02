@@ -5,6 +5,7 @@ function mix(kind: SmartMixKind, label: string, presetId: string): SmartMix {
 }
 
 const ALCOHOL = mix("alcohol", "Alcohol", "alcohol-empty");
+const EMULSIFIER = mix("emulsifier", "Emulsifier", "emulsifier-empty");
 const SUGAR = mix("sugar", "Sugar Mix", "sugar-sucrose");
 const STAB_MODERNIST = mix("stabilizer", "Stabilizer Mix", "stab-modernist");
 const STAB_NONE = mix("stabilizer", "Stabilizer Mix", "stab-none");
@@ -70,5 +71,7 @@ export function seedRecipe(style: StyleCategory): Recipe {
       break;
   }
 
-  return { smartMixes, additionalIngredients: [] };
+  // Emulsifier is empty-by-default in every style (custard's emulsification comes
+  // from egg yolks); it activates when the user raises the emulsifier slider.
+  return { smartMixes: [...smartMixes, EMULSIFIER], additionalIngredients: [] };
 }

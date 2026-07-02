@@ -203,6 +203,36 @@ describe("adjustRatio", () => {
       const sum = Object.values(ratios).reduce((a, b) => a + b, 0);
       expect(sum).toBeCloseTo(1.0, 4);
     });
+
+    // The fixture has no stabilizer/emulsifier/alcohol block. A macro sitting at 0%
+    // must still be raisable — the slider can't scale mass that doesn't exist yet.
+    it("raises stabilizer from an absent carrier to the target ratio", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "stabilizer", 0.004);
+      expect(updated.conflict).toBe(false);
+      expect(computeRatios(updated).stabilizer).toBeCloseTo(0.004, 4);
+    });
+
+    it("raises alcohol from zero to the target ratio", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "alcohol", 0.03);
+      expect(updated.conflict).toBe(false);
+      expect(computeRatios(updated).alcohol).toBeCloseTo(0.03, 4);
+    });
+
+    it("raises emulsifier from zero to the target ratio", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "emulsifier", 0.002);
+      expect(updated.conflict).toBe(false);
+      expect(computeRatios(updated).emulsifier).toBeCloseTo(0.002, 4);
+    });
+
+    it("leaves the other blocks' grams untouched when introducing a new macro", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "alcohol", 0.03);
+      expect(updated.ingredients.find((i) => i.id === "_water")!.grams).toBe(607);
+      expect(updated.ingredients.find((i) => i.id === "_fat")!.grams).toBe(160);
+    });
   });
 });
 

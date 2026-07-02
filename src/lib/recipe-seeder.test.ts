@@ -17,8 +17,8 @@ function preset(recipe: ReturnType<typeof seedRecipe>, kind: SmartMixKind): stri
 describe("seedRecipe(philadelphia)", () => {
   const recipe = seedRecipe("philadelphia");
 
-  it("includes milk, sugar, stabilizer, alcohol — no eggs, no liquid", () => {
-    expect(kinds(recipe).sort()).toEqual(["alcohol", "milk", "stabilizer", "sugar"]);
+  it("includes milk, sugar, stabilizer, alcohol, emulsifier — no eggs, no liquid", () => {
+    expect(kinds(recipe).sort()).toEqual(["alcohol", "emulsifier", "milk", "stabilizer", "sugar"]);
   });
 
   it("milk uses milk-standard preset", () => {
@@ -45,8 +45,8 @@ describe("seedRecipe(philadelphia)", () => {
 describe("seedRecipe(custard)", () => {
   const recipe = seedRecipe("custard");
 
-  it("includes milk, eggs, sugar, stabilizer, alcohol — no liquid", () => {
-    expect(kinds(recipe).sort()).toEqual(["alcohol", "eggs", "milk", "stabilizer", "sugar"]);
+  it("includes milk, eggs, sugar, stabilizer, alcohol, emulsifier — no liquid", () => {
+    expect(kinds(recipe).sort()).toEqual(["alcohol", "eggs", "emulsifier", "milk", "stabilizer", "sugar"]);
   });
 
   it("eggs uses eggs-yolks preset", () => {
@@ -65,8 +65,8 @@ describe("seedRecipe(custard)", () => {
 describe("seedRecipe(gelato)", () => {
   const recipe = seedRecipe("gelato");
 
-  it("includes milk, sugar, stabilizer, alcohol — no eggs by default, no liquid", () => {
-    expect(kinds(recipe).sort()).toEqual(["alcohol", "milk", "stabilizer", "sugar"]);
+  it("includes milk, sugar, stabilizer, alcohol, emulsifier — no eggs by default, no liquid", () => {
+    expect(kinds(recipe).sort()).toEqual(["alcohol", "emulsifier", "milk", "stabilizer", "sugar"]);
   });
 
   it("milk uses milk-milk-heavy preset", () => {
@@ -151,6 +151,12 @@ describe("seedRecipe — invariants across all styles", () => {
   it("alcohol is always present and always uses alcohol-empty", () => {
     for (const style of styles) {
       expect(preset(seedRecipe(style), "alcohol"), style).toBe("alcohol-empty");
+    }
+  });
+
+  it("emulsifier is always present and always uses emulsifier-empty", () => {
+    for (const style of styles) {
+      expect(preset(seedRecipe(style), "emulsifier"), style).toBe("emulsifier-empty");
     }
   });
 });

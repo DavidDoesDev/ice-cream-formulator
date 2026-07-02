@@ -130,18 +130,20 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                     >
                       −
                     </button>
-                    <input
-                      className={styles.gramInput}
-                      type="number"
-                      value={Math.round(mix.grams)}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        if (!isNaN(val)) setMixGrams(mix.kind, val);
-                      }}
-                      min={0}
-                      step={10}
-                    />
-                    <span className={styles.gramUnit}>g</span>
+                    <div className={styles.gramField}>
+                      <input
+                        className={styles.gramInput}
+                        type="number"
+                        value={Math.round(mix.grams)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val)) setMixGrams(mix.kind, val);
+                        }}
+                        min={0}
+                        step={10}
+                      />
+                      <span className={styles.gramUnit}>g</span>
+                    </div>
                     <button
                       className={styles.stepBtn}
                       type="button"
@@ -191,18 +193,20 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                       >
                         −
                       </button>
-                      <input
-                        className={styles.gramInput}
-                        type="number"
-                        value={Math.round(ai.grams)}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          if (!isNaN(val)) setAdditionalGrams(ai.ingredientId, val);
-                        }}
-                        min={0}
-                        step={10}
-                      />
-                      <span className={styles.gramUnit}>g</span>
+                      <div className={styles.gramField}>
+                        <input
+                          className={styles.gramInput}
+                          type="number"
+                          value={Math.round(ai.grams)}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val)) setAdditionalGrams(ai.ingredientId, val);
+                          }}
+                          min={0}
+                          step={10}
+                        />
+                        <span className={styles.gramUnit}>g</span>
+                      </div>
                       <button
                         className={styles.stepBtn}
                         type="button"

@@ -18,12 +18,14 @@
 }
 
 .fieldLabel {
+  font-family: var(--font-display);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--color-text-secondary);
-  margin: 0;
+  text-align: center;
+  margin: 0 0 var(--space-1) 0;
 }
 
 .textInput {
@@ -85,4 +87,74 @@
 
 .select:focus {
   border-color: var(--color-accent);
+}
+
+.mixRows {
+  display: flex;
+  flex-direction: column;
+}
+
+.mixEntry {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.mixRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0 0 var(--space-3) var(--space-6);
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.breakdownName {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.breakdownPct {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.mixIcon {
+  flex: none;
+  color: var(--color-text-secondary);
+}
+
+.mixLabel {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.mixRow .select {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: var(--space-2) 0;
+  text-align: right;
+  text-align-last: right;
+}
+
+.mixRow .select:focus {
+  border: none;
 }

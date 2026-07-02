@@ -161,6 +161,24 @@ const ALCOHOL_DARK_RUM = preset("alcohol-dark-rum", "alcohol", "Dark Rum", [
 ]);
 
 // ---------------------------------------------------------------------------
+// Emulsifier Mix presets
+// Empty by default (custard gets its emulsification from egg yolks); when the
+// user raises the emulsifier slider, the app auto-selects soy lecithin.
+// ---------------------------------------------------------------------------
+
+const EMULSIFIER_EMPTY: MixPreset = {
+  id: "emulsifier-empty",
+  kind: "emulsifier",
+  name: "None",
+  ingredients: [],
+  effectiveMacros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 },
+};
+
+const EMULSIFIER_LECITHIN = preset("emulsifier-lecithin", "emulsifier", "Soy Lecithin", [
+  { ingredientId: "soy-lecithin", proportion: 1.0 },
+]);
+
+// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
@@ -183,6 +201,8 @@ export const MIX_PRESETS: MixPreset[] = [
   ALCOHOL_EMPTY,
   ALCOHOL_VODKA,
   ALCOHOL_DARK_RUM,
+  EMULSIFIER_EMPTY,
+  EMULSIFIER_LECITHIN,
 ];
 
 export function getPresetById(id: string): MixPreset | undefined {

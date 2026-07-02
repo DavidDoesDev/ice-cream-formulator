@@ -6,17 +6,42 @@ import { computeRatios, computeSliderBounds, type FormulaState, type MacroRatios
 import { solveRecipe } from "@/lib/recipe-solver";
 import { getPresetById } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
-import type { Recipe } from "@/data/types";
+import { formatPercent } from "@/lib/measure";
+import { SectionHeader } from "@/components/shared/SectionHeader";
+import type { Recipe, SmartMixKind } from "@/data/types";
 import styles from "./FormulaEdit.module.scss";
 
-const SLIDERS: { key: keyof MacroRatios; label: string; color: string }[] = [
-  { key: "fat", label: "Fat", color: "var(--color-macro-fat)" },
-  { key: "sugar", label: "Sugar", color: "var(--color-macro-sugar)" },
-  { key: "nonfatSolids", label: "Milk solids", color: "var(--color-macro-nonfat)" },
-  { key: "stabilizer", label: "Stabilizer", color: "var(--color-macro-stabilizer)" },
-  { key: "emulsifier", label: "Emulsifier", color: "var(--color-macro-emulsifier)" },
-  { key: "alcohol", label: "Alcohol", color: "var(--color-macro-alcohol)" },
+const SLIDERS: { key: keyof MacroRatios; label: string }[] = [
+  { key: "fat", label: "Fat" },
+  { key: "sugar", label: "Sugar" },
+  { key: "nonfatSolids", label: "Nonfat solids" },
+  { key: "stabilizer", label: "Stabilizer" },
+  { key: "emulsifier", label: "Emulsifier" },
+  { key: "alcohol", label: "Alcohol" },
 ];
+
+// Slider snap granularity, in percentage points. Micro-macros snap 10× finer so
+// they're expressive across their narrow range rather than jumping by 0.1%.
+const SLIDER_STEP: Record<string, number> = {
+  fat: 0.1,
+  sugar: 0.1,
+  nonfatSolids: 0.1,
+  alcohol: 0.1,
+  stabilizer: 0.01,
+  emulsifier: 0.01,
+};
+
+function snapPct(key: string, pct: number): number {
+  const step = SLIDER_STEP[key] ?? 0.1;
+  return Math.round(pct / step) * step;
+}
+
+// Macros whose recipe mix is empty by default and auto-activates a default
+// ingredient when its slider first crosses above zero.
+const AUTO_ACTIVATE: Partial<Record<keyof MacroRatios, { kind: SmartMixKind; label: string; empty: string; default: string }>> = {
+  alcohol: { kind: "alcohol", label: "Alcohol", empty: "alcohol-empty", default: "alcohol-vodka" },
+  emulsifier: { kind: "emulsifier", label: "Emulsifier", empty: "emulsifier-empty", default: "emulsifier-lecithin" },
+};
 
 interface FormulaEditProps {
   initial: FormulaState;
@@ -62,14 +87,25 @@ export const FormulaEdit = forwardRef<FormulaEditHandle, FormulaEditProps>(
         const baseRatiosNow = computeRatios(local.state);
         const committed: MacroRatios = { ...baseRatiosNow, [key]: finalPct / 100 };
 
-        // Auto-activate vodka when alcohol slider first crosses above zero
-        const mixesToSolve = (key === "alcohol" && finalPct > 0)
-          ? localRecipe.smartMixes.map((m) =>
-              m.kind === "alcohol" && m.presetId === "alcohol-empty"
-                ? { ...m, presetId: "alcohol-vodka" }
+        // Auto-activate a default ingredient when an empty-by-default mix's slider
+        // first crosses above zero (alcohol → vodka, emulsifier → soy lecithin).
+        // Appends the mix if the recipe predates it (older saved formulas).
+        const auto = AUTO_ACTIVATE[key];
+        let mixesToSolve = localRecipe.smartMixes;
+        if (auto && finalPct > 0) {
+          if (mixesToSolve.some((m) => m.kind === auto.kind)) {
+            mixesToSolve = mixesToSolve.map((m) =>
+              m.kind === auto.kind && m.presetId === auto.empty
+                ? { ...m, presetId: auto.default }
                 : m,
-            )
-          : localRecipe.smartMixes;
+            );
+          } else {
+            mixesToSolve = [
+              ...mixesToSolve,
+              { kind: auto.kind, label: auto.label, presetId: auto.default, grams: 0 },
+            ];
+          }
+        }
 
         const solved = solveRecipe(
           committed,
@@ -92,8 +128,9 @@ export const FormulaEdit = forwardRef<FormulaEditHandle, FormulaEditProps>(
 
     return (
       <div className={styles.root}>
+        <SectionHeader role="composition" label="Composition" />
         <div className={styles.sliders}>
-          {SLIDERS.map(({ key, label, color }) => {
+          {SLIDERS.map(({ key, label }) => {
             const [min, max] = computeSliderBounds(key, baseRatios[key]);
             const effectiveMin = min;
             const current = ratios[key];
@@ -115,13 +152,22 @@ export const FormulaEdit = forwardRef<FormulaEditHandle, FormulaEditProps>(
                 <div className={styles.sliderHeader}>
                   <span className={styles.sliderLabel}>{label}</span>
                   <span className={styles.sliderValue}>
-                    {currentPct.toFixed(1)}%
+                    {formatPercent(currentPct)}%
                     {local.state.conflict && current < effectiveMin && (
                       <span className={styles.conflict}>!</span>
                     )}
                   </span>
                 </div>
-                <div className={styles.sliderTrack} style={{ "--macro-color": color } as React.CSSProperties}>
+                <div className={styles.sliderTrack}>
+                  <div
+                    className={styles.sliderFillGlow}
+                    style={{
+                      width: `${fillPct}%`,
+                      transition: (!isDraggingThis && springKey === key)
+                        ? "width 0.35s var(--ease-jelly)"
+                        : "none",
+                    }}
+                  />
                   <input
                     type="range"
                     className={styles.slider}
@@ -133,7 +179,7 @@ export const FormulaEdit = forwardRef<FormulaEditHandle, FormulaEditProps>(
                     onChange={(e) => {
                       const raw = parseFloat(e.target.value);
                       setDragVisual({ key, pct: raw });
-                      handleSlider(key, Math.round(raw * 10) / 10);
+                      handleSlider(key, snapPct(key, raw));
                     }}
                     onPointerUp={(e) => {
                       const raw = parseFloat(e.currentTarget.value);
@@ -141,25 +187,20 @@ export const FormulaEdit = forwardRef<FormulaEditHandle, FormulaEditProps>(
                       setSpringKey(key);
                       if (springTimerRef.current) clearTimeout(springTimerRef.current);
                       springTimerRef.current = setTimeout(() => setSpringKey(null), 350);
-                      handleSliderCommit(key, Math.round(raw * 10) / 10);
+                      handleSliderCommit(key, snapPct(key, raw));
                     }}
                   />
                   <div className={styles.sliderFillWrap}>
                     <div
                       className={styles.sliderFill}
                       style={{
-                        width: `${fillPct}%`,
-                        backgroundColor: color,
+                        clipPath: `inset(0 ${100 - fillPct}% 0 0)`,
                         transition: (!isDraggingThis && springKey === key)
-                          ? "width 0.35s var(--ease-jelly)"
+                          ? "clip-path 0.35s var(--ease-jelly)"
                           : "none",
                       }}
                     />
                   </div>
-                </div>
-                <div className={styles.sliderBounds}>
-                  <span>{(effectiveMin * 100).toFixed(0)}%</span>
-                  <span>{(max * 100).toFixed(0)}%</span>
                 </div>
               </div>
             );

@@ -75,8 +75,8 @@
   height: 24px;
   border-radius: 50%;
   background: var(--color-surface);
-  border: 2px solid var(--macro-color, var(--color-accent));
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-text) 15%, transparent);
+  border: 2px solid var(--color-border);
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--color-bg) 60%, transparent);
   transition: transform var(--duration-fast) var(--ease-jelly);
   margin-top: -9px;
 }
@@ -96,8 +96,8 @@
   height: 24px;
   border-radius: 50%;
   background: var(--color-surface);
-  border: 2px solid var(--macro-color, var(--color-accent));
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-text) 15%, transparent);
+  border: 2px solid var(--color-border);
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--color-bg) 60%, transparent);
   cursor: pointer;
 }
 
@@ -109,8 +109,8 @@
 
 .sliderFillWrap {
   position: absolute;
-  left: 12px;
-  right: 12px;
+  left: 0;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
   height: 6px;
@@ -118,18 +118,44 @@
   border-radius: var(--radius-pill);
   pointer-events: none;
   overflow: hidden;
+  z-index: 1;
+}
+
+.sliderFillGlow {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    to right,
+    var(--color-macro-nonfat),
+    var(--color-macro-stabilizer),
+    var(--color-macro-emulsifier),
+    var(--color-macro-alcohol),
+    var(--color-macro-fat),
+    var(--color-macro-sugar)
+  );
+  filter: blur(5px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .sliderFill {
-  height: 100%;
+  position: absolute;
+  inset: 0;
   border-radius: var(--radius-pill);
-}
-
-.sliderBounds {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--color-text-secondary);
+  background: linear-gradient(
+    to right,
+    var(--color-macro-nonfat),
+    var(--color-macro-stabilizer),
+    var(--color-macro-emulsifier),
+    var(--color-macro-alcohol),
+    var(--color-macro-fat),
+    var(--color-macro-sugar)
+  );
 }
 
 .conflictBanner {
