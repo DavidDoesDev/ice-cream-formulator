@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import type { Recipe, AdditionalIngredient } from "@/data/types";
 import type { Ingredient, FormulaState } from "@/lib/formula-engine";
 import { getIngredientById } from "@/data/ingredients";
-import { computeRatiosFromRecipe } from "@/lib/recipe-solver";
+import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
 import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById } from "@/data/mix-presets";
 import styles from "./RecipeEdit.module.scss";
@@ -31,22 +31,43 @@ export function RecipeEdit({ recipe, initialNotes, onDone, onCancel, onOpenIngre
     }));
   }, []);
 
+  const rebalanceWithAdditionals = useCallback(
+    (prev: Recipe, newAdditionals: AdditionalIngredient[]): Recipe => {
+      const smartTotal = prev.smartMixes.reduce((s, m) => s + m.grams, 0) || 1000;
+      const targets = computeRatiosFromRecipe(
+        { smartMixes: prev.smartMixes, additionalIngredients: [] },
+        getPresetById,
+      );
+      const addTotal = newAdditionals.reduce((s, a) => s + a.grams, 0);
+      const solved = solveRecipe(
+        targets,
+        smartTotal + addTotal,
+        newAdditionals,
+        prev.smartMixes,
+        getPresetById,
+        (id) => getIngredientById(id)?.macros,
+      );
+      return { smartMixes: solved, additionalIngredients: newAdditionals };
+    },
+    [],
+  );
+
   const setAdditionalGrams = useCallback((ingredientId: string, grams: number) => {
-    setLocal((prev) => ({
-      ...prev,
-      additionalIngredients: prev.additionalIngredients.map((a) =>
+    setLocal((prev) => {
+      const newAdditionals = prev.additionalIngredients.map((a) =>
         a.ingredientId === ingredientId ? { ...a, grams: Math.max(0, grams) } : a,
-      ),
-    }));
-  }, []);
+      );
+      return rebalanceWithAdditionals(prev, newAdditionals);
+    });
+  }, [rebalanceWithAdditionals]);
 
   const removeAdditional = useCallback((ingredientId: string) => {
-    setLocal((prev) => ({
-      ...prev,
-      additionalIngredients: prev.additionalIngredients.filter((a) => a.ingredientId !== ingredientId),
-    }));
+    setLocal((prev) => {
+      const newAdditionals = prev.additionalIngredients.filter((a) => a.ingredientId !== ingredientId);
+      return rebalanceWithAdditionals(prev, newAdditionals);
+    });
     setSwipeOpen(null);
-  }, []);
+  }, [rebalanceWithAdditionals]);
 
   const handleAddIngredient = useCallback(() => {
     onOpenIngredientSelector((ing: Ingredient) => {
