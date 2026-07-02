@@ -203,6 +203,14 @@ export const INGREDIENTS: CatalogIngredient[] = [
     macros: { fat: 0, sugar: 0.10, nonfatSolids: 0.85, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.05 },
   },
 
+  {
+    id: "raisins",
+    name: "Raisins",
+    description: "Dried grapes, used rum-soaked in rum raisin ice cream. High natural sugar; soak in spirit before adding so they stay plump when frozen.",
+    category: "inclusion",
+    macros: { fat: 0.004, sugar: 0.62, nonfatSolids: 0.04, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.15 },
+  },
+
   // --- Alcohol ---
   {
     id: "vodka",

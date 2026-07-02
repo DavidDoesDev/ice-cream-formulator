@@ -23,6 +23,8 @@ const INCLUSION_MAP: Record<string, { id: string; grams: number }> = {
   pistachio: { id: "pistachio-paste", grams: 80 },
   honey: { id: "honey", grams: 80 },
   "peanut butter": { id: "peanut-butter", grams: 100 },
+  "brown butter": { id: "brown-butter", grams: 80 },
+  raisin: { id: "raisins", grams: 60 },
 };
 
 // Each macro block contributes exactly one macro at 100%.
@@ -78,11 +80,22 @@ export function bootstrapFromArchetype(
     });
 
   const seeded = seedRecipe(archetype.style);
+
+  // Override the seeded alcohol preset if the archetype specifies one.
+  // seedRecipe always uses "alcohol-empty"; archetypes with non-zero alcohol
+  // (e.g. rum raisin) need a specific spirit so the solver can satisfy the ratio.
+  const alcoholPresetId = archetype.attributes?.alcoholPresetId;
+  const seededMixes = alcoholPresetId
+    ? seeded.smartMixes.map((m) =>
+        m.kind === "alcohol" ? { ...m, presetId: alcoholPresetId } : m,
+      )
+    : seeded.smartMixes;
+
   const solvedMixes = solveRecipe(
     archetype.ratios,
     yieldGrams,
     additionalIngredients,
-    seeded.smartMixes,
+    seededMixes,
     getPresetById,
     (id) => getIngredientById(id)?.macros,
   );

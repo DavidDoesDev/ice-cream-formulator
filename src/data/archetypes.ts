@@ -147,7 +147,7 @@ export const ARCHETYPES: Archetype[] = [
       fatTier: "ultra-rich",
       sugarSystem: "natural",
       texture: ["rich", "warm", "nutty", "caramel"],
-      inclusions: ["caramel"],
+      inclusions: ["brown butter"],
     },
     prose: "Butter browned until the milk solids caramelize, then built into a custard base. Higher fat and sugar than a standard custard to carry all that roasty flavor. Eat it warm if you could.",
     decisionCards: [
@@ -204,7 +204,8 @@ export const ARCHETYPES: Archetype[] = [
       fatTier: "rich",
       sugarSystem: "blended",
       texture: ["rich", "warming", "boozy"],
-      inclusions: ["rum", "raisin"],
+      inclusions: ["raisin"],
+      alcoholPresetId: "alcohol-dark-rum",
     },
     prose: "The alcohol from dark rum acts as an antifreeze — this scoops softer than it looks. Raisins are soaked in rum before adding so they stay plump and don't freeze solid.",
     decisionCards: [
@@ -301,7 +302,7 @@ export const ARCHETYPES: Archetype[] = [
       fatTier: "medium",
       sugarSystem: "sucrose",
       texture: ["milky", "delicate", "clean"],
-      inclusions: ["chocolate"],
+      inclusions: [],
     },
     prose: "The base is pure fior di latte — the chocolate is added as a thin drizzle during the last minute of churning, where it shatters into shards. The base formula doesn't change; the chocolate is a process addition.",
     decisionCards: [

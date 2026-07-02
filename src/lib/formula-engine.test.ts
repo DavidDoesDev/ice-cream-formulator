@@ -146,6 +146,64 @@ describe("adjustRatio", () => {
     const updated = adjustRatio(state, "fat", 0.9);
     expect(updated.conflict).toBe(true);
   });
+
+  describe("single-macro block state (bootstrapped FormulaState)", () => {
+    // The bootstrapped state uses pure single-macro blocks — each ingredient contributes
+    // exactly one macro at 1.0. adjustRatio must actually change ratios here.
+    function singleMacroState(): FormulaState {
+      return {
+        ingredients: [
+          { id: "_fat", name: "Fat", state: "normal", grams: 160, macros: { fat: 1, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 } },
+          { id: "_sugar", name: "Sugar", state: "normal", grams: 160, macros: { fat: 0, sugar: 1, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 } },
+          { id: "_water", name: "Water", state: "normal", grams: 607, macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 1 } },
+          { id: "_nonfat", name: "MSNF", state: "normal", grams: 90, macros: { fat: 0, sugar: 0, nonfatSolids: 1, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 } },
+        ],
+        yieldGrams: 1017,
+        conflict: false,
+      };
+    }
+
+    it("increases fat ratio to target", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "fat", 0.18);
+      expect(updated.conflict).toBe(false);
+      const ratios = computeRatios(updated);
+      expect(ratios.fat).toBeCloseTo(0.18, 3);
+    });
+
+    it("decreases fat ratio to target", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "fat", 0.12);
+      expect(updated.conflict).toBe(false);
+      const ratios = computeRatios(updated);
+      expect(ratios.fat).toBeCloseTo(0.12, 3);
+    });
+
+    it("increases sugar ratio to target", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "sugar", 0.22);
+      expect(updated.conflict).toBe(false);
+      const ratios = computeRatios(updated);
+      expect(ratios.sugar).toBeCloseTo(0.22, 3);
+    });
+
+    it("other blocks are unchanged when fat is adjusted", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "fat", 0.18);
+      const sugarGrams = updated.ingredients.find((i) => i.id === "_sugar")!.grams;
+      const waterGrams = updated.ingredients.find((i) => i.id === "_water")!.grams;
+      expect(sugarGrams).toBe(160);
+      expect(waterGrams).toBe(607);
+    });
+
+    it("ratios sum to 1.0 after adjustment", () => {
+      const state = singleMacroState();
+      const updated = adjustRatio(state, "fat", 0.18);
+      const ratios = computeRatios(updated);
+      const sum = Object.values(ratios).reduce((a, b) => a + b, 0);
+      expect(sum).toBeCloseTo(1.0, 4);
+    });
+  });
 });
 
 describe("conflict and rebalance", () => {

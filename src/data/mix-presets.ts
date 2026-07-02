@@ -68,7 +68,7 @@ const STAB_MODERNIST = preset("stab-modernist", "stabilizer", "LBG + Carrageenan
   { ingredientId: "guar-gum", proportion: 0.25 },
 ]);
 
-const STAB_CORNSTARCH = preset("stab-cornstarch", "stabilizer", "Cornstarch", [
+const STAB_CORNSTARCH = preset("stab-cornstarch", "stabilizer", "Tara + Carrageenan", [
   { ingredientId: "carrageenan", proportion: 0.10 },
   { ingredientId: "tara-gum", proportion: 0.90 },
 ]);

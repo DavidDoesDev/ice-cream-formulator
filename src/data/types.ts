@@ -70,6 +70,7 @@ export interface Archetype {
     sugarSystem: SugarSystem;
     texture: string[];
     inclusions: string[];
+    alcoholPresetId?: string; // overrides "alcohol-empty" in bootstrapFromArchetype when archetype has non-zero alcohol
   };
   prose: string;
   decisionCards: DecisionCard[];

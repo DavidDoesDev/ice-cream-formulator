@@ -142,24 +142,6 @@ export function removeIngredient(state: FormulaState, id: string): FormulaState 
   return { ...state, ingredients: state.ingredients.filter((i) => i.id !== id) };
 }
 
-// Distribute `delta` grams across normal ingredients, proportional to each ingredient's
-// water content (most neutral first). Returns null if no normal ingredients available.
-function distributeToNormals(
-  normals: Ingredient[],
-  delta: number
-): Ingredient[] | null {
-  if (normals.length === 0) return null;
-
-  // Weight by water content — higher water = more neutral = absorbs more of the change
-  const weights = normals.map((i) => i.macros.water + 0.01); // add epsilon to avoid zero weights
-  const totalWeight = weights.reduce((s, w) => s + w, 0);
-
-  return normals.map((ingredient, idx) => {
-    const share = (weights[idx] / totalWeight) * delta;
-    return { ...ingredient, grams: Math.max(0, ingredient.grams + share) };
-  });
-}
-
 export function adjustRatio(
   state: FormulaState,
   macro: keyof MacroRatios,
@@ -171,59 +153,48 @@ export function adjustRatio(
   const included = state.ingredients.filter((i) => i.state !== "excluded");
   const normals = included.filter((i) => i.state === "normal");
 
-  if (normals.length === 0) {
-    return { ...state, conflict: true };
-  }
+  if (normals.length === 0) return { ...state, conflict: true };
 
   const totalGrams = included.reduce((sum, i) => sum + i.grams, 0);
   if (totalGrams === 0) return { ...state, conflict: true };
 
-  // Current contribution of this macro from non-normal (pinned) included ingredients
-  const pinnedContribution = included
-    .filter((i) => i.state === "pinned")
-    .reduce((sum, i) => sum + i.grams * i.macros[macro], 0);
+  // Only the ingredients that actually carry this macro can be scaled to achieve the target.
+  // Non-carrier normals and pinned ingredients stay fixed.
+  const carriers = normals.filter((i) => i.macros[macro] > 0);
+  const anchors = normals.filter((i) => i.macros[macro] === 0);
+  const pinned = included.filter((i) => i.state === "pinned");
 
-  const normalGrams = normals.reduce((sum, i) => sum + i.grams, 0);
-  const normalMacroContribution = normals.reduce(
-    (sum, i) => sum + i.grams * i.macros[macro],
-    0
+  if (carriers.length === 0) return { ...state, conflict: true };
+
+  const currentCarrierMacro = carriers.reduce((sum, i) => sum + i.grams * i.macros[macro], 0);
+  const currentCarrierGrams = carriers.reduce((sum, i) => sum + i.grams, 0);
+
+  // Grams and macro contribution from non-scaling ingredients
+  const otherGrams =
+    anchors.reduce((sum, i) => sum + i.grams, 0) +
+    pinned.reduce((sum, i) => sum + i.grams, 0);
+  const otherMacroContrib =
+    anchors.reduce((sum, i) => sum + i.grams * i.macros[macro], 0) +
+    pinned.reduce((sum, i) => sum + i.grams * i.macros[macro], 0);
+
+  // Find scale factor k such that:
+  //   (k * currentCarrierMacro + otherMacroContrib) / (k * currentCarrierGrams + otherGrams) = clamped
+  // Rearranges to: k * (currentCarrierMacro - clamped * currentCarrierGrams) = clamped * otherGrams - otherMacroContrib
+  const numerator = clamped * otherGrams - otherMacroContrib;
+  const denominator = currentCarrierMacro - clamped * currentCarrierGrams;
+
+  if (Math.abs(denominator) < 1e-9) {
+    const current = computeRatios(state)[macro];
+    return Math.abs(current - clamped) < 1e-4 ? state : { ...state, conflict: true };
+  }
+
+  const k = numerator / denominator;
+  if (k < 0) return { ...state, conflict: true };
+
+  const carrierIds = new Set(carriers.map((i) => i.id));
+  const updatedIngredients = state.ingredients.map((i) =>
+    carrierIds.has(i.id) ? { ...i, grams: i.grams * k } : i,
   );
-
-  // We want: (pinnedContribution + targetMacroFromNormals) / totalGrams = clamped
-  // So: targetMacroFromNormals = clamped * totalGrams - pinnedContribution
-  const targetFromNormals = clamped * totalGrams - pinnedContribution;
-
-  // Check if achievable: each normal ingredient's macro contribution is bounded by [0, grams * macros[macro]]
-  const maxFromNormals = normals.reduce((sum, i) => sum + i.grams * i.macros[macro], 0);
-  const minFromNormals = 0;
-
-  if (targetFromNormals < minFromNormals || targetFromNormals > maxFromNormals) {
-    return { ...state, conflict: true };
-  }
-
-  const delta = targetFromNormals - normalMacroContribution;
-
-  // Scale normal ingredient grams proportionally to achieve the target macro contribution.
-  // Simple approach: scale all normals by the ratio of target to current macro contribution.
-  // If current contribution is 0, distribute delta proportionally by water weight.
-  let updatedNormals: Ingredient[];
-  if (Math.abs(normalMacroContribution) < 1e-9) {
-    const distributed = distributeToNormals(normals, delta);
-    if (!distributed) return { ...state, conflict: true };
-    updatedNormals = distributed;
-  } else {
-    const scaleFactor = targetFromNormals / normalMacroContribution;
-    updatedNormals = normals.map((i) => ({
-      ...i,
-      grams: i.grams * scaleFactor,
-    }));
-  }
-
-  const normalIds = new Set(normals.map((i) => i.id));
-  const updatedIngredients = state.ingredients.map((i) => {
-    if (!normalIds.has(i.id)) return i;
-    return updatedNormals.find((u) => u.id === i.id) ?? i;
-  });
 
   return { ...state, ingredients: updatedIngredients, conflict: false };
 }
