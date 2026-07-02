@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import type { Recipe } from "@/data/types";
 import { getPresetById } from "@/data/mix-presets";
@@ -39,6 +39,8 @@ export function RecipePreview({ recipe, notes }: RecipePreviewProps) {
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     drag.current = { startY: e.clientY, startYield: displayYield };
     e.currentTarget.setPointerCapture(e.pointerId);
+    // Suppress text selection across the page for the duration of the scrub.
+    document.body.style.userSelect = "none";
   }, [displayYield]);
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!drag.current) return;
@@ -48,10 +50,14 @@ export function RecipePreview({ recipe, notes }: RecipePreviewProps) {
   }, []);
   const endDrag = useCallback((e: React.PointerEvent) => {
     drag.current = null;
+    document.body.style.userSelect = "";
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
   }, []);
+
+  // Safety: if unmounted mid-drag, restore selection.
+  useEffect(() => () => { document.body.style.userSelect = ""; }, []);
 
   // Flatten every mix + addition to individual ingredients, merged and scaled.
   const rows = useMemo(() => {
