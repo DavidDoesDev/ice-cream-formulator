@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useFormula } from "@/hooks/useFormula";
 import { computeRatios, computeSliderBounds, type FormulaState, type MacroRatios } from "@/lib/formula-engine";
 import { solveRecipe } from "@/lib/recipe-solver";
@@ -28,6 +28,13 @@ interface FormulaEditProps {
 export function FormulaEdit({ initial, recipe, onDone, onCancel }: FormulaEditProps) {
   const local = useFormula(initial);
   const [localRecipe, setLocalRecipe] = useState(recipe);
+  // Raw drag position for the active slider — drives smooth thumb and fill motion.
+  // Cleared on pointer-up; fill then springs from raw → committed via CSS.
+  const [dragVisual, setDragVisual] = useState<{ key: string; pct: number } | null>(null);
+  // Which slider is mid-spring (just released). Spring transition is enabled only here;
+  // all other fills update instantly so they stay in contact with their thumb.
+  const [springKey, setSpringKey] = useState<string | null>(null);
+  const springTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ratios = computeRatios(local.state);
   const baseRatios = computeRatios(initial);
 
@@ -85,8 +92,14 @@ export function FormulaEdit({ initial, recipe, onDone, onCancel }: FormulaEditPr
           const currentPct = current * 100;
 
           const clampedPct = Math.min(currentPct, max * 100);
+
+          // During drag: show raw pointer position (smooth thumb + fill).
+          // After release: revert to committed value so fill springs to snapped position.
+          const isDraggingThis = dragVisual?.key === key;
+          const displayPct = isDraggingThis ? dragVisual!.pct : clampedPct;
+
           const fillPct = max > effectiveMin
-            ? Math.max(0, Math.min(100, ((clampedPct - effectiveMin * 100) / ((max - effectiveMin) * 100)) * 100))
+            ? Math.max(0, Math.min(100, ((displayPct - effectiveMin * 100) / ((max - effectiveMin) * 100)) * 100))
             : 0;
 
           return (
@@ -106,15 +119,31 @@ export function FormulaEdit({ initial, recipe, onDone, onCancel }: FormulaEditPr
                   className={styles.slider}
                   min={effectiveMin * 100}
                   max={max * 100}
-                  step={0.1}
-                  value={clampedPct}
-                  onChange={(e) => handleSlider(key, parseFloat(e.target.value))}
-                  onPointerUp={(e) => handleSliderCommit(key, parseFloat(e.currentTarget.value))}
+                  step="any"
+                  value={displayPct}
+                  onPointerDown={() => setDragVisual({ key, pct: clampedPct })}
+                  onChange={(e) => {
+                    const raw = parseFloat(e.target.value);
+                    setDragVisual({ key, pct: raw });
+                    handleSlider(key, Math.round(raw * 10) / 10);
+                  }}
+                  onPointerUp={(e) => {
+                    const raw = parseFloat(e.currentTarget.value);
+                    setDragVisual(null);
+                    setSpringKey(key);
+                    if (springTimerRef.current) clearTimeout(springTimerRef.current);
+                    springTimerRef.current = setTimeout(() => setSpringKey(null), 350);
+                    handleSliderCommit(key, Math.round(raw * 10) / 10);
+                  }}
                 />
                 <div className={styles.sliderFillWrap}>
                   <div
                     className={styles.sliderFill}
-                    style={{ width: `${fillPct}%`, background: color }}
+                    style={{
+                      width: `${fillPct}%`,
+                      background: color,
+                      transition: (isDraggingThis || springKey !== key) ? "none" : undefined,
+                    }}
                   />
                 </div>
               </div>
