@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useFormulaContext } from "@/context/FormulaContext";
-import type { StyleCategory } from "@/data/types";
+import type { StyleCategory, SmartMixKind, Recipe } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
+import { getPresetsByKind } from "@/data/mix-presets";
 import styles from "./ConfigPanel.module.scss";
 
 const STYLE_OPTIONS: { value: StyleCategory; label: string }[] = [
@@ -15,27 +15,21 @@ const STYLE_OPTIONS: { value: StyleCategory; label: string }[] = [
   { value: "vegan", label: "Vegan" },
 ];
 
-const SUGAR_PRESETS = [
-  { label: "Sucrose only", value: "sucrose" },
-  { label: "Dextrose blend (softer scoop)", value: "blended" },
-  { label: "Invert sugar (anti-crystallization)", value: "invert" },
-  { label: "Natural (honey/maple)", value: "natural" },
-  { label: "Custom…", value: "custom" },
-];
-
-const STABILIZER_PRESETS = [
-  { label: "Carrageenan", value: "carrageenan" },
-  { label: "Locust bean gum", value: "locust-bean-gum" },
-  { label: "Guar gum", value: "guar-gum" },
-  { label: "Tara gum", value: "tara-gum" },
-  { label: "Custom…", value: "custom" },
+const MIX_CONFIG_KINDS: { kind: SmartMixKind; label: string; custardGelato?: boolean }[] = [
+  { kind: "milk", label: "Milk base" },
+  { kind: "sugar", label: "Sugar system" },
+  { kind: "stabilizer", label: "Stabilizer system" },
+  { kind: "eggs", label: "Egg mix", custardGelato: true },
+  { kind: "alcohol", label: "Alcohol" },
 ];
 
 interface ConfigPanelProps {
   formulaName: string;
   formulaStyle: string;
+  recipe: Recipe;
   onNameChange: (name: string) => void;
   onStyleChange: (style: string) => void;
+  onPresetChange: (kind: SmartMixKind, presetId: string) => void;
   onBack: () => void;
   onOpenIngredientSelector: (context: string, onAdd: (ingredient: Ingredient) => void) => void;
 }
@@ -43,8 +37,10 @@ interface ConfigPanelProps {
 export function ConfigPanel({
   formulaName,
   formulaStyle,
+  recipe,
   onNameChange,
   onStyleChange,
+  onPresetChange,
   onBack,
   onOpenIngredientSelector,
 }: ConfigPanelProps) {
@@ -60,25 +56,16 @@ export function ConfigPanel({
       setStyle(val);
       onStyleChange(val);
     },
-    [onStyleChange]
+    [onStyleChange],
   );
 
-  const handleSugarPreset = useCallback(
-    (val: string) => {
-      if (val === "custom") {
-        onOpenIngredientSelector("sugar-mix", () => {});
-      }
-    },
-    [onOpenIngredientSelector]
-  );
+  const currentPresetId = (kind: SmartMixKind): string => {
+    const mix = recipe.smartMixes.find((m) => m.kind === kind);
+    return mix?.presetId ?? "";
+  };
 
-  const handleStabilizerPreset = useCallback(
-    (val: string) => {
-      if (val === "custom") {
-        onOpenIngredientSelector("stabilizer-mix", () => {});
-      }
-    },
-    [onOpenIngredientSelector]
+  const showAlcohol = recipe.smartMixes.some(
+    (m) => m.kind === "alcohol" && m.presetId !== "alcohol-empty" && m.grams > 0,
   );
 
   return (
@@ -119,35 +106,39 @@ export function ConfigPanel({
           </div>
         </div>
 
-        <div className={styles.section}>
-          <label className={styles.fieldLabel} htmlFor="sugar-mix">Sugar system</label>
-          <select
-            id="sugar-mix"
-            className={styles.select}
-            defaultValue=""
-            onChange={(e) => handleSugarPreset(e.target.value)}
-          >
-            <option value="" disabled>Choose a preset…</option>
-            {SUGAR_PRESETS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
-            ))}
-          </select>
-        </div>
+        {MIX_CONFIG_KINDS.map(({ kind, label, custardGelato }) => {
+          if (custardGelato && style !== "custard" && style !== "gelato") return null;
+          if (kind === "alcohol" && !showAlcohol) return null;
+          if (kind === "liquid") return null;
 
-        <div className={styles.section}>
-          <label className={styles.fieldLabel} htmlFor="stabilizer-mix">Stabilizer system</label>
-          <select
-            id="stabilizer-mix"
-            className={styles.select}
-            defaultValue=""
-            onChange={(e) => handleStabilizerPreset(e.target.value)}
-          >
-            <option value="" disabled>Choose a preset…</option>
-            {STABILIZER_PRESETS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
-            ))}
-          </select>
-        </div>
+          const presets = getPresetsByKind(kind);
+          if (presets.length === 0) return null;
+
+          const activePresetId = currentPresetId(kind);
+
+          return (
+            <div key={kind} className={styles.section}>
+              <label className={styles.fieldLabel} htmlFor={`mix-${kind}`}>{label}</label>
+              <select
+                id={`mix-${kind}`}
+                className={styles.select}
+                value={activePresetId}
+                onChange={(e) => {
+                  if (e.target.value !== "custom") {
+                    onPresetChange(kind, e.target.value);
+                  } else {
+                    onOpenIngredientSelector(`${kind}-mix`, () => {});
+                  }
+                }}
+              >
+                {presets.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+                <option value="custom">Custom…</option>
+              </select>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -13,8 +13,11 @@ import { RecipeEdit } from "@/components/recipe/RecipeEdit";
 import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
 import { seedRecipe } from "@/lib/recipe-seeder";
+import { solveRecipe, computeRatiosFromRecipe } from "@/lib/recipe-solver";
+import { getPresetById } from "@/data/mix-presets";
+import { getIngredientById } from "@/data/ingredients";
 import type { FormulaState, Ingredient } from "@/lib/formula-engine";
-import type { Recipe, StyleCategory } from "@/data/types";
+import type { Recipe, StyleCategory, SmartMixKind } from "@/data/types";
 import styles from "./page.module.scss";
 
 type WorkspaceView = "formula" | "recipe";
@@ -65,6 +68,29 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     [reset],
   );
 
+  const handlePresetChange = useCallback(
+    (kind: SmartMixKind, presetId: string) => {
+      setRecipe((prev) => {
+        const updatedMixes = prev.smartMixes.map((m) =>
+          m.kind === kind ? { ...m, presetId } : m,
+        );
+        const updatedRecipe: Recipe = { ...prev, smartMixes: updatedMixes };
+        const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, (id) => getIngredientById(id)?.macros);
+        const totalGrams = updatedMixes.reduce((s, m) => s + m.grams, 0) + prev.additionalIngredients.reduce((s, a) => s + a.grams, 0) || 1000;
+        const solved = solveRecipe(
+          targets,
+          totalGrams,
+          prev.additionalIngredients,
+          updatedMixes,
+          getPresetById,
+          (id) => getIngredientById(id)?.macros,
+        );
+        return { ...prev, smartMixes: solved };
+      });
+    },
+    [],
+  );
+
   const handleRecipeDone = useCallback(
     (newRecipe: Recipe, newState: FormulaState, newNotes: string) => {
       setRecipe(newRecipe);
@@ -81,8 +107,10 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
         <ConfigPanel
           formulaName={meta.name}
           formulaStyle={meta.style}
+          recipe={recipe}
           onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
           onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
+          onPresetChange={handlePresetChange}
           onBack={() => setShowConfig(false)}
           onOpenIngredientSelector={openIngredientSelector}
         />
