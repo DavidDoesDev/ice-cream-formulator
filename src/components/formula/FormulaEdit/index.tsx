@@ -8,8 +8,12 @@ import { getPresetById } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 import { formatPercent } from "@/lib/measure";
 import { SectionHeader } from "@/components/shared/SectionHeader";
-import type { Recipe, SmartMixKind } from "@/data/types";
+import { IngredientNote } from "@/components/shared/IngredientNote";
+import type { Ingredient } from "@/lib/formula-engine";
+import type { Recipe, SmartMixKind, AdditionalIngredient } from "@/data/types";
 import styles from "./FormulaEdit.module.scss";
+
+const SPECIFIC_MAX_PCT = 50; // slider ceiling for a specific ingredient's share
 
 const SLIDERS: { key: keyof MacroRatios; label: string }[] = [
   { key: "fat", label: "Fat" },
@@ -47,6 +51,7 @@ interface FormulaEditProps {
   initial: FormulaState;
   recipe: Recipe;
   onDone: (state: FormulaState, recipe: Recipe) => void;
+  onOpenIngredientSelector: (onAdd: (ingredient: Ingredient) => void) => void;
 }
 
 export interface FormulaEditHandle {
@@ -54,7 +59,7 @@ export interface FormulaEditHandle {
 }
 
 export const FormulaEdit = forwardRef<FormulaEditHandle, FormulaEditProps>(
-  function FormulaEdit({ initial, recipe, onDone }, ref) {
+  function FormulaEdit({ initial, recipe, onDone, onOpenIngredientSelector }, ref) {
     const local = useFormula(initial);
     const [localRecipe, setLocalRecipe] = useState(recipe);
     // Raw drag position for the active slider — drives smooth thumb and fill motion.
@@ -120,11 +125,64 @@ export const FormulaEdit = forwardRef<FormulaEditHandle, FormulaEditProps>(
       [local.state, localRecipe],
     );
 
-    const specialty = local.state.ingredients.filter((ing) => {
-      const keys = Object.keys(ing.macros) as (keyof typeof ing.macros)[];
-      const nonWaterNonZero = keys.filter((k) => k !== "water" && ing.macros[k] > 0);
-      return nonWaterNonZero.length > 1;
-    });
+    // --- Specific (additional) ingredients ---
+    // Each slider sets the ingredient's share of the yield; on release the solver
+    // re-balances the smart mixes around it while holding the macro targets.
+    const setSpecificProportion = useCallback((ingredientId: string, pct: number) => {
+      const grams = Math.max(0, (pct / 100) * local.state.yieldGrams);
+      setLocalRecipe((prev) => ({
+        ...prev,
+        additionalIngredients: prev.additionalIngredients.map((a) =>
+          a.ingredientId === ingredientId ? { ...a, grams } : a,
+        ),
+      }));
+    }, [local.state.yieldGrams]);
+
+    const commitSpecific = useCallback((ingredientId: string, pct: number) => {
+      const yieldG = local.state.yieldGrams;
+      const grams = Math.max(0, (pct / 100) * yieldG);
+      const targets = computeRatios(local.state);
+      setLocalRecipe((prev) => {
+        const additionals = prev.additionalIngredients.map((a) =>
+          a.ingredientId === ingredientId ? { ...a, grams } : a,
+        );
+        const solved = solveRecipe(
+          targets, yieldG, additionals, prev.smartMixes,
+          getPresetById, (id) => getIngredientById(id)?.macros,
+        );
+        return { ...prev, smartMixes: solved, additionalIngredients: additionals };
+      });
+    }, [local.state]);
+
+    const setSpecificNote = useCallback((ingredientId: string, note: string) => {
+      setLocalRecipe((prev) => ({
+        ...prev,
+        additionalIngredients: prev.additionalIngredients.map((a) =>
+          a.ingredientId === ingredientId ? { ...a, note } : a,
+        ),
+      }));
+    }, []);
+
+    const handleAddSpecific = useCallback(() => {
+      onOpenIngredientSelector((ing: Ingredient) => {
+        const yieldG = local.state.yieldGrams;
+        const targets = computeRatios(local.state);
+        setLocalRecipe((prev) => {
+          const item: AdditionalIngredient = { ingredientId: ing.id, grams: ing.grams };
+          const additionals = [
+            ...prev.additionalIngredients.filter((a) => a.ingredientId !== ing.id),
+            item,
+          ];
+          const solved = solveRecipe(
+            targets, yieldG, additionals, prev.smartMixes,
+            getPresetById, (id) => getIngredientById(id)?.macros,
+          );
+          return { ...prev, smartMixes: solved, additionalIngredients: additionals };
+        });
+      });
+    }, [onOpenIngredientSelector, local.state]);
+
+    const specifics = localRecipe.additionalIngredients;
 
     return (
       <div className={styles.root}>
@@ -220,23 +278,46 @@ export const FormulaEdit = forwardRef<FormulaEditHandle, FormulaEditProps>(
           </div>
         )}
 
-        {specialty.length > 0 && (
-          <div className={styles.specialty}>
-            <p className={styles.sectionLabel}>Specialty ingredients</p>
-            {specialty.map((ing) => {
-              const totalGrams = local.state.ingredients
-                .filter((i) => i.state !== "excluded")
-                .reduce((s, i) => s + i.grams, 0);
-              const pct = totalGrams > 0 ? (ing.grams / totalGrams) * 100 : 0;
-              return (
-                <div key={ing.id} className={styles.specialtyRow}>
-                  <span className={styles.specialtyName}>{ing.name}</span>
-                  <span className={styles.specialtyPct}>{pct.toFixed(1)}%</span>
+        <div className={styles.specific}>
+          <SectionHeader role="specific" label="Specific Ingredients" />
+          {specifics.map((ai) => {
+            const ing = getIngredientById(ai.ingredientId);
+            const yieldG = local.state.yieldGrams || 1;
+            const pct = Math.min(SPECIFIC_MAX_PCT, (ai.grams / yieldG) * 100);
+            const fillPct = Math.max(0, Math.min(100, (pct / SPECIFIC_MAX_PCT) * 100));
+            return (
+              <div key={ai.ingredientId} className={styles.sliderRow}>
+                <div className={styles.sliderHeader}>
+                  <span className={styles.sliderLabel}>{ing?.name ?? ai.ingredientId}</span>
+                  <span className={styles.sliderValue}>{formatPercent(pct)}%</span>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div className={styles.sliderTrack}>
+                  <div className={styles.sliderFillGlow} style={{ width: `${fillPct}%` }} />
+                  <input
+                    type="range"
+                    className={styles.slider}
+                    min={0}
+                    max={SPECIFIC_MAX_PCT}
+                    step="any"
+                    value={pct}
+                    onChange={(e) => setSpecificProportion(ai.ingredientId, parseFloat(e.target.value))}
+                    onPointerUp={(e) => commitSpecific(ai.ingredientId, parseFloat(e.currentTarget.value))}
+                  />
+                  <div className={styles.sliderFillWrap}>
+                    <div className={styles.sliderFill} style={{ clipPath: `inset(0 ${100 - fillPct}% 0 0)` }} />
+                  </div>
+                </div>
+                <IngredientNote
+                  value={ai.note ?? ""}
+                  onChange={(n) => setSpecificNote(ai.ingredientId, n)}
+                />
+              </div>
+            );
+          })}
+          <button className={styles.addBtn} type="button" onClick={handleAddSpecific}>
+            Add ingredient
+          </button>
+        </div>
       </div>
     );
   }

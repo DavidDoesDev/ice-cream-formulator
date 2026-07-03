@@ -181,6 +181,7 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
                 initial={state}
                 recipe={recipe}
                 onDone={handleFormulaDone}
+                onOpenIngredientSelector={(onAdd) => openIngredientSelector("specific", onAdd)}
               />
             )}
             {view === "recipe" && mode === "preview" && (

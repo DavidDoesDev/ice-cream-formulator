@@ -205,41 +205,29 @@
   opacity: 0.85;
 }
 
-.sectionLabel {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
-  margin: 0 0 var(--space-3) 0;
-}
-
-.specialty {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-}
-
-.specialtyRow {
+.specific {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--color-border);
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
-.specialtyRow:last-child {
-  border-bottom: none;
+.addBtn {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  background: none;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: background var(--duration-fast);
 }
 
-.specialtyName {
-  font-size: 15px;
-  color: var(--color-text);
-}
-
-.specialtyPct {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
+.addBtn:hover {
+  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
 }
