@@ -18,6 +18,13 @@ const MACRO_COLORS: Record<string, string> = {
 const CONTEXT_CATEGORIES: Record<string, IngredientCategory[]> = {
   "sugar-mix": ["sweetener"],
   "stabilizer-mix": ["stabilizer", "emulsifier"],
+  // Custom-system builders only accept ingredients valid for that system.
+  "sugar-custom": ["sweetener"],
+  "stabilizer-custom": ["stabilizer"],
+  "milk-custom": ["dairy", "vegan-dairy"],
+  "eggs-custom": ["emulsifier"],
+  "alcohol-custom": ["alcohol"],
+  "emulsifier-custom": ["emulsifier"],
   general: ["dairy", "sweetener", "stabilizer", "emulsifier", "inclusion", "alcohol", "fruit", "vegan-dairy", "misc"],
 };
 
