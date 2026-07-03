@@ -4,7 +4,7 @@ import { useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import type { Recipe, AdditionalIngredient, SmartMixKind, SmartMix } from "@/data/types";
 import type { Ingredient, FormulaState } from "@/lib/formula-engine";
 import { getIngredientById } from "@/data/ingredients";
-import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
+import { computeRatiosFromRecipe } from "@/lib/recipe-solver";
 import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById } from "@/data/mix-presets";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -59,43 +59,25 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
       }));
     }, []);
 
-    const rebalanceWithAdditionals = useCallback(
-      (prev: Recipe, newAdditionals: AdditionalIngredient[]): Recipe => {
-        const smartTotal = prev.smartMixes.reduce((s, m) => s + m.grams, 0) || 1000;
-        const targets = computeRatiosFromRecipe(
-          { smartMixes: prev.smartMixes, additionalIngredients: [] },
-          getPresetById,
-        );
-        const addTotal = newAdditionals.reduce((s, a) => s + a.grams, 0);
-        const solved = solveRecipe(
-          targets,
-          smartTotal + addTotal,
-          newAdditionals,
-          prev.smartMixes,
-          getPresetById,
-          (id) => getIngredientById(id)?.macros,
-        );
-        return { smartMixes: solved, additionalIngredients: newAdditionals };
-      },
-      [],
-    );
-
+    // Recipe editing is direct: every ingredient is effectively pinned except the
+    // one being changed. No solver runs here — the Mix is recomputed from the final
+    // recipe on commit, where any imbalance can surface.
     const setAdditionalGrams = useCallback((ingredientId: string, grams: number) => {
-      setLocal((prev) => {
-        const newAdditionals = prev.additionalIngredients.map((a) =>
+      setLocal((prev) => ({
+        ...prev,
+        additionalIngredients: prev.additionalIngredients.map((a) =>
           a.ingredientId === ingredientId ? { ...a, grams: Math.max(0, grams) } : a,
-        );
-        return rebalanceWithAdditionals(prev, newAdditionals);
-      });
-    }, [rebalanceWithAdditionals]);
+        ),
+      }));
+    }, []);
 
     const removeAdditional = useCallback((ingredientId: string) => {
-      setLocal((prev) => {
-        const newAdditionals = prev.additionalIngredients.filter((a) => a.ingredientId !== ingredientId);
-        return rebalanceWithAdditionals(prev, newAdditionals);
-      });
+      setLocal((prev) => ({
+        ...prev,
+        additionalIngredients: prev.additionalIngredients.filter((a) => a.ingredientId !== ingredientId),
+      }));
       setMenuOpen(null);
-    }, [rebalanceWithAdditionals]);
+    }, []);
 
     const handleAddIngredient = useCallback(() => {
       onOpenIngredientSelector((ing: Ingredient) => {
