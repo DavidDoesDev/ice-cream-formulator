@@ -42,6 +42,8 @@ interface ConfigPanelProps {
   onStyleChange: (style: string) => void;
   onPresetChange: (kind: SmartMixKind, presetId: string) => void;
   onCustomPreset: (kind: SmartMixKind, preset: MixPreset) => void;
+  onAddMilkIngredient: (ing: Ingredient) => void;
+  onRemoveMilkIngredient: (presetId: string) => void;
   onOpenIngredientSelector: (context: string, onAdd: (ingredient: Ingredient) => void) => void;
 }
 
@@ -53,6 +55,8 @@ export function ConfigPanel({
   onStyleChange,
   onPresetChange,
   onCustomPreset,
+  onAddMilkIngredient,
+  onRemoveMilkIngredient,
   onOpenIngredientSelector,
 }: ConfigPanelProps) {
   const [name, setName] = useState(formulaName);
@@ -154,6 +158,44 @@ export function ConfigPanel({
               const breakdown = activePreset && activePreset.ingredients.length > 1
                 ? activePreset.ingredients
                 : [];
+
+              // Milk base has no ratios — it's a set of included ingredients.
+              if (kind === "milk") {
+                const milkMixes = recipe.smartMixes.filter((m) => m.kind === "milk");
+                return (
+                  <div key={kind} className={styles.mixEntry}>
+                    <div className={styles.mixRow}>
+                      <Icon className={styles.mixIcon} size={17} strokeWidth={2} aria-hidden />
+                      <label className={styles.mixLabel}>{label}</label>
+                    </div>
+                    <div className={styles.includeList}>
+                      {milkMixes.map((m) => (
+                        <div key={m.presetId} className={styles.includeRow}>
+                          <span className={styles.includeName}>
+                            {getPresetById(m.presetId)?.name ?? m.label}
+                          </span>
+                          <button
+                            className={styles.includeRemove}
+                            type="button"
+                            aria-label="Remove"
+                            onClick={() => onRemoveMilkIngredient(m.presetId)}
+                          >
+                            <X size={14} strokeWidth={2} />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        className={styles.customAdd}
+                        type="button"
+                        onClick={() => onOpenIngredientSelector("milk-custom", onAddMilkIngredient)}
+                      >
+                        + Add milk ingredient
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div key={kind} className={styles.mixEntry}>
                   <div className={styles.mixRow}>

@@ -15,7 +15,7 @@ import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
 import { seedRecipe } from "@/lib/recipe-seeder";
 import { solveRecipe, computeRatiosFromRecipe } from "@/lib/recipe-solver";
-import { getPresetById, registerCustomPreset } from "@/data/mix-presets";
+import { getPresetById, registerCustomPreset, buildCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 import type { FormulaState, Ingredient } from "@/lib/formula-engine";
 import type { Recipe, StyleCategory, SmartMixKind, MixPreset } from "@/data/types";
@@ -124,6 +124,37 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
     [],
   );
 
+  // Milk base is a set of individual included ingredients (no ratios), so config
+  // adds/removes single-ingredient milk mixes rather than picking a blend.
+  const handleAddMilkIngredient = useCallback((ing: Ingredient) => {
+    const preset = buildCustomPreset("milk", ing.name, [{ ingredientId: ing.id, proportion: 1 }]);
+    registerCustomPreset(preset);
+    setRecipe((prev) => {
+      const already = prev.smartMixes.some(
+        (m) => m.kind === "milk" && getPresetById(m.presetId)?.ingredients[0]?.ingredientId === ing.id,
+      );
+      if (already) return prev;
+      const customPresets = [...(prev.customPresets ?? []), preset];
+      const updatedMixes = [...prev.smartMixes, { kind: "milk" as SmartMixKind, label: ing.name, presetId: preset.id, grams: 0 }];
+      const updatedRecipe: Recipe = { ...prev, smartMixes: updatedMixes, customPresets };
+      const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, (id) => getIngredientById(id)?.macros);
+      const totalGrams = updatedMixes.reduce((s, m) => s + m.grams, 0) + prev.additionalIngredients.reduce((s, a) => s + a.grams, 0) || 1000;
+      const solved = solveRecipe(targets, totalGrams, prev.additionalIngredients, updatedMixes, getPresetById, (id) => getIngredientById(id)?.macros);
+      return { ...prev, smartMixes: solved, customPresets };
+    });
+  }, []);
+
+  const handleRemoveMilkIngredient = useCallback((presetId: string) => {
+    setRecipe((prev) => {
+      const updatedMixes = prev.smartMixes.filter((m) => !(m.kind === "milk" && m.presetId === presetId));
+      const updatedRecipe: Recipe = { ...prev, smartMixes: updatedMixes };
+      const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, (id) => getIngredientById(id)?.macros);
+      const totalGrams = updatedMixes.reduce((s, m) => s + m.grams, 0) + prev.additionalIngredients.reduce((s, a) => s + a.grams, 0) || 1000;
+      const solved = solveRecipe(targets, totalGrams, prev.additionalIngredients, updatedMixes, getPresetById, (id) => getIngredientById(id)?.macros);
+      return { ...prev, smartMixes: solved };
+    });
+  }, []);
+
   const handleRecipeDone = useCallback(
     (newRecipe: Recipe, newState: FormulaState, newNotes: string) => {
       setRecipe(newRecipe);
@@ -199,6 +230,8 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
             onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
             onPresetChange={handlePresetChange}
             onCustomPreset={handleCustomPreset}
+            onAddMilkIngredient={handleAddMilkIngredient}
+            onRemoveMilkIngredient={handleRemoveMilkIngredient}
             onOpenIngredientSelector={openIngredientSelector}
           />
         ) : (
