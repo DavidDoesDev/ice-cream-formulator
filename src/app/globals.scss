@@ -39,15 +39,25 @@
   --space-24: 96px;
 }
 
+@mixin dark-theme {
+  --color-bg: #0b0a0a;
+  --color-surface: #252018;
+  --color-text: #f0ede8;
+  --color-text-secondary: #8c8680;
+  --color-accent: #f07a50;
+  --color-border: #3a3228;
+}
+
+// Follow the system unless the user has explicitly chosen light…
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0b0a0a;
-    --color-surface: #252018;
-    --color-text: #f0ede8;
-    --color-text-secondary: #8c8680;
-    --color-accent: #f07a50;
-    --color-border: #3a3228;
+  :root:not([data-theme="light"]) {
+    @include dark-theme;
   }
+}
+
+// …and honor an explicit dark choice regardless of system.
+:root[data-theme="dark"] {
+  @include dark-theme;
 }
 
 *,

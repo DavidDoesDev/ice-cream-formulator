@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Menu, Share2, Settings, Home } from "lucide-react";
+import { Menu, Share2, Settings, Home, Moon, Sun } from "lucide-react";
 import { FormulaProvider } from "@/context/FormulaContext";
 import { useFormulaContext } from "@/context/FormulaContext";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
@@ -35,6 +35,27 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
   const [mode, setMode] = useState<WorkspaceMode>("preview");
   const [showConfig, setShowConfig] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  // Reflect the saved theme (or system) and apply the explicit override.
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    if (stored === "light" || stored === "dark") {
+      setTheme(stored);
+      document.documentElement.setAttribute("data-theme", stored);
+    } else {
+      setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+      return next;
+    });
+  }, []);
   const [ingredientSelector, setIngredientSelector] = useState<IngredientSelectorState | null>(null);
   const [notes, setNotes] = useState("");
   const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
@@ -187,6 +208,10 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
               <Home size={16} strokeWidth={2} />
               Home
             </Link>
+            <button className={styles.menuItem} type="button" onClick={toggleTheme}>
+              {theme === "dark" ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+              {theme === "dark" ? "Light mode" : "Dark mode"}
+            </button>
           </div>
         </>
       )}

@@ -166,13 +166,18 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  width: 100%;
   padding: var(--space-3);
+  border: none;
   border-radius: var(--radius-sm);
+  background: none;
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 600;
   color: var(--color-text);
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
   transition: background var(--duration-fast);
 }
 
