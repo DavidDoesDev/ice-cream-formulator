@@ -185,6 +185,16 @@ const EGGS_YOLKS = preset("eggs-yolks", "eggs", "Egg Yolks", [
   { ingredientId: "egg-yolk", proportion: 1.0 },
 ]);
 
+const EGGS_WHITES = preset("eggs-whites", "eggs", "Egg Whites", [
+  { ingredientId: "egg-white", proportion: 1.0 },
+]);
+
+// A whole egg is roughly one part yolk to two parts white by weight.
+const EGGS_WHOLE = preset("eggs-whole", "eggs", "Whole Eggs", [
+  { ingredientId: "egg-yolk", proportion: 0.34 },
+  { ingredientId: "egg-white", proportion: 0.66 },
+]);
+
 // ---------------------------------------------------------------------------
 // Alcohol Mix preset
 // Default is empty / unset. When the user activates the alcohol slider,
@@ -251,6 +261,8 @@ export const MIX_PRESETS: MixPreset[] = [
   MILK_PLANT_BASED,
   LIQUID_WATER,
   EGGS_YOLKS,
+  EGGS_WHITES,
+  EGGS_WHOLE,
   ALCOHOL_EMPTY,
   ALCOHOL_VODKA,
   ALCOHOL_DARK_RUM,

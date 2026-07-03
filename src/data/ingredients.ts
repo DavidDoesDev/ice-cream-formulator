@@ -152,6 +152,13 @@ export const INGREDIENTS: CatalogIngredient[] = [
     macros: { fat: 0.27, sugar: 0, nonfatSolids: 0.14, stabilizer: 0, emulsifier: 0.02, alcohol: 0, water: 0.50 },
   },
   {
+    id: "egg-white",
+    name: "Egg White",
+    description: "Mostly water and protein. Adds body and lift without fat or the yolk's emulsification.",
+    category: "misc",
+    macros: { fat: 0, sugar: 0, nonfatSolids: 0.11, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.89 },
+  },
+  {
     id: "soy-lecithin",
     name: "Soy Lecithin",
     description: "Plant-based emulsifier. Improves body and reduces iciness without adding richness.",
