@@ -9,6 +9,7 @@ import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById } from "@/data/mix-presets";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { IngredientNote } from "@/components/shared/IngredientNote";
+import { GramScrubField } from "@/components/shared/GramScrubField";
 import styles from "./RecipeEdit.module.scss";
 
 // Sugar and stabilizer are fixed-proportion systems shown as one grouped card;
@@ -133,20 +134,7 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                     >
                       −
                     </button>
-                    <div className={styles.gramField}>
-                      <input
-                        className={styles.gramInput}
-                        type="number"
-                        value={Math.round(mix.grams)}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          if (!isNaN(val)) setMixGrams(mix.presetId, val);
-                        }}
-                        min={0}
-                        step={10}
-                      />
-                      <span className={styles.gramUnit}>g</span>
-                    </div>
+                    <GramScrubField grams={mix.grams} onChange={(g) => setMixGrams(mix.presetId, g)} />
                     <button
                       className={styles.stepBtn}
                       type="button"
@@ -187,20 +175,7 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                       >
                         −
                       </button>
-                      <div className={styles.gramField}>
-                        <input
-                          className={styles.gramInput}
-                          type="number"
-                          value={Math.round(ai.grams)}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!isNaN(val)) setAdditionalGrams(ai.ingredientId, val);
-                          }}
-                          min={0}
-                          step={10}
-                        />
-                        <span className={styles.gramUnit}>g</span>
-                      </div>
+                      <GramScrubField grams={ai.grams} onChange={(g) => setAdditionalGrams(ai.ingredientId, g)} />
                       <button
                         className={styles.stepBtn}
                         type="button"
