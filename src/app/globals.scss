@@ -1,21 +1,13 @@
 :root {
   --font-display: var(--font-bricolage), system-ui, sans-serif;
 
-  // Fixed light palette — never overridden by theme, so elements can pin to it.
-  --light-bg: #fafaf7;
-  --light-surface: #ffffff;
-  --light-text: #1c1812;
-  --light-accent: #d92814;
-  --light-on-accent: #ffffff;
-  --light-border: #e8e4de;
-
-  --color-bg: var(--light-bg);
-  --color-surface: var(--light-surface);
-  --color-text: var(--light-text);
+  --color-bg: #fafaf7;
+  --color-surface: #ffffff;
+  --color-text: #1c1812;
   --color-text-secondary: #8c8680;
-  --color-accent: var(--light-accent);
-  --color-on-accent: var(--light-on-accent);
-  --color-border: var(--light-border);
+  --color-accent: #d92814;
+  --color-on-accent: #ffffff;
+  --color-border: #e8e4de;
 
   --color-macro-sugar: #f6d98a;
   --color-macro-fat: #f0c4a8;
