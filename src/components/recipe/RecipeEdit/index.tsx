@@ -8,6 +8,7 @@ import { computeRatiosFromRecipe } from "@/lib/recipe-solver";
 import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById } from "@/data/mix-presets";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { IngredientNote } from "@/components/shared/IngredientNote";
 import styles from "./RecipeEdit.module.scss";
 
 // Sugar and stabilizer are fixed-proportion systems shown as one grouped card;
@@ -55,6 +56,24 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
         ...prev,
         smartMixes: prev.smartMixes.map((m) =>
           m.presetId === presetId ? { ...m, grams: Math.max(0, grams) } : m,
+        ),
+      }));
+    }, []);
+
+    const setMixNote = useCallback((presetId: string, note: string) => {
+      setLocal((prev) => ({
+        ...prev,
+        smartMixes: prev.smartMixes.map((m) =>
+          m.presetId === presetId ? { ...m, note } : m,
+        ),
+      }));
+    }, []);
+
+    const setAdditionalNote = useCallback((ingredientId: string, note: string) => {
+      setLocal((prev) => ({
+        ...prev,
+        additionalIngredients: prev.additionalIngredients.map((a) =>
+          a.ingredientId === ingredientId ? { ...a, note } : a,
         ),
       }));
     }, []);
@@ -137,6 +156,12 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                     </button>
                   </div>
                 </div>
+                <div className={styles.cardNote}>
+                  <IngredientNote
+                    value={mix.note ?? ""}
+                    onChange={(n) => setMixNote(mix.presetId, n)}
+                  />
+                </div>
               </div>
             ))}
 
@@ -184,6 +209,12 @@ export const RecipeEdit = forwardRef<RecipeEditHandle, RecipeEditProps>(
                         +
                       </button>
                     </div>
+                  </div>
+                  <div className={styles.cardNote}>
+                    <IngredientNote
+                      value={ai.note ?? ""}
+                      onChange={(n) => setAdditionalNote(ai.ingredientId, n)}
+                    />
                   </div>
 
                   {menuOpen === ai.ingredientId && (

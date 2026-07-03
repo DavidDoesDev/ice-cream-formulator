@@ -20,11 +20,13 @@ export interface SmartMix {
   label: string; // display name; for alcohol matches the selected ingredient name
   presetId: string;
   grams: number;
+  note?: string; // per-formula note for this ingredient (not global to the catalog)
 }
 
 export interface AdditionalIngredient {
   ingredientId: string;
   grams: number;
+  note?: string; // per-formula note for this ingredient
 }
 
 export interface Recipe {
