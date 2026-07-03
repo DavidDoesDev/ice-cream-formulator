@@ -32,6 +32,7 @@ export interface AdditionalIngredient {
 export interface Recipe {
   smartMixes: SmartMix[];
   additionalIngredients: AdditionalIngredient[];
+  customPresets?: MixPreset[]; // per-formula custom systems (registered on load)
 }
 
 export type StyleCategory =

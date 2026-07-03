@@ -15,10 +15,10 @@ import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
 import { seedRecipe } from "@/lib/recipe-seeder";
 import { solveRecipe, computeRatiosFromRecipe } from "@/lib/recipe-solver";
-import { getPresetById } from "@/data/mix-presets";
+import { getPresetById, registerCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 import type { FormulaState, Ingredient } from "@/lib/formula-engine";
-import type { Recipe, StyleCategory, SmartMixKind } from "@/data/types";
+import type { Recipe, StyleCategory, SmartMixKind, MixPreset } from "@/data/types";
 import styles from "./page.module.scss";
 
 type WorkspaceView = "formula" | "recipe";
@@ -38,9 +38,12 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
   const [ingredientSelector, setIngredientSelector] = useState<IngredientSelectorState | null>(null);
   const [notes, setNotes] = useState("");
   const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
-  const [recipe, setRecipe] = useState<Recipe>(
-    saved.recipe ?? seedRecipe(saved.style as StyleCategory),
-  );
+  const [recipe, setRecipe] = useState<Recipe>(() => {
+    const r = saved.recipe ?? seedRecipe(saved.style as StyleCategory);
+    // Register any per-formula custom systems before first render resolves them.
+    (r.customPresets ?? []).forEach(registerCustomPreset);
+    return r;
+  });
 
   const formulaEditRef = useRef<FormulaEditHandle>(null);
   const recipeEditRef = useRef<RecipeEditHandle>(null);
@@ -91,6 +94,31 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
           (id) => getIngredientById(id)?.macros,
         );
         return { ...prev, smartMixes: solved };
+      });
+    },
+    [],
+  );
+
+  const handleCustomPreset = useCallback(
+    (kind: SmartMixKind, preset: MixPreset) => {
+      registerCustomPreset(preset);
+      setRecipe((prev) => {
+        const customPresets = [...(prev.customPresets ?? []).filter((p) => p.kind !== kind), preset];
+        const updatedMixes = prev.smartMixes.map((m) =>
+          m.kind === kind ? { ...m, presetId: preset.id } : m,
+        );
+        const updatedRecipe: Recipe = { ...prev, smartMixes: updatedMixes, customPresets };
+        const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, (id) => getIngredientById(id)?.macros);
+        const totalGrams = updatedMixes.reduce((s, m) => s + m.grams, 0) + prev.additionalIngredients.reduce((s, a) => s + a.grams, 0) || 1000;
+        const solved = solveRecipe(
+          targets,
+          totalGrams,
+          prev.additionalIngredients,
+          updatedMixes,
+          getPresetById,
+          (id) => getIngredientById(id)?.macros,
+        );
+        return { ...prev, smartMixes: solved, customPresets };
       });
     },
     [],
@@ -170,6 +198,7 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
             onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
             onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
             onPresetChange={handlePresetChange}
+            onCustomPreset={handleCustomPreset}
             onOpenIngredientSelector={openIngredientSelector}
           />
         ) : (

@@ -2,10 +2,10 @@
 
 import { useState, useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Milk, GlassWater, Wine, MapPin, Waypoints, Droplets } from "lucide-react";
-import type { StyleCategory, SmartMixKind, Recipe } from "@/data/types";
+import { Milk, GlassWater, Wine, MapPin, Waypoints, Droplets, X } from "lucide-react";
+import type { StyleCategory, SmartMixKind, Recipe, MixPreset } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
-import { getPresetsByKind, getPresetById } from "@/data/mix-presets";
+import { getPresetsByKind, getPresetById, buildCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 import { formatPercent } from "@/lib/measure";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -41,6 +41,7 @@ interface ConfigPanelProps {
   onNameChange: (name: string) => void;
   onStyleChange: (style: string) => void;
   onPresetChange: (kind: SmartMixKind, presetId: string) => void;
+  onCustomPreset: (kind: SmartMixKind, preset: MixPreset) => void;
   onOpenIngredientSelector: (context: string, onAdd: (ingredient: Ingredient) => void) => void;
 }
 
@@ -51,10 +52,35 @@ export function ConfigPanel({
   onNameChange,
   onStyleChange,
   onPresetChange,
+  onCustomPreset,
   onOpenIngredientSelector,
 }: ConfigPanelProps) {
   const [name, setName] = useState(formulaName);
   const [style, setStyle] = useState(formulaStyle);
+  const [building, setBuilding] = useState<SmartMixKind | null>(null);
+  const [customItems, setCustomItems] = useState<{ ingredientId: string; weight: number }[]>([]);
+
+  const addCustomItem = useCallback((kind: SmartMixKind) => {
+    onOpenIngredientSelector(`${kind}-custom`, (ing) => {
+      setCustomItems((prev) =>
+        prev.some((i) => i.ingredientId === ing.id)
+          ? prev
+          : [...prev, { ingredientId: ing.id, weight: 1 }],
+      );
+    });
+  }, [onOpenIngredientSelector]);
+
+  const saveCustom = useCallback((kind: SmartMixKind) => {
+    if (customItems.length === 0) return;
+    const preset = buildCustomPreset(
+      kind,
+      "Custom",
+      customItems.map((i) => ({ ingredientId: i.ingredientId, proportion: i.weight })),
+    );
+    onCustomPreset(kind, preset);
+    setBuilding(null);
+    setCustomItems([]);
+  }, [customItems, onCustomPreset]);
 
   const handleNameBlur = useCallback(() => {
     if (name.trim()) onNameChange(name.trim());
@@ -138,10 +164,11 @@ export function ConfigPanel({
                       className={styles.select}
                       value={activePresetId}
                       onChange={(e) => {
-                        if (e.target.value !== "custom") {
-                          onPresetChange(kind, e.target.value);
+                        if (e.target.value === "custom") {
+                          setBuilding(kind);
+                          setCustomItems([]);
                         } else {
-                          onOpenIngredientSelector(`${kind}-mix`, () => {});
+                          onPresetChange(kind, e.target.value);
                         }
                       }}
                     >
@@ -163,6 +190,58 @@ export function ConfigPanel({
                           </span>
                         </div>
                       ))}
+                    </div>
+                  )}
+                  {building === kind && (
+                    <div className={styles.customBuilder}>
+                      {customItems.map((item, idx) => {
+                        const totalW = customItems.reduce((s, i) => s + i.weight, 0) || 1;
+                        const pct = (item.weight / totalW) * 100;
+                        return (
+                          <div key={item.ingredientId} className={styles.customRow}>
+                            <span className={styles.customName}>
+                              {getIngredientById(item.ingredientId)?.name ?? item.ingredientId}
+                            </span>
+                            <input
+                              className={styles.customWeight}
+                              type="number"
+                              min={0}
+                              step={1}
+                              value={item.weight}
+                              onChange={(e) => {
+                                const w = parseFloat(e.target.value);
+                                setCustomItems((prev) =>
+                                  prev.map((it, i) =>
+                                    i === idx ? { ...it, weight: isNaN(w) ? 0 : Math.max(0, w) } : it,
+                                  ),
+                                );
+                              }}
+                            />
+                            <span className={styles.customPct}>{formatPercent(pct)}%</span>
+                            <button
+                              className={styles.customRemove}
+                              type="button"
+                              aria-label="Remove"
+                              onClick={() => setCustomItems((prev) => prev.filter((_, i) => i !== idx))}
+                            >
+                              <X size={14} strokeWidth={2} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      <div className={styles.customActions}>
+                        <button className={styles.customAdd} type="button" onClick={() => addCustomItem(kind)}>
+                          + Ingredient
+                        </button>
+                        <button
+                          className={styles.customSave}
+                          type="button"
+                          disabled={customItems.length === 0}
+                          onClick={() => saveCustom(kind)}
+                        >
+                          Save system
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

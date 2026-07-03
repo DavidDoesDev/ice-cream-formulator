@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MIX_PRESETS, getPresetById, getPresetsByKind } from "./mix-presets";
+import { MIX_PRESETS, getPresetById, getPresetsByKind, buildCustomPreset } from "./mix-presets";
 import { getIngredientById } from "./ingredients";
 
 describe("mix-presets", () => {
@@ -51,6 +51,20 @@ describe("mix-presets", () => {
     for (const kind of kinds) {
       expect(getPresetsByKind(kind).length, `kind=${kind}`).toBeGreaterThan(0);
     }
+  });
+
+  it("buildCustomPreset normalizes proportions and computes effective macros", () => {
+    // 3:1 sucrose:carrageenan → normalized 0.75/0.25.
+    // sucrose is pure sugar (1.0), carrageenan pure stabilizer (1.0), so the
+    // weighted macros are sugar 0.75 and stabilizer 0.25 — derived from the
+    // normalization rule, not from the implementation.
+    const preset = buildCustomPreset("sugar", "My Blend", [
+      { ingredientId: "sucrose", proportion: 3 },
+      { ingredientId: "carrageenan", proportion: 1 },
+    ]);
+    expect(preset.ingredients.map((i) => i.proportion)).toEqual([0.75, 0.25]);
+    expect(preset.effectiveMacros.sugar).toBeCloseTo(0.75, 4);
+    expect(preset.effectiveMacros.stabilizer).toBeCloseTo(0.25, 4);
   });
 
   it("every preset references only ingredient ids that exist in the catalog", () => {

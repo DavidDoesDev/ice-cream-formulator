@@ -34,6 +34,27 @@ function preset(
   return { id, kind, name, ingredients, effectiveMacros: computeEffectiveMacros(ingredients) };
 }
 
+// Build a per-formula custom system from user-chosen ingredients and weights.
+// Weights are normalized to sum to 1.0; effective macros follow from them.
+export function buildCustomPreset(
+  kind: SmartMixKind,
+  name: string,
+  ingredients: MixPresetIngredient[],
+): MixPreset {
+  const total = ingredients.reduce((s, i) => s + i.proportion, 0) || 1;
+  const normalized = ingredients.map((i) => ({
+    ingredientId: i.ingredientId,
+    proportion: i.proportion / total,
+  }));
+  return {
+    id: `custom-${kind}-${Math.random().toString(36).slice(2, 8)}`,
+    kind,
+    name,
+    ingredients: normalized,
+    effectiveMacros: computeEffectiveMacros(normalized),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Sugar Mix presets
 // ---------------------------------------------------------------------------
@@ -237,8 +258,16 @@ export const MIX_PRESETS: MixPreset[] = [
   EMULSIFIER_LECITHIN,
 ];
 
+// Per-formula custom systems, registered at runtime so getPresetById (used by the
+// solver and every view) can resolve their ids like any built-in preset.
+const customRegistry = new Map<string, MixPreset>();
+
+export function registerCustomPreset(preset: MixPreset): void {
+  customRegistry.set(preset.id, preset);
+}
+
 export function getPresetById(id: string): MixPreset | undefined {
-  return MIX_PRESETS.find((p) => p.id === id);
+  return MIX_PRESETS.find((p) => p.id === id) ?? customRegistry.get(id);
 }
 
 export function getPresetsByKind(kind: SmartMixKind): MixPreset[] {
