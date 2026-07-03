@@ -83,9 +83,12 @@ export function FormulaPreview({ recipe }: FormulaPreviewProps) {
         <div className={styles.macroGrid}>
           {MACRO_ORDER.map((key) => {
             const pct = ratios[key as keyof typeof ratios] * 100;
-            if (pct < 0.001) return null;
+            const isZero = pct < 0.001;
             return (
-              <div key={key} className={styles.macroCell}>
+              <div
+                key={key}
+                className={`${styles.macroCell} ${isZero ? styles.macroCellZero : ""}`}
+              >
                 <span
                   className={styles.macroSwatch}
                   style={{ background: MACRO_COLORS[key] }}
