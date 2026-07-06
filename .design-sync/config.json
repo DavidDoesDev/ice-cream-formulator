@@ -1,0 +1,28 @@
+{
+  "shape": "package",
+  "projectId": "7a7ba821-71b5-4a95-b124-07d4c42aacc9",
+  "pkg": "ice-cream-formulator",
+  "globalName": "IceCreamDS",
+  "buildCmd": "node .design-sync/build-dist.mjs",
+  "tsconfig": "tsconfig.json",
+  "cssEntry": "dist/index.css",
+  "extraFonts": [".design-sync/fonts/bricolage.css"],
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "IngredientSelector": { "cardMode": "single", "primaryStory": "AllIngredients" }
+  },
+  "componentSrcMap": {
+    "ConfigPanel": "src/components/formula/ConfigPanel/index.tsx",
+    "FormulaEdit": "src/components/formula/FormulaEdit/index.tsx",
+    "FormulaPreview": "src/components/formula/FormulaPreview/index.tsx",
+    "RecipeEdit": "src/components/recipe/RecipeEdit/index.tsx",
+    "RecipePreview": "src/components/recipe/RecipePreview/index.tsx",
+    "ArchetypeTile": "src/components/shared/ArchetypeTile/index.tsx",
+    "GramScrubField": "src/components/shared/GramScrubField/index.tsx",
+    "IngredientNote": "src/components/shared/IngredientNote/index.tsx",
+    "IngredientSelector": "src/components/shared/IngredientSelector/index.tsx",
+    "PintCup": "src/components/shared/PintCup/index.tsx",
+    "SearchModule": "src/components/shared/SearchModule/index.tsx",
+    "SectionHeader": "src/components/shared/SectionHeader/index.tsx"
+  }
+}
