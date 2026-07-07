@@ -121,7 +121,7 @@ export function RecipePanel({
       <SectionHeader role="yield" label="Batch yield" />
       <div className={styles.yieldRow}>
         <span className={styles.yieldNote}>Scale the whole recipe up or down — every gram moves together.</span>
-        <GramScrubField grams={yieldGrams} onChange={onYield} step={50} />
+        <GramScrubField grams={yieldGrams} onChange={onYield} />
       </div>
 
       <div className={styles.totalRow}>

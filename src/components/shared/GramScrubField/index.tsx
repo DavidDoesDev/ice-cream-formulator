@@ -1,21 +1,33 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import styles from "./GramScrubField.module.scss";
 
-const SCRUB_G_PER_PX = 2; // vertical drag sensitivity
-const SCRUB_SNAP = 5;     // round scrubbed grams to nearest 5
 const DRAG_THRESHOLD = 4; // px before a press becomes a scrub (vs a click-to-type)
+
+// Snap + drag sensitivity scale with magnitude, so trace amounts (stabilizer,
+// emulsifier, alcohol — often < 5 g and fractional) stay adjustable while big
+// amounts step in coarse, sensible increments.
+function gramStep(grams: number): number {
+  if (grams < 5) return 0.1;
+  if (grams < 20) return 0.5;
+  if (grams < 100) return 1;
+  return 5;
+}
+
+const round2 = (g: number) => Math.round(g * 100) / 100;
 
 interface GramScrubFieldProps {
   grams: number;
   onChange: (grams: number) => void;
-  step?: number;
 }
 
 // A gram value you can drag vertically to change (up = more), or click to type.
-export function GramScrubField({ grams, onChange, step = 10 }: GramScrubFieldProps) {
+// Precision follows the amount: small amounts allow decimals, large ones don't.
+export function GramScrubField({ grams, onChange }: GramScrubFieldProps) {
   const drag = useRef<{ startY: number; startGrams: number; moved: boolean } | null>(null);
+  // Raw text while the field is focused, so partial decimals (e.g. "2.") can be typed.
+  const [text, setText] = useState<string | null>(null);
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     drag.current = { startY: e.clientY, startGrams: grams, moved: false };
@@ -32,8 +44,9 @@ export function GramScrubField({ grams, onChange, step = 10 }: GramScrubFieldPro
       document.body.classList.add("scrubbing");
       (document.activeElement as HTMLElement | null)?.blur?.();
     }
-    const raw = d.startGrams + dy * SCRUB_G_PER_PX;
-    onChange(Math.max(0, Math.round(raw / SCRUB_SNAP) * SCRUB_SNAP));
+    const step = gramStep(d.startGrams);
+    const raw = d.startGrams + dy * step * 0.5; // ~2 px per step
+    onChange(Math.max(0, round2(Math.round(raw / step) * step)));
   }, [onChange]);
 
   const endScrub = useCallback((e: React.PointerEvent) => {
@@ -54,14 +67,20 @@ export function GramScrubField({ grams, onChange, step = 10 }: GramScrubFieldPro
     >
       <input
         className={styles.input}
-        type="number"
-        value={Math.round(grams)}
+        type="text"
+        inputMode="decimal"
+        value={text ?? String(round2(grams))}
+        onFocus={(e) => {
+          setText(String(round2(grams)));
+          e.target.select();
+        }}
         onChange={(e) => {
-          const v = parseFloat(e.target.value);
+          const t = e.target.value.replace(/[^0-9.]/g, "");
+          setText(t);
+          const v = parseFloat(t);
           if (!isNaN(v)) onChange(Math.max(0, v));
         }}
-        min={0}
-        step={step}
+        onBlur={() => setText(null)}
       />
       <span className={styles.unit}>g</span>
     </div>
