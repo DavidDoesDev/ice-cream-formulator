@@ -52,6 +52,16 @@ describe("live workspace binding", () => {
     expect(ws1.yieldGrams).toBe(1000);
   });
 
+  it("leaves trace mixes untouched when a big macro is solved", () => {
+    // Dragging sugar must not thrash the stabilizer grams — trace additives are
+    // held out of the blend solve.
+    const ws0 = seededWorkspace();
+    const stabBefore = ws0.recipe.smartMixes.find((m) => m.presetId === "stab-modernist")!.grams;
+    const ws1 = setMacroTarget(ws0, "sugar", 0.2, deps);
+    const stabAfter = ws1.recipe.smartMixes.find((m) => m.presetId === "stab-modernist")!.grams;
+    expect(stabAfter).toBe(stabBefore);
+  });
+
   it("actually moves the fat ratio toward the requested target", () => {
     const ws0 = seededWorkspace();
     const before = workspaceRatios(ws0, deps).fat;
@@ -114,8 +124,8 @@ describe("live workspace binding", () => {
   });
 
   it("rebalances an out-of-bound formula back into every macro's bounds", () => {
-    // Drive sugar far past its upper bound to force a conflict, then rebalance.
-    const pushed = setMacroTarget(seededWorkspace(), "sugar", 0.5, deps);
+    // Drive sugar just past its upper bound to force a conflict, then rebalance.
+    const pushed = setMacroTarget(seededWorkspace(), "sugar", 0.42, deps);
     // Sanity: the push actually created a conflict (independent of rebalance).
     expect(workspaceConflict(pushed, deps)).toBe(true);
     const fixed = rebalanceWorkspace(pushed, deps);

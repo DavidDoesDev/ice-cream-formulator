@@ -58,14 +58,20 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     [],
   );
 
+  const baseRatios = useMemo(() => computeRatios(saved.state), [saved.state]);
+
   const initialWs = useMemo<LiveWorkspace>(() => {
     const recipe = saved.recipe ?? seedRecipe(saved.style as StyleCategory);
     (recipe.customPresets ?? []).forEach(registerCustomPreset);
     const yieldGrams = saved.state?.yieldGrams || totalGrams(recipe) || 1000;
-    return { recipe, yieldGrams };
-  }, [saved]);
-
-  const baseRatios = useMemo(() => computeRatios(saved.state), [saved.state]);
+    // The whole-recipe solver can't nail trace targets (the yield pressure
+    // dominates), so bootstrapped recipes load with stabilizer/emulsifier out
+    // of range. Dose them directly to the style target once on load.
+    let ws: LiveWorkspace = { recipe, yieldGrams };
+    ws = setTraceMacro(ws, "stabilizer", baseRatios.stabilizer, deps);
+    ws = setTraceMacro(ws, "emulsifier", baseRatios.emulsifier, deps);
+    return ws;
+  }, [saved, baseRatios, deps]);
 
   const [ws, setWs] = useState<LiveWorkspace>(initialWs);
   const [meta, setMeta] = useState({ name: saved.name, style: saved.style });

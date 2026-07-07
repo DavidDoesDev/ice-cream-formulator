@@ -1,6 +1,11 @@
 import { computeRatiosFromRecipe, solveRecipe } from "./recipe-solver";
 import { MACRO_BOUNDS, type MacroRatios, type IngredientMacros } from "./formula-engine";
-import type { Recipe, MixPreset } from "@/data/types";
+import type { Recipe, MixPreset, SmartMix, SmartMixKind } from "@/data/types";
+
+// Trace additives are dosed directly (setTraceMacro), so a big-macro solve must
+// leave them alone — otherwise the solver flings their grams around to minimize
+// a trace target it can't meaningfully influence.
+const TRACE_KINDS = new Set<SmartMixKind>(["stabilizer", "emulsifier"]);
 
 // The always-live workspace: a Recipe (the source of truth for grams) plus the
 // batch yield. Ratios are always derived from the recipe; a macro-slider change
@@ -58,22 +63,35 @@ export function setAdditionalGrams(
 // Macro-slider change: re-solve the smart-mix grams to hit the new target while
 // holding the current yield. Other macros move to make room (the solver settles
 // on the least-change grams); the yield is invariant.
+// Solve the blend (non-trace) mixes toward a target ratio vector, holding the
+// trace additives fixed and the batch yield exact. The one place the solver runs.
+function solveBlend(ws: LiveWorkspace, targets: MacroRatios, deps: WorkspaceDeps): LiveWorkspace {
+  const mixes = ws.recipe.smartMixes;
+  const heldGrams = mixes.filter((m) => TRACE_KINDS.has(m.kind)).reduce((s, m) => s + m.grams, 0);
+  const solveMixes = mixes.filter((m) => !TRACE_KINDS.has(m.kind));
+  const solved = solveRecipe(
+    targets,
+    ws.yieldGrams - heldGrams,
+    ws.recipe.additionalIngredients,
+    solveMixes,
+    deps.getPreset,
+    deps.resolveIngredient,
+  );
+  const gramsFor = new Map<SmartMix, number>();
+  solveMixes.forEach((m, i) => gramsFor.set(m, solved[i].grams));
+  const smartMixes = mixes.map((m) =>
+    TRACE_KINDS.has(m.kind) ? m : { ...m, grams: gramsFor.get(m) ?? m.grams },
+  );
+  return { ...ws, recipe: { ...ws.recipe, smartMixes } };
+}
+
 export function setMacroTarget(
   ws: LiveWorkspace,
   macro: keyof MacroRatios,
   target: number,
   deps: WorkspaceDeps,
 ): LiveWorkspace {
-  const targets: MacroRatios = { ...workspaceRatios(ws, deps), [macro]: target };
-  const solved = solveRecipe(
-    targets,
-    ws.yieldGrams,
-    ws.recipe.additionalIngredients,
-    ws.recipe.smartMixes,
-    deps.getPreset,
-    deps.resolveIngredient,
-  );
-  return { ...ws, recipe: { ...ws.recipe, smartMixes: solved } };
+  return solveBlend(ws, { ...workspaceRatios(ws, deps), [macro]: target }, deps);
 }
 
 // Add an additional (individual) ingredient; the batch grows by its grams.
@@ -107,21 +125,26 @@ export function removeAdditionalIngredient(
 // coupled at fixed yield, so clamping one perturbs others — re-check and repeat
 // until the whole formula sits inside its bounds (or passes run out).
 export function rebalanceWorkspace(ws: LiveWorkspace, deps: WorkspaceDeps): LiveWorkspace {
+  // Trace additives are dosed directly (the solve can't nail them); blend macros
+  // are clamped as a vector and solved at once (clamping one at a time
+  // oscillates, since the macros are coupled). A few passes settle it.
   let cur = ws;
-  for (let pass = 0; pass < 8; pass++) {
-    const r = workspaceRatios(cur, deps);
-    let changed = false;
-    for (const k of MACRO_KEYS) {
-      const [min, max] = MACRO_BOUNDS[k];
-      if (r[k] < min - 1e-6) {
-        cur = setMacroTarget(cur, k, min, deps);
-        changed = true;
-      } else if (r[k] > max + 1e-6) {
-        cur = setMacroTarget(cur, k, max, deps);
-        changed = true;
+  for (let pass = 0; pass < 4; pass++) {
+    if (!workspaceConflict(cur, deps)) break;
+    const rTrace = workspaceRatios(cur, deps);
+    for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+      const [min, max] = MACRO_BOUNDS[macro];
+      if (rTrace[macro] > max + 1e-6 || rTrace[macro] < min - 1e-6) {
+        cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, rTrace[macro])), deps);
       }
     }
-    if (!changed) break;
+    const r = workspaceRatios(cur, deps);
+    const targets = { ...r };
+    for (const k of MACRO_KEYS) {
+      const [min, max] = MACRO_BOUNDS[k];
+      targets[k] = Math.max(min, Math.min(max, r[k]));
+    }
+    cur = solveBlend(cur, targets, deps);
   }
   return cur;
 }
