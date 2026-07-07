@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { listFormulas, deleteFormula, type SavedFormula } from "@/lib/persistence";
 import { computeRatios } from "@/lib/formula-engine";
 import { PintCup } from "@/components/shared/PintCup";
@@ -11,12 +12,19 @@ import styles from "./page.module.scss";
 const MARQUEE_ITEMS = ["COLD", "HARD", "SCIENCE"];
 
 export default function Home() {
+  const router = useRouter();
   const [formulas, setFormulas] = useState<SavedFormula[] | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormulas(listFormulas());
   }, []);
+
+  const surpriseMe = useCallback(() => {
+    if (!formulas || formulas.length === 0) return;
+    const pick = formulas[Math.floor(Math.random() * formulas.length)];
+    router.push(`/formula/${pick.id}`);
+  }, [formulas, router]);
 
   const handleDelete = useCallback((id: string, name: string) => {
     if (!confirm(`Delete "${name}"?`)) return;
@@ -49,6 +57,20 @@ export default function Home() {
             <Icon name="plus" size={18} />
             New formula
           </Link>
+          <a href="#vault" className={styles.ctaGhost}>
+            Open the vault
+            <Icon name="arrow" size={16} />
+          </a>
+          <button
+            className={styles.dice}
+            type="button"
+            onClick={surpriseMe}
+            disabled={!hasFormulas}
+            title="Surprise me"
+            aria-label="Open a random formula"
+          >
+            <Icon name="dice" size={22} />
+          </button>
         </div>
       </section>
 
@@ -73,9 +95,9 @@ export default function Home() {
         </div>
       </div>
 
-      <section className={styles.lib}>
+      <section className={styles.lib} id="vault">
         <div className={styles.libHead}>
-          <h2 className={styles.libTitle}>Library</h2>
+          <h2 className={styles.libTitle}>The vault</h2>
           <Link href="/new" className={styles.libLink}>
             Start a batch
             <Icon name="arrow" size={16} />

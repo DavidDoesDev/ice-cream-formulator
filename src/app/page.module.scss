@@ -82,27 +82,73 @@
   font-weight: 700;
   font-size: 17px;
   text-decoration: none;
-  box-shadow: 0 6px 20px -8px color-mix(in oklab, var(--ink) 55%, transparent);
+  box-shadow: var(--sh);
   transition: transform var(--duration-fast) var(--ease-jelly), box-shadow var(--duration-fast);
 }
 
 .ctaPrimary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 26px -8px color-mix(in oklab, var(--ink) 60%, transparent);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--sh-h);
   color: var(--paper);
+}
+
+.ctaGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 2.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 13px 22px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color var(--duration-fast), transform var(--duration-fast) var(--ease-jelly);
+}
+
+.ctaGhost:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.dice {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill);
+  border: 2.5px solid var(--ink);
+  background: var(--paper-2);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-jelly), background var(--duration-fast),
+    color var(--duration-fast);
+}
+
+.dice:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.dice:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* ---- caution-tape marquee ---- */
 .marquee {
-  // Full-bleed: break out of the centered .main to span the whole viewport.
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-top: calc(28px * var(--u));
+  // Full-bleed + tilted like caution tape. Over-wide and pulled left so the
+  // -2deg rotation doesn't reveal paper triangles at the edges; body's
+  // overflow-x: clip trims the overhang. Vertical margins give the tilt room.
+  width: 108vw;
+  margin: calc(44px * var(--u)) 0 calc(44px * var(--u)) calc(50% - 54vw);
   overflow: hidden;
   background: var(--c-yellow);
   border-top: 2.5px solid var(--ink);
   border-bottom: 2.5px solid var(--ink);
-  transform: none;
+  transform: rotate(-2deg);
 }
 
 .marqueeTrack {

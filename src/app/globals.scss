@@ -27,6 +27,10 @@
   // blue-violet ink / accent
   --accent: #4b39f2;
 
+  // Shadows are dark in EVERY theme (never flip to a light glow). Not
+  // theme-swapped — the hard offset shadow should read as ink registration.
+  --shadow-color: rgba(14, 8, 26, 0.88);
+
   // shape
   --radius: 22px;
   --radius-lg: 34px;
@@ -65,8 +69,8 @@
   --text: var(--accent);
   --muted: color-mix(in oklab, var(--accent) 42%, #9c8f78);
   --line: color-mix(in oklab, var(--accent) 20%, transparent);
-  --sh: 6px 6px 0 var(--ink);
-  --sh-h: 10px 10px 0 var(--ink);
+  --sh: 6px 6px 0 var(--shadow-color);
+  --sh-h: 10px 10px 0 var(--shadow-color);
   --grain: 0.55;
 
   // back-compat aliases for not-yet-restyled components
@@ -88,8 +92,6 @@
   --text: #f7efdd;
   --muted: color-mix(in oklab, #f7efdd 55%, var(--accent));
   --line: rgba(247, 239, 221, 0.26);
-  --sh: 6px 6px 0 rgba(6, 2, 28, 0.4);
-  --sh-h: 10px 10px 0 rgba(6, 2, 28, 0.45);
   --grain: 0.4;
 
   --color-bg: var(--paper);
