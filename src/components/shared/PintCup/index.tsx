@@ -13,13 +13,13 @@ interface PintCupProps {
 // Layer order bottom-to-top: water on the bottom, then the non-water macros in
 // their usual size order — biggest just above the waterline, smallest at the top.
 // Fixed (not per-formula): sugar ≥ fat ≥ milk solids ≥ stabilizer ≥ emulsifier ≥ alcohol.
-// Colors keep their original bottom-to-top sequence (mint, gold, peach, …) so the
-// gradient is unchanged even though the macros are reordered.
+// Each macro layer wears its OWN candy color from the press macro palette; water
+// is a neutral panel tone so the "core sample" reads as its actual composition.
 const LAYERS: { key: keyof MacroRatios; color: string }[] = [
-  { key: "water", color: "var(--color-bg)" },
-  { key: "sugar", color: "var(--color-macro-nonfat)" },
-  { key: "fat", color: "var(--color-macro-sugar)" },
-  { key: "nonfatSolids", color: "var(--color-macro-fat)" },
+  { key: "water", color: "var(--panel)" },
+  { key: "sugar", color: "var(--color-macro-sugar)" },
+  { key: "fat", color: "var(--color-macro-fat)" },
+  { key: "nonfatSolids", color: "var(--color-macro-nonfat)" },
   { key: "stabilizer", color: "var(--color-macro-stabilizer)" },
   { key: "emulsifier", color: "var(--color-macro-emulsifier)" },
   { key: "alcohol", color: "var(--color-macro-alcohol)" },
@@ -178,6 +178,9 @@ export function PintCup({ ratios, size = "full", width }: PintCupProps) {
               key={key}
               points={points}
               fill={color}
+              stroke="var(--ink)"
+              strokeWidth="0.6"
+              strokeOpacity="0.35"
               className={styles.layer}
             />
           ))}
@@ -192,12 +195,13 @@ export function PintCup({ ratios, size = "full", width }: PintCupProps) {
           )}
         </g>
 
-        {/* Cup outline drawn on top */}
+        {/* Cup outline drawn on top — press ink stroke */}
         <path
           d={CUP_PATH}
           fill="none"
-          stroke="var(--color-border)"
-          strokeWidth="1.5"
+          stroke="var(--ink)"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
         />
 
         {/* Lid — wider than the cup with a gap above the rim */}
@@ -208,8 +212,9 @@ export function PintCup({ ratios, size = "full", width }: PintCupProps) {
           height={LID_H}
           rx={CORNER_R}
           fill="none"
-          stroke="var(--color-border)"
-          strokeWidth="1.5"
+          stroke="var(--ink)"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
         />
       </svg>
     </div>
