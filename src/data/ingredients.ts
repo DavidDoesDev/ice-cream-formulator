@@ -163,7 +163,9 @@ export const INGREDIENTS: CatalogIngredient[] = [
     name: "Soy Lecithin",
     description: "Plant-based emulsifier. Improves body and reduces iciness without adding richness.",
     category: "emulsifier",
-    macros: { fat: 0.95, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0.05, alcohol: 0, water: 0 },
+    // Modeled as a pure emulsifier so the emulsifier slider is a clean, independent
+    // lever (real lecithin is mostly fat, but that coupling isn't useful here).
+    macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 1, alcohol: 0, water: 0 },
   },
 
   // --- Inclusions ---

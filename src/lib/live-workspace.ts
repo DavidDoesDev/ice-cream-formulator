@@ -60,23 +60,11 @@ export function setAdditionalGrams(
   return { recipe, yieldGrams: totalGrams(recipe) };
 }
 
-// Macro-slider change: re-solve the smart-mix grams to hit the new target while
-// holding the current yield. Other macros move to make room (the solver settles
-// on the least-change grams); the yield is invariant.
-// Mixes that are a single, independent macro's pure source. Dragging any other
-// macro must leave these untouched — they don't share ingredients with the
-// coupled dairy group (fat / milk-solids / water).
-const PURE_KIND_MACRO: Partial<Record<SmartMixKind, keyof MacroRatios>> = {
-  sugar: "sugar",
-  stabilizer: "stabilizer",
-  emulsifier: "emulsifier",
-  alcohol: "alcohol",
-};
-
-// Solve the blend toward a target vector, holding every pure independent mix
-// fixed except the one being dragged, and freeing water (plus the dragged
-// macro's coupled partner) so the change is absorbed there instead of smeared
-// across the independent macros. The batch yield stays exact.
+// Solve the blend toward a target vector at fixed yield. Only trace additives are
+// held out of the solve (it can't nail them); every other mix stays in so its
+// target is honored — including topping up sucrose to hold the sugar ratio as
+// dairy shifts. Water (plus the dragged macro's coupled dairy partner) is freed
+// so the change is absorbed there rather than smeared across the other macros.
 function solveBlend(
   ws: LiveWorkspace,
   targets: MacroRatios,
@@ -84,13 +72,15 @@ function solveBlend(
   dragged?: keyof MacroRatios,
 ): LiveWorkspace {
   const mixes = ws.recipe.smartMixes;
-  const isHeld = (m: SmartMix) => {
-    const pm = PURE_KIND_MACRO[m.kind];
-    return pm !== undefined && pm !== dragged;
-  };
+  // Only trace additives are held out (the solve can't nail them). Every other
+  // mix stays in the solve so its target is honored — e.g. sucrose tops up to
+  // hold the sugar ratio when dairy (and its incidental lactose) shifts.
+  const isHeld = (m: SmartMix) => TRACE_KINDS.has(m.kind);
   const held = mixes.filter(isHeld);
   const solveMixes = mixes.filter((m) => !isHeld(m));
 
+  // Free water (the remainder) plus the dragged macro's coupled dairy partner,
+  // so the change lands there instead of being smeared into the other targets.
   const free: (keyof MacroRatios)[] = ["water"];
   if (dragged === "fat") free.push("nonfatSolids");
   else if (dragged === "nonfatSolids") free.push("fat");
