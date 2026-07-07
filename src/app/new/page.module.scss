@@ -1,50 +1,101 @@
 .main {
-  max-width: 640px;
+  width: min(1240px, 92vw);
   margin: 0 auto;
-  padding: var(--space-10) var(--space-6) var(--space-24);
+  padding: calc(40px * var(--u)) 0 calc(90px * var(--u));
 }
 
 .header {
   display: flex;
   align-items: center;
   gap: var(--space-5);
-  margin-bottom: var(--space-8);
+  margin-bottom: calc(20px * var(--u));
 }
 
 .back {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
   text-decoration: none;
   transition: color var(--duration-fast);
 }
 
 .back:hover {
-  color: var(--color-text);
+  color: var(--ink);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-left: auto;
 }
 
 .title {
-  font-size: 32px;
-  font-weight: 800;
-  margin: 0;
-  color: var(--color-text);
+  font-family: var(--font-poster);
+  text-transform: uppercase;
+  color: var(--ink);
+  font-size: clamp(48px, 9vw, 120px);
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  margin: 0 0 calc(30px * var(--u));
 }
 
 .search {
-  margin-bottom: var(--space-8);
-  position: sticky;
-  top: var(--space-5);
-  z-index: 10;
+  margin-bottom: calc(36px * var(--u));
+}
+
+.searchLabel {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+  margin: 0 0 var(--space-4);
+}
+
+.pickHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 calc(22px * var(--u));
+}
+
+.pickHeadDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1.5px solid var(--ink);
+  background: var(--c-yellow);
+  flex: none;
+}
+
+.pickHeadLabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pickHeadRule {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-
-@media (max-width: 440px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: calc(20px * var(--u));
 }

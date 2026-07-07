@@ -20,7 +20,7 @@ export function ArchetypeTile({ archetype, onClick }: ArchetypeTileProps) {
       type="button"
     >
       <div className={styles.cup}>
-        <PintCup ratios={archetype.ratios} size="mini" />
+        <PintCup ratios={archetype.ratios} width={110} />
       </div>
       <div className={styles.body}>
         <span className={styles.style}>{archetype.style}</span>
