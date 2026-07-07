@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 import { listFormulas, deleteFormula, type SavedFormula } from "@/lib/persistence";
 import { computeRatios } from "@/lib/formula-engine";
 import { PintCup } from "@/components/shared/PintCup";
 import { Icon } from "@/components/shared/Icon";
+import { Pill } from "@/components/shared/Pill";
 import styles from "./page.module.scss";
 
 const MARQUEE_ITEMS = ["COLD", "HARD", "SCIENCE"];
@@ -33,6 +35,24 @@ export default function Home() {
   }, []);
 
   const hasFormulas = formulas !== null && formulas.length > 0;
+
+  const [query, setQuery] = useState("");
+  const [styleFilter, setStyleFilter] = useState("All");
+
+  const styleOptions = useMemo(
+    () => ["All", ...Array.from(new Set((formulas ?? []).map((f) => f.style)))],
+    [formulas],
+  );
+
+  const filtered = useMemo(() => {
+    if (!formulas) return [];
+    const q = query.trim().toLowerCase();
+    return formulas.filter((f) => {
+      if (styleFilter !== "All" && f.style !== styleFilter) return false;
+      if (!q) return true;
+      return `${f.name} ${f.style}`.toLowerCase().includes(q);
+    });
+  }, [formulas, query, styleFilter]);
 
   return (
     <main className={styles.main}>
@@ -98,11 +118,35 @@ export default function Home() {
       <section className={styles.lib} id="vault">
         <div className={styles.libHead}>
           <h2 className={styles.libTitle}>The vault</h2>
-          <Link href="/new" className={styles.libLink}>
-            Start a batch
-            <Icon name="arrow" size={16} />
-          </Link>
+          {hasFormulas && (
+            <div className={styles.searchbar}>
+              <Search size={18} strokeWidth={2} />
+              <input
+                className={styles.search}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search formulas…"
+                aria-label="Search formulas"
+              />
+            </div>
+          )}
         </div>
+
+        {hasFormulas && styleOptions.length > 2 && (
+          <div className={styles.filterRow}>
+            {styleOptions.map((s) => (
+              <Pill
+                key={s}
+                tone={styleFilter === s ? "ink" : "ghost"}
+                size="sm"
+                active={styleFilter === s}
+                onClick={() => setStyleFilter(s)}
+              >
+                {s}
+              </Pill>
+            ))}
+          </div>
+        )}
 
         {!hasFormulas ? (
           <div className={styles.empty}>
@@ -112,9 +156,13 @@ export default function Home() {
               <Icon name="arrow" size={16} />
             </Link>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className={styles.empty}>
+            <p className={styles.emptyText}>No formulas match.</p>
+          </div>
         ) : (
           <div className={styles.grid}>
-            {formulas.map((formula, idx) => {
+            {filtered.map((formula, idx) => {
               const ratios = computeRatios(formula.state);
               const fatPct = Math.round(ratios.fat * 100);
               const sugarPct = Math.round(ratios.sugar * 100);
