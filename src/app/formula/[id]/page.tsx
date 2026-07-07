@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Menu, Home, Moon, Sun, Settings, RotateCcw } from "lucide-react";
+import { Menu, Home, Moon, Sun, Settings, RotateCcw, X } from "lucide-react";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
 import { RecipePanel } from "@/components/recipe/RecipePanel";
 import { MacrosPanel } from "@/components/formula/MacrosPanel";
@@ -260,26 +260,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
         </div>
       </header>
 
-      {showConfig ? (
-        <div className={styles.content}>
-          <button className={styles.configBack} type="button" onClick={() => setShowConfig(false)}>
-            ← Back to workspace
-          </button>
-          <ConfigPanel
-            formulaName={meta.name}
-            formulaStyle={meta.style}
-            recipe={ws.recipe}
-            onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
-            onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
-            onPresetChange={handlePresetChange}
-            onCustomPreset={handleCustomPreset}
-            onAddMilkIngredient={handleAddMilkIngredient}
-            onRemoveMilkIngredient={handleRemoveMilkIngredient}
-            onOpenIngredientSelector={openSelector}
-          />
-        </div>
-      ) : (
-        <div className={styles.content}>
+      <div className={styles.content}>
           {editName ? (
             <input
               autoFocus
@@ -319,6 +300,38 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               onMacroTarget={onMacroTarget}
               onRebalance={onRebalance}
             />
+          </div>
+        </div>
+
+      {showConfig && (
+        <div className={styles.configModal} role="dialog" aria-modal="true">
+          <div className={styles.configScrim} onClick={() => setShowConfig(false)} />
+          <div className={styles.configSheet}>
+            <div className={styles.configHead}>
+              <span className={styles.configTitle}>Config</span>
+              <button
+                className={styles.iconBtn}
+                type="button"
+                aria-label="Close config"
+                onClick={() => setShowConfig(false)}
+              >
+                <X size={20} strokeWidth={2} />
+              </button>
+            </div>
+            <div className={styles.configBody}>
+              <ConfigPanel
+                formulaName={meta.name}
+                formulaStyle={meta.style}
+                recipe={ws.recipe}
+                onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
+                onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
+                onPresetChange={handlePresetChange}
+                onCustomPreset={handleCustomPreset}
+                onAddMilkIngredient={handleAddMilkIngredient}
+                onRemoveMilkIngredient={handleRemoveMilkIngredient}
+                onOpenIngredientSelector={openSelector}
+              />
+            </div>
           </div>
         </div>
       )}
