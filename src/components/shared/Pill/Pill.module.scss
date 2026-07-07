@@ -1,0 +1,106 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid var(--ink);
+  background: var(--paper-2);
+  color: var(--ink);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  white-space: nowrap;
+  transition: transform 0.15s cubic-bezier(0.34, 1.45, 0.64, 1),
+    background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.pill:hover {
+  transform: translateY(-2px);
+}
+
+.pill:active {
+  transform: translateY(0);
+}
+
+.size_sm {
+  padding: 7px 13px;
+  font-size: 12.5px;
+}
+
+.size_md {
+  padding: 10px 17px;
+  font-size: 14.5px;
+}
+
+.size_lg {
+  padding: 14px 24px;
+  font-size: 17px;
+  border-width: 2.5px;
+}
+
+.tone_ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.tone_ghost:hover {
+  border-color: var(--ink);
+}
+
+.tone_ink {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.tone_accent {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.tone_surface {
+  background: var(--paper-2);
+}
+
+.tone_pink {
+  background: var(--c-pink);
+  color: #3a1220;
+  border-color: #3a1220;
+}
+
+.tone_mint {
+  background: var(--c-mint);
+  color: #0d3324;
+  border-color: #0d3324;
+}
+
+.tone_yellow {
+  background: var(--c-yellow);
+  color: #3d2c00;
+  border-color: #3d2c00;
+}
+
+.tone_sky {
+  background: var(--c-sky);
+  color: #08303f;
+  border-color: #08303f;
+}
+
+.tone_peach {
+  background: var(--c-peach);
+  color: #43260a;
+  border-color: #43260a;
+}
+
+.tone_lilac {
+  background: var(--c-lilac);
+  color: #241645;
+  border-color: #241645;
+}
+
+.active {
+  background: var(--ink);
+  color: var(--paper);
+}

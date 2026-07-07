@@ -1,0 +1,6 @@
+.dot {
+  display: inline-block;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in oklab, var(--ink) 55%, transparent);
+  flex: none;
+}
