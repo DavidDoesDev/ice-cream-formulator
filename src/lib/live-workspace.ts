@@ -166,13 +166,18 @@ export function setTraceMacro(
   if (srcIdx < 0) return ws;
 
   const f = deps.getPreset(mixes[srcIdx].presetId)!.effectiveMacros[macro];
+  const Y = ws.yieldGrams;
+  // Grams of source needed to hit the target fraction of the fixed yield; the
+  // rest of the batch scales to fill the remainder, so the yield stays put.
+  const sourceGrams = f <= target ? Y : Math.max(0, Math.min(Y, (target * Y) / f));
   const otherGrams = totalGrams(ws.recipe) - mixes[srcIdx].grams;
-  // newGrams * f / (otherGrams + newGrams) = target  →  solve for newGrams.
-  const newGrams = f - target <= 1e-6 ? otherGrams * 10 : Math.max(0, (target * otherGrams) / (f - target));
+  const scale = otherGrams > 1e-9 ? (Y - sourceGrams) / otherGrams : 0;
 
-  const smartMixes = mixes.map((m, i) => (i === srcIdx ? { ...m, grams: newGrams } : m));
-  const recipe = { ...ws.recipe, smartMixes };
-  return { recipe, yieldGrams: totalGrams(recipe) };
+  const smartMixes = mixes.map((m, i) =>
+    i === srcIdx ? { ...m, grams: sourceGrams } : { ...m, grams: m.grams * scale },
+  );
+  const additionalIngredients = ws.recipe.additionalIngredients.map((a) => ({ ...a, grams: a.grams * scale }));
+  return { recipe: { ...ws.recipe, smartMixes, additionalIngredients }, yieldGrams: Y };
 }
 
 // Explicit yield change: scale every gram so the whole batch grows or shrinks.

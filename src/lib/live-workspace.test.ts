@@ -106,7 +106,7 @@ describe("live workspace binding", () => {
     expect(workspaceRatios(ws1, deps).stabilizer).toBeCloseTo(0.005, 3);
   });
 
-  it("doses emulsifier via its (fatty) source once activated, growing the batch", () => {
+  it("doses emulsifier to its target while holding the batch yield", () => {
     const seed = seededWorkspace();
     const ws0: LiveWorkspace = {
       ...seed,
@@ -120,7 +120,7 @@ describe("live workspace binding", () => {
     };
     const ws1 = setTraceMacro(ws0, "emulsifier", 0.004, deps);
     expect(workspaceRatios(ws1, deps).emulsifier).toBeCloseTo(0.004, 3);
-    expect(totalGrams(ws1.recipe)).toBeGreaterThan(ws0.yieldGrams); // lecithin added → batch grew
+    expect(totalGrams(ws1.recipe)).toBeCloseTo(ws0.yieldGrams, 0); // yield held, batch redistributed
   });
 
   it("rebalances an out-of-bound formula back into every macro's bounds", () => {
