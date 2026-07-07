@@ -134,7 +134,13 @@ export function solveRecipe(
 
   // --- 4. Projected gradient descent (NNLS) ---
   const lr = 1 / (2 * (frobeniusSq(A) + 1e-10));
-  let x = Array<number>(n).fill(yieldRemaining / n);
+  // Warm-start from the current grams so the descent settles on the solution
+  // nearest the existing recipe (minimal change), rather than re-deriving from a
+  // uniform split. This keeps a live slider edit from lurching every other
+  // ingredient — the objective is convex, so the target accuracy is unchanged;
+  // only which solution in the underdetermined nullspace is selected.
+  let x = activeIdx.map((gi) => Math.max(0, smartMixes[gi].grams));
+  if (x.reduce((s, v) => s + v, 0) <= 1e-9) x = Array<number>(n).fill(yieldRemaining / n);
 
   const MAX_ITER = 3000;
   const TOL = 1e-8;

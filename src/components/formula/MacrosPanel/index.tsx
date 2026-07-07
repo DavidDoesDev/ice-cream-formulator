@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { type MacroRatios } from "@/lib/formula-engine";
 import { sliderGeometry } from "@/lib/macro-bands";
 import { balanceReport } from "@/lib/balance";
@@ -49,6 +50,11 @@ export function MacrosPanel({
   onMacroTarget,
   onRebalance,
 }: MacrosPanelProps) {
+  // While a slider is actively dragged, its thumb follows the pointer's target
+  // value rather than the solved ratio — so it can't fight the continuous solve.
+  // Other sliders still reflect the live solved ratios. Cleared on release.
+  const [drag, setDrag] = useState<{ key: MacroKey; value: number } | null>(null);
+
   const report = balanceReport(ratios, baseRatios);
   const offChecks = report.checks.filter((c) => c.verdict !== "ok");
   return (
@@ -66,7 +72,10 @@ export function MacrosPanel({
       <SectionHeader role="composition" label="Composition" />
 
       {SLIDERS.map(({ key, label }) => {
-        const g = sliderGeometry(key, ratios[key], baseRatios[key]);
+        const dragging = drag?.key === key;
+        // The dragged slider shows the pointer's target; others show solved ratios.
+        const shown = dragging ? drag!.value : ratios[key];
+        const g = sliderGeometry(key, shown, baseRatios[key]);
         return (
           <div key={key} className={styles.sliderRow}>
             <span className={styles.sliderKey}>
@@ -87,11 +96,18 @@ export function MacrosPanel({
                 step="any"
                 value={g.value}
                 aria-label={label}
-                onChange={(e) => onMacroTarget(key, parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const raw = parseFloat(e.target.value);
+                  setDrag({ key, value: raw });
+                  onMacroTarget(key, raw);
+                }}
+                onPointerUp={() => setDrag(null)}
+                onPointerCancel={() => setDrag(null)}
+                onBlur={() => setDrag(null)}
               />
             </span>
             <span className={`${styles.sliderVal} ${g.inRange ? "" : styles.valOut}`}>
-              {formatPercent(ratios[key] * 100)}%
+              {formatPercent(shown * 100)}%
             </span>
           </div>
         );
