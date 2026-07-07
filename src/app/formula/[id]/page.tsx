@@ -20,6 +20,7 @@ import {
   setMixGrams,
   setAdditionalGrams,
   setMacroTarget,
+  setTraceMacro,
   setYield,
   addAdditionalIngredient,
   removeAdditionalIngredient,
@@ -36,6 +37,9 @@ import styles from "./page.module.scss";
 
 // Empty-by-default mixes that activate a real ingredient the first time their
 // slider rises above zero.
+// Trace additives placed directly from a single source, not via the solve.
+const TRACE_MACROS = new Set<keyof MacroRatios>(["stabilizer", "emulsifier"]);
+
 const AUTO_ACTIVATE: Partial<
   Record<keyof MacroRatios, { kind: SmartMixKind; label: string; empty: string; default: string }>
 > = {
@@ -157,7 +161,12 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
             : [...mixes, { kind: auto.kind, label: auto.label, presetId: auto.default, grams: 0 }];
           cur = { ...cur, recipe: { ...cur.recipe, smartMixes: next } };
         }
-        return setMacroTarget(cur, macro, target, deps);
+        // Trace additives (stabilizer, emulsifier) come from a single source, so
+        // dose that source directly instead of routing through the whole-recipe
+        // solve (which washes trace targets out and can't place them).
+        return TRACE_MACROS.has(macro)
+          ? setTraceMacro(cur, macro, target, deps)
+          : setMacroTarget(cur, macro, target, deps);
       });
     },
     [deps],

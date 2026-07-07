@@ -126,6 +126,32 @@ export function rebalanceWorkspace(ws: LiveWorkspace, deps: WorkspaceDeps): Live
   return cur;
 }
 
+// Directly dose a trace macro (stabilizer, emulsifier) by setting its source
+// mix's grams to hit the target fraction exactly — holding every other
+// ingredient fixed, so the batch follows. Deterministic and always placeable,
+// unlike routing a trace target through the whole-recipe solve (which the big
+// macros dominate). For a fat-carrying source (lecithin) the batch grows and
+// fat rises with it — an honest consequence, not a fight.
+export function setTraceMacro(
+  ws: LiveWorkspace,
+  macro: keyof MacroRatios,
+  target: number,
+  deps: WorkspaceDeps,
+): LiveWorkspace {
+  const mixes = ws.recipe.smartMixes;
+  const srcIdx = mixes.findIndex((m) => (deps.getPreset(m.presetId)?.effectiveMacros[macro] ?? 0) > 0);
+  if (srcIdx < 0) return ws;
+
+  const f = deps.getPreset(mixes[srcIdx].presetId)!.effectiveMacros[macro];
+  const otherGrams = totalGrams(ws.recipe) - mixes[srcIdx].grams;
+  // newGrams * f / (otherGrams + newGrams) = target  →  solve for newGrams.
+  const newGrams = f - target <= 1e-6 ? otherGrams * 10 : Math.max(0, (target * otherGrams) / (f - target));
+
+  const smartMixes = mixes.map((m, i) => (i === srcIdx ? { ...m, grams: newGrams } : m));
+  const recipe = { ...ws.recipe, smartMixes };
+  return { recipe, yieldGrams: totalGrams(recipe) };
+}
+
 // Explicit yield change: scale every gram so the whole batch grows or shrinks.
 export function setYield(ws: LiveWorkspace, yieldGrams: number): LiveWorkspace {
   const current = totalGrams(ws.recipe);

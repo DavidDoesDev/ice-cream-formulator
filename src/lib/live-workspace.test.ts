@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { solveRecipe } from "./recipe-solver";
 import {
   setMacroTarget,
+  setTraceMacro,
   setMixGrams,
   addAdditionalIngredient,
   removeAdditionalIngredient,
@@ -86,6 +87,30 @@ describe("live workspace binding", () => {
     const ws1 = removeAdditionalIngredient(ws0, "cocoa");
     expect(ws1.recipe.additionalIngredients.some((a) => a.ingredientId === "cocoa")).toBe(false);
     expect(ws1.yieldGrams).toBeCloseTo(1000, 0);
+  });
+
+  it("places a trace macro exactly at its target by dosing its pure source", () => {
+    // stabilizer's source (stab-modernist) is 100% stabilizer — dosing it hits
+    // the target exactly, unlike the whole-recipe solve which washes it out.
+    const ws1 = setTraceMacro(seededWorkspace(), "stabilizer", 0.005, deps);
+    expect(workspaceRatios(ws1, deps).stabilizer).toBeCloseTo(0.005, 3);
+  });
+
+  it("doses emulsifier via its (fatty) source once activated, growing the batch", () => {
+    const seed = seededWorkspace();
+    const ws0: LiveWorkspace = {
+      ...seed,
+      recipe: {
+        ...seed.recipe,
+        smartMixes: [
+          ...seed.recipe.smartMixes,
+          { kind: "emulsifier", label: "Emulsifier", presetId: "emulsifier-lecithin", grams: 0 },
+        ],
+      },
+    };
+    const ws1 = setTraceMacro(ws0, "emulsifier", 0.004, deps);
+    expect(workspaceRatios(ws1, deps).emulsifier).toBeCloseTo(0.004, 3);
+    expect(totalGrams(ws1.recipe)).toBeGreaterThan(ws0.yieldGrams); // lecithin added → batch grew
   });
 
   it("rebalances an out-of-bound formula back into every macro's bounds", () => {
