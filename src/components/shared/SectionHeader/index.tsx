@@ -7,6 +7,7 @@ const ROLE_COLOR = {
   specific: "var(--c-lilac)",
   yield: "var(--c-yellow)",
   notes: "var(--c-mint)",
+  balance: "var(--c-mint)",
 } as const;
 
 export type SectionRole = keyof typeof ROLE_COLOR;

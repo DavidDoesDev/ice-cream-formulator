@@ -149,6 +149,58 @@
   color: var(--accent);
 }
 
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.score {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+}
+
+.scoreOk {
+  background: var(--c-mint);
+  color: #0d3324;
+  border-color: #0d3324;
+}
+
+.scoreNote {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.advice {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.adviceRow {
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.adviceRow b {
+  font-family: var(--font-display);
+}
+
 .conflict {
   display: flex;
   align-items: center;

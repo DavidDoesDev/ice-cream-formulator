@@ -2,6 +2,7 @@
 
 import { type MacroRatios } from "@/lib/formula-engine";
 import { sliderGeometry } from "@/lib/macro-bands";
+import { balanceReport } from "@/lib/balance";
 import { formatPercent } from "@/lib/measure";
 import { PintCup } from "@/components/shared/PintCup";
 import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
@@ -48,6 +49,8 @@ export function MacrosPanel({
   onMacroTarget,
   onRebalance,
 }: MacrosPanelProps) {
+  const report = balanceReport(ratios, baseRatios);
+  const offChecks = report.checks.filter((c) => c.verdict !== "ok");
   return (
     <section className={styles.panel}>
       <div className={styles.bar}>
@@ -94,10 +97,36 @@ export function MacrosPanel({
         );
       })}
 
+      <SectionHeader role="balance" label="Balance check" />
+      <div className={styles.scoreRow}>
+        <span className={`${styles.score} ${report.balanced ? styles.scoreOk : ""}`}>
+          {report.balanced ? (
+            <>
+              <Icon name="check" size={14} /> Balanced
+            </>
+          ) : (
+            `${report.inRange} / ${report.total} in range`
+          )}
+        </span>
+        <span className={styles.scoreNote}>
+          each macro checked against its window for a {style.toLowerCase()}
+        </span>
+      </div>
+
+      {offChecks.length > 0 && (
+        <div className={styles.advice}>
+          {offChecks.map((c) => (
+            <div key={c.key} className={styles.adviceRow}>
+              <b>{c.label}</b> — {c.advice}
+            </div>
+          ))}
+        </div>
+      )}
+
       {conflict && (
         <div className={styles.conflict}>
           <span className={styles.conflictMsg}>
-            <Icon name="bolt" size={16} /> Out of balance for a {style.toLowerCase()}.
+            <Icon name="bolt" size={16} /> Can&apos;t hit that target with these ingredients.
           </span>
           <Pill tone="accent" size="sm" onClick={onRebalance}>
             Rebalance
