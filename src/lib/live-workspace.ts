@@ -63,25 +63,51 @@ export function setAdditionalGrams(
 // Macro-slider change: re-solve the smart-mix grams to hit the new target while
 // holding the current yield. Other macros move to make room (the solver settles
 // on the least-change grams); the yield is invariant.
-// Solve the blend (non-trace) mixes toward a target ratio vector, holding the
-// trace additives fixed and the batch yield exact. The one place the solver runs.
-function solveBlend(ws: LiveWorkspace, targets: MacroRatios, deps: WorkspaceDeps): LiveWorkspace {
+// Mixes that are a single, independent macro's pure source. Dragging any other
+// macro must leave these untouched — they don't share ingredients with the
+// coupled dairy group (fat / milk-solids / water).
+const PURE_KIND_MACRO: Partial<Record<SmartMixKind, keyof MacroRatios>> = {
+  sugar: "sugar",
+  stabilizer: "stabilizer",
+  emulsifier: "emulsifier",
+  alcohol: "alcohol",
+};
+
+// Solve the blend toward a target vector, holding every pure independent mix
+// fixed except the one being dragged, and freeing water (plus the dragged
+// macro's coupled partner) so the change is absorbed there instead of smeared
+// across the independent macros. The batch yield stays exact.
+function solveBlend(
+  ws: LiveWorkspace,
+  targets: MacroRatios,
+  deps: WorkspaceDeps,
+  dragged?: keyof MacroRatios,
+): LiveWorkspace {
   const mixes = ws.recipe.smartMixes;
-  const heldGrams = mixes.filter((m) => TRACE_KINDS.has(m.kind)).reduce((s, m) => s + m.grams, 0);
-  const solveMixes = mixes.filter((m) => !TRACE_KINDS.has(m.kind));
+  const isHeld = (m: SmartMix) => {
+    const pm = PURE_KIND_MACRO[m.kind];
+    return pm !== undefined && pm !== dragged;
+  };
+  const held = mixes.filter(isHeld);
+  const solveMixes = mixes.filter((m) => !isHeld(m));
+
+  const free: (keyof MacroRatios)[] = ["water"];
+  if (dragged === "fat") free.push("nonfatSolids");
+  else if (dragged === "nonfatSolids") free.push("fat");
+
   const solved = solveRecipe(
     targets,
-    ws.yieldGrams - heldGrams,
+    ws.yieldGrams,
     ws.recipe.additionalIngredients,
     solveMixes,
     deps.getPreset,
     deps.resolveIngredient,
+    free,
+    held,
   );
   const gramsFor = new Map<SmartMix, number>();
   solveMixes.forEach((m, i) => gramsFor.set(m, solved[i].grams));
-  const smartMixes = mixes.map((m) =>
-    TRACE_KINDS.has(m.kind) ? m : { ...m, grams: gramsFor.get(m) ?? m.grams },
-  );
+  const smartMixes = mixes.map((m) => (isHeld(m) ? m : { ...m, grams: gramsFor.get(m) ?? m.grams }));
   return { ...ws, recipe: { ...ws.recipe, smartMixes } };
 }
 
@@ -91,7 +117,7 @@ export function setMacroTarget(
   target: number,
   deps: WorkspaceDeps,
 ): LiveWorkspace {
-  return solveBlend(ws, { ...workspaceRatios(ws, deps), [macro]: target }, deps);
+  return solveBlend(ws, { ...workspaceRatios(ws, deps), [macro]: target }, deps, macro);
 }
 
 // Add an additional (individual) ingredient; the batch grows by its grams.
@@ -121,32 +147,51 @@ export function removeAdditionalIngredient(
   return { recipe, yieldGrams: totalGrams(recipe) };
 }
 
-// Pull every out-of-bound macro back to its nearest healthy bound. Macros are
-// coupled at fixed yield, so clamping one perturbs others — re-check and repeat
-// until the whole formula sits inside its bounds (or passes run out).
+// Pull every out-of-bound macro back to its nearest healthy bound. Trace
+// additives are dosed directly (the solver can't nail them); everything else is
+// solved at once toward the clamped vector, holding only trace and freeing water.
 export function rebalanceWorkspace(ws: LiveWorkspace, deps: WorkspaceDeps): LiveWorkspace {
-  // Trace additives are dosed directly (the solve can't nail them); blend macros
-  // are clamped as a vector and solved at once (clamping one at a time
-  // oscillates, since the macros are coupled). A few passes settle it.
   let cur = ws;
-  for (let pass = 0; pass < 4; pass++) {
-    if (!workspaceConflict(cur, deps)) break;
-    const rTrace = workspaceRatios(cur, deps);
-    for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
-      const [min, max] = MACRO_BOUNDS[macro];
-      if (rTrace[macro] > max + 1e-6 || rTrace[macro] < min - 1e-6) {
-        cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, rTrace[macro])), deps);
-      }
+
+  // 1. Dose out-of-bound trace additives to their bound.
+  const r0 = workspaceRatios(cur, deps);
+  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+    const [min, max] = MACRO_BOUNDS[macro];
+    if (r0[macro] > max + 1e-6 || r0[macro] < min - 1e-6) {
+      cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, r0[macro])), deps);
     }
-    const r = workspaceRatios(cur, deps);
-    const targets = { ...r };
-    for (const k of MACRO_KEYS) {
-      const [min, max] = MACRO_BOUNDS[k];
-      targets[k] = Math.max(min, Math.min(max, r[k]));
-    }
-    cur = solveBlend(cur, targets, deps);
   }
-  return cur;
+
+  // 2. Solve all blend mixes (sugar / alcohol / dairy) toward the clamped target
+  //    vector, holding only trace and letting water absorb.
+  const r = workspaceRatios(cur, deps);
+  const targets = { ...r };
+  for (const k of MACRO_KEYS) {
+    const [min, max] = MACRO_BOUNDS[k];
+    // Aim just inside the bound so the least-squares residual still lands in range.
+    const margin = (max - min) * 0.03;
+    if (r[k] < min) targets[k] = min + margin;
+    else if (r[k] > max) targets[k] = max - margin;
+  }
+  const mixes = cur.recipe.smartMixes;
+  const heldTrace = mixes.filter((m) => TRACE_KINDS.has(m.kind));
+  const solveMixes = mixes.filter((m) => !TRACE_KINDS.has(m.kind));
+  const solved = solveRecipe(
+    targets,
+    cur.yieldGrams,
+    cur.recipe.additionalIngredients,
+    solveMixes,
+    deps.getPreset,
+    deps.resolveIngredient,
+    ["water"],
+    heldTrace,
+  );
+  const gramsFor = new Map<SmartMix, number>();
+  solveMixes.forEach((m, i) => gramsFor.set(m, solved[i].grams));
+  const smartMixes = mixes.map((m) =>
+    TRACE_KINDS.has(m.kind) ? m : { ...m, grams: gramsFor.get(m) ?? m.grams },
+  );
+  return { ...cur, recipe: { ...cur.recipe, smartMixes } };
 }
 
 // Directly dose a trace macro (stabilizer, emulsifier) by setting its source

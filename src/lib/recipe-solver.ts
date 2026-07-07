@@ -92,9 +92,13 @@ export function solveRecipe(
   smartMixes: SmartMix[],
   getPreset: (id: string) => MixPreset | undefined,
   resolveIngredient: (id: string) => IngredientMacros | undefined = () => undefined,
+  freeMacros: (keyof IngredientMacros)[] = [],
+  fixedMixes: SmartMix[] = [],
 ): SmartMix[] {
-  // --- 1. Compute fixed macro contributions from additional ingredients ---
-  const additionalGrams = additionals.reduce((s, a) => s + a.grams, 0);
+  // --- 1. Compute fixed macro contributions from additional ingredients and
+  // any held smart mixes. Targets stay against the full yield; these fixed
+  // grams just leave less for the solved mixes to fill. ---
+  let fixedGrams = additionals.reduce((s, a) => s + a.grams, 0);
   const addMacros: IngredientMacros = {
     fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0,
     emulsifier: 0, alcohol: 0, water: 0,
@@ -104,8 +108,14 @@ export function solveRecipe(
     if (!m) continue;
     for (const k of MACROS) addMacros[k] += m[k] * grams;
   }
+  for (const mix of fixedMixes) {
+    const p = getPreset(mix.presetId);
+    if (!p) continue;
+    for (const k of MACROS) addMacros[k] += p.effectiveMacros[k] * mix.grams;
+    fixedGrams += mix.grams;
+  }
 
-  const yieldRemaining = yieldGrams - additionalGrams;
+  const yieldRemaining = yieldGrams - fixedGrams;
 
   // --- 2. Identify active mixes (non-zero effective macros) ---
   const presets = smartMixes.map((m) => getPreset(m.presetId));
@@ -123,11 +133,17 @@ export function solveRecipe(
   const activeMacros = activeIdx.map((i) => macroVec(presets[i]!.effectiveMacros));
 
   // --- 3. Build augmented system: macro rows + yield-conservation row ---
+  // Free macros (e.g. water) are left unconstrained so they absorb the change
+  // instead of fighting it; the yield row still pins the total.
+  const constrained = MACROS.filter((k) => !freeMacros.includes(k));
   // Target grams per macro = target ratio × totalYield − fixed additional contribution
-  const targetGrams = MACROS.map((k) => targets[k] * yieldGrams - addMacros[k]);
+  const targetGrams = constrained.map((k) => targets[k] * yieldGrams - addMacros[k]);
 
   const A: number[][] = [
-    ...MACROS.map((_, ki) => activeMacros.map((mv) => mv[ki])),
+    ...constrained.map((k) => {
+      const ki = MACROS.indexOf(k);
+      return activeMacros.map((mv) => mv[ki]);
+    }),
     Array(n).fill(YIELD_WEIGHT),           // yield row
   ];
   const b: number[] = [...targetGrams, YIELD_WEIGHT * yieldRemaining];
@@ -142,7 +158,7 @@ export function solveRecipe(
   let x = activeIdx.map((gi) => Math.max(0, smartMixes[gi].grams));
   if (x.reduce((s, v) => s + v, 0) <= 1e-9) x = Array<number>(n).fill(yieldRemaining / n);
 
-  const MAX_ITER = 3000;
+  const MAX_ITER = 30000;
   const TOL = 1e-8;
   for (let iter = 0; iter < MAX_ITER; iter++) {
     const grad = matTVec(A, vecSub(matVec(A, x), b)).map((v) => 2 * v);
