@@ -12,6 +12,8 @@ import { Pill } from "@/components/shared/Pill";
 import { Icon } from "@/components/shared/Icon";
 import styles from "./MacrosPanel.module.scss";
 
+const SLIDER_SCALE = 1000;
+
 const SLIDERS: { key: MacroKey; label: string }[] = [
   { key: "fat", label: "Fat" },
   { key: "sugar", label: "Sugar" },
@@ -75,6 +77,12 @@ export function MacrosPanel({
         // The dragged slider shows the pointer's target; others show solved ratios.
         const shown = dragging ? drag!.value : ratios[key];
         const g = sliderGeometry(key, shown, baseRatios[key]);
+        // Run the native input on a 0–1000 scale and map to the macro's range —
+        // the browser mishandles very small float ranges (e.g. stabilizer 0–0.008),
+        // silently dropping input events. This keeps every slider responsive.
+        const span = g.max - g.min;
+        const toPos = (v: number) => (span > 0 ? ((v - g.min) / span) * SLIDER_SCALE : 0);
+        const fromPos = (p: number) => g.min + (p / SLIDER_SCALE) * span;
         return (
           <div key={key} className={styles.sliderRow}>
             <span className={styles.sliderKey}>
@@ -90,13 +98,13 @@ export function MacrosPanel({
               <input
                 type="range"
                 className={styles.slider}
-                min={g.min}
-                max={g.max}
+                min={0}
+                max={SLIDER_SCALE}
                 step="any"
-                value={g.value}
+                value={toPos(g.value)}
                 aria-label={label}
                 onChange={(e) => {
-                  const raw = parseFloat(e.target.value);
+                  const raw = fromPos(parseFloat(e.target.value));
                   setDrag({ key, value: raw });
                   onMacroTarget(key, raw);
                 }}
@@ -105,20 +113,10 @@ export function MacrosPanel({
                 onBlur={() => setDrag(null)}
               />
             </span>
-            <span className={`${styles.sliderVal} ${g.inRange ? "" : styles.valOut}`}>
-              {formatPercent(shown * 100)}%
-            </span>
+            <span className={styles.sliderVal}>{formatPercent(shown * 100)}%</span>
           </div>
         );
       })}
-
-      <div className={styles.waterRow}>
-        <span className={styles.sliderKey}>
-          <MacroDot macro="water" /> Water
-        </span>
-        <span className={styles.waterVal}>{formatPercent(ratios.water * 100)}%</span>
-        <span className={styles.waterNote}>inferred</span>
-      </div>
 
       <SectionHeader role="balance" label="Balance check" />
       <div className={styles.scoreRow}>
