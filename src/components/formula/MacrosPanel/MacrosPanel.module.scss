@@ -90,14 +90,14 @@
   background: color-mix(in oklab, var(--ink) 28%, transparent);
 }
 
-// Healthy-window edge ticks — drawn above the fill and thumb so the target
-// window stays visible no matter where the value sits.
+// Healthy-window edge ticks — above the fill but below the thumb, so a handle
+// parked on a boundary sits on top of the tick rather than being clipped by it.
 .tick {
   position: absolute;
   top: -3px;
   bottom: -3px;
   width: 2px;
-  z-index: 3;
+  z-index: 2;
   transform: translateX(-1px);
   background: var(--ink);
   border-radius: 2px;
@@ -107,7 +107,7 @@
 .slider {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   width: 100%;
   height: 100%;
   margin: 0;

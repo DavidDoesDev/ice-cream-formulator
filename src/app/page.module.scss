@@ -13,14 +13,17 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  border: 2.5px solid var(--line);
+  // Reversed sticker: green fill with blue accent text/icon (the accent is the
+  // same blue as the dark-mode background).
+  background: var(--c-mint);
+  border: 2.5px solid var(--accent);
   border-radius: var(--radius-pill);
   padding: 12px 22px;
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
   margin-bottom: 4px;
 }
 
@@ -31,7 +34,7 @@
   font-size: clamp(58px, 12.5vw, 178px);
   line-height: 0.82;
   letter-spacing: -0.005em;
-  margin: calc(10px * var(--u)) 0 calc(36px * var(--u));
+  margin: calc(18px * var(--u)) 0 calc(36px * var(--u));
 }
 
 .titleRow {
@@ -151,8 +154,6 @@
   margin: calc(44px * var(--u)) 0 calc(44px * var(--u)) calc(50% - 54vw);
   overflow: hidden;
   background: var(--c-yellow);
-  border-top: 2.5px solid var(--ink);
-  border-bottom: 2.5px solid var(--ink);
   transform: rotate(-2deg);
 }
 
@@ -170,7 +171,7 @@
   display: inline-flex;
   align-items: center;
   gap: 22px;
-  padding: 12px 26px;
+  padding: 18px 26px;
   color: #1a1024;
 }
 
@@ -183,7 +184,7 @@
 }
 
 .marqueeItem :global(svg) {
-  color: var(--accent);
+  color: #1a1024;
 }
 
 @keyframes marqmove {

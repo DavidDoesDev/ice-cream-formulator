@@ -105,7 +105,7 @@
   font-size: clamp(36px, 7vw, 84px);
   line-height: 0.86;
   color: var(--ink);
-  margin: 0 0 calc(20px * var(--u));
+  margin: 0 0 calc(32px * var(--u));
   cursor: text;
 }
 
@@ -121,7 +121,7 @@
   border-bottom: 3px solid var(--ink);
   outline: 0;
   padding: 0;
-  margin: 0 0 calc(20px * var(--u));
+  margin: 0 0 calc(32px * var(--u));
 }
 
 .work {
