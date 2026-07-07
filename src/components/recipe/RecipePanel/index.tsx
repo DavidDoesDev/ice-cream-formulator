@@ -19,6 +19,14 @@ function mixLabel(mix: SmartMix): string {
   return getPresetById(mix.presetId)?.name ?? mix.label;
 }
 
+// Common flavor additions offered as one-tap pills (skipped once already added).
+const QUICK: { id: string; label: string }[] = [
+  { id: "egg-yolk", label: "Yolk" },
+  { id: "cocoa-powder", label: "Cocoa" },
+  { id: "dark-chocolate", label: "Dark choc" },
+  { id: "peanut-butter", label: "Peanut" },
+];
+
 interface RecipePanelProps {
   recipe: Recipe;
   yieldGrams: number;
@@ -30,6 +38,7 @@ interface RecipePanelProps {
   onAdditionalNote: (ingredientId: string, note: string) => void;
   onRemoveAdditional: (ingredientId: string) => void;
   onAddIngredient: () => void;
+  onQuickAdd: (ingredientId: string) => void;
   onYield: (grams: number) => void;
   onNotes: (notes: string) => void;
 }
@@ -46,6 +55,7 @@ export function RecipePanel({
   onAdditionalNote,
   onRemoveAdditional,
   onAddIngredient,
+  onQuickAdd,
   onYield,
   onNotes,
 }: RecipePanelProps) {
@@ -53,6 +63,8 @@ export function RecipePanel({
     (m) => (getPresetById(m.presetId)?.ingredients.length ?? 0) > 0,
   );
   const count = activeMixes.length + recipe.additionalIngredients.length;
+  const present = new Set(recipe.additionalIngredients.map((a) => a.ingredientId));
+  const quick = QUICK.filter((q) => !present.has(q.id)).slice(0, 3);
 
   return (
     <section className={styles.panel}>
@@ -98,6 +110,12 @@ export function RecipePanel({
         <Pill tone="accent" size="md" onClick={onAddIngredient}>
           <Icon name="plus" size={16} /> Add ingredient
         </Pill>
+        {quick.length > 0 && <span className={styles.tryLabel}>Try</span>}
+        {quick.map((q) => (
+          <Pill key={q.id} tone="ghost" size="md" onClick={() => onQuickAdd(q.id)}>
+            + {q.label}
+          </Pill>
+        ))}
       </div>
 
       <SectionHeader role="yield" label="Batch yield" />

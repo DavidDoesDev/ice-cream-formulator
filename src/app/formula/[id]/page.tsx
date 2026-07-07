@@ -142,6 +142,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const onAddIngredient = useCallback(() => {
     openSelector("general", (ing) => setWs((w) => addAdditionalIngredient(w, ing.id, ing.grams)));
   }, [openSelector]);
+  const onQuickAdd = useCallback((id: string) => setWs((w) => addAdditionalIngredient(w, id, 40)), []);
 
   // --- Macro (slider) edits: continuous, yield-conserving, with auto-activate ---
   const onMacroTarget = useCallback(
@@ -306,6 +307,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               onAdditionalNote={onAdditionalNote}
               onRemoveAdditional={onRemoveAdditional}
               onAddIngredient={onAddIngredient}
+              onQuickAdd={onQuickAdd}
               onYield={onYield}
               onNotes={setNotes}
             />

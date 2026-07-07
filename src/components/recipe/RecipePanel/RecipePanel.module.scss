@@ -70,7 +70,20 @@
 }
 
 .addRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-top: 18px;
+}
+
+.tryLabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-left: 2px;
 }
 
 .yieldRow {
