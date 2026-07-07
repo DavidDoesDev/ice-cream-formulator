@@ -70,32 +70,39 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--accent);
-  color: #fff;
-  border: 2.5px solid var(--accent);
+  // Ink fill + paper text contrasts in both themes (accent-on-accent went
+  // invisible in dark, and the ink-colored offset shadow matched the accent
+  // button in light).
+  background: var(--ink);
+  color: var(--paper);
+  border: 2.5px solid var(--ink);
   border-radius: var(--radius-pill);
   padding: 14px 24px;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 17px;
   text-decoration: none;
-  box-shadow: var(--sh);
+  box-shadow: 0 6px 20px -8px color-mix(in oklab, var(--ink) 55%, transparent);
   transition: transform var(--duration-fast) var(--ease-jelly), box-shadow var(--duration-fast);
 }
 
 .ctaPrimary:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--sh-h);
-  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -8px color-mix(in oklab, var(--ink) 60%, transparent);
+  color: var(--paper);
 }
 
 /* ---- caution-tape marquee ---- */
 .marquee {
+  // Full-bleed: break out of the centered .main to span the whole viewport.
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-top: calc(28px * var(--u));
   overflow: hidden;
-  margin: calc(28px * var(--u)) 0 0;
   background: var(--c-yellow);
   border-top: 2.5px solid var(--ink);
   border-bottom: 2.5px solid var(--ink);
+  transform: none;
 }
 
 .marqueeTrack {

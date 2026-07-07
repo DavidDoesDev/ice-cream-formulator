@@ -129,6 +129,9 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background 0.4s ease, color 0.4s ease;
+  // Contain decorative overflow (staggered poster titles, full-bleed bands)
+  // without creating a scroll container that would break sticky headers.
+  overflow-x: clip;
 }
 
 a {
