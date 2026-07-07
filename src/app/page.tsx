@@ -13,6 +13,9 @@ import styles from "./page.module.scss";
 
 const MARQUEE_ITEMS = ["COLD", "HARD", "SCIENCE"];
 
+// Sentence case for filter labels: "philadelphia" -> "Philadelphia".
+const sentenceCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
 export default function Home() {
   const router = useRouter();
   const [formulas, setFormulas] = useState<SavedFormula[] | null>(null);
@@ -142,7 +145,7 @@ export default function Home() {
                 active={styleFilter === s}
                 onClick={() => setStyleFilter(s)}
               >
-                {s}
+                {sentenceCase(s)}
               </Pill>
             ))}
           </div>
