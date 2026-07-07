@@ -9,6 +9,7 @@ import { computeRatios } from "@/lib/formula-engine";
 import { PintCup } from "@/components/shared/PintCup";
 import { Icon } from "@/components/shared/Icon";
 import { Pill } from "@/components/shared/Pill";
+import { SiteMenu } from "@/components/shared/SiteMenu";
 import styles from "./page.module.scss";
 
 const MARQUEE_ITEMS = ["COLD", "HARD", "SCIENCE"];
@@ -59,6 +60,9 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      <div className={styles.pageMenu}>
+        <SiteMenu />
+      </div>
       <section className={styles.hero}>
         <div className={styles.eyebrow}>
           <Icon name="flask" size={16} />

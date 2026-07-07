@@ -1,0 +1,60 @@
+.menuWrap {
+  position: relative;
+  display: inline-block;
+}
+
+.iconBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-pill);
+  border: 2.5px solid var(--ink);
+  background: var(--paper-2);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--sh);
+}
+
+.menuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.menu {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  background: var(--paper-2);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius-md);
+  box-shadow: var(--sh);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.menuItem:hover {
+  background: color-mix(in oklab, var(--ink) 10%, transparent);
+}

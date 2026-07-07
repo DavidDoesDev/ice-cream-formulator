@@ -4,6 +4,10 @@
   padding: calc(40px * var(--u)) 0 calc(90px * var(--u));
 }
 
+.pageMenu {
+  margin-bottom: calc(16px * var(--u));
+}
+
 .header {
   display: flex;
   align-items: center;

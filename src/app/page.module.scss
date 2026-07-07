@@ -4,9 +4,13 @@
   padding: calc(40px * var(--u)) 0 calc(90px * var(--u));
 }
 
+.pageMenu {
+  padding-top: calc(16px * var(--u));
+}
+
 /* ---- hero ---- */
 .hero {
-  padding: calc(46px * var(--u)) 0 calc(28px * var(--u));
+  padding: calc(30px * var(--u)) 0 calc(28px * var(--u));
 }
 
 .eyebrow {
@@ -70,11 +74,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  // Ink fill + paper text contrasts in both themes (accent-on-accent went
-  // invisible in dark, and the ink-colored offset shadow matched the accent
-  // button in light).
-  background: var(--ink);
-  color: var(--paper);
+  // Light sticker so the blue offset shadow reads against it (an ink-filled
+  // button would blend into its own blue shadow).
+  background: var(--paper-2);
+  color: var(--ink);
   border: 2.5px solid var(--ink);
   border-radius: var(--radius-pill);
   padding: 14px 24px;
@@ -89,7 +92,7 @@
 .ctaPrimary:hover {
   transform: translate(-2px, -2px);
   box-shadow: var(--sh-h);
-  color: var(--paper);
+  color: var(--ink);
 }
 
 .ctaGhost {
