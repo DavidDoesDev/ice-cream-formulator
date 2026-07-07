@@ -9,7 +9,7 @@ import { computeRatios } from "@/lib/formula-engine";
 import { PintCup } from "@/components/shared/PintCup";
 import { Icon } from "@/components/shared/Icon";
 import { Pill } from "@/components/shared/Pill";
-import { SiteMenu } from "@/components/shared/SiteMenu";
+import { Header } from "@/components/shared/Header";
 import styles from "./page.module.scss";
 
 const MARQUEE_ITEMS = ["COLD", "HARD", "SCIENCE"];
@@ -60,19 +60,17 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <div className={styles.pageMenu}>
-        <SiteMenu />
-      </div>
+      <Header />
       <section className={styles.hero}>
         <div className={styles.eyebrow}>
           <Icon name="flask" size={16} />
           <span>Frozen formula studio</span>
         </div>
         <h1 className={styles.title}>
-          <span className={styles.titleRow}>Ice</span>
-          <span className={`${styles.titleRow} ${styles.titleShift}`}>Cream</span>
+          <span className={styles.titleRow}>Cold</span>
+          <span className={`${styles.titleRow} ${styles.titleShift}`}>Hard</span>
           <span className={styles.titleRow}>
-            <em className={styles.titleHollow}>Lab</em>
+            <em className={styles.titleHollow}>Science</em>
           </span>
         </h1>
         <p className={styles.lead}>

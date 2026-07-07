@@ -1,36 +1,7 @@
 .main {
   width: min(1240px, 92vw);
   margin: 0 auto;
-  padding: calc(40px * var(--u)) 0 calc(90px * var(--u));
-}
-
-.pageMenu {
-  margin-bottom: calc(16px * var(--u));
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  margin-bottom: calc(20px * var(--u));
-}
-
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color var(--duration-fast);
-}
-
-.back:hover {
-  color: var(--ink);
+  padding: 0 0 calc(90px * var(--u));
 }
 
 .eyebrow {
@@ -42,7 +13,6 @@
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-left: auto;
 }
 
 .title {
@@ -52,7 +22,7 @@
   font-size: clamp(48px, 9vw, 120px);
   line-height: 0.86;
   letter-spacing: -0.005em;
-  margin: 0 0 calc(30px * var(--u));
+  margin: calc(30px * var(--u)) 0 calc(30px * var(--u));
 }
 
 .search {
@@ -79,7 +49,7 @@
   height: 12px;
   border-radius: 3px;
   border: 1.5px solid var(--ink);
-  background: var(--c-yellow);
+  background: var(--ink);
   flex: none;
 }
 

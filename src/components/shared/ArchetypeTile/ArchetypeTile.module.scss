@@ -39,7 +39,9 @@
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--accent);
+  // See note in page.module.scss .specimenStyle: --accent is blue-on-blue in
+  // dark mode; --text stays readable (same blue in light, cream in dark).
+  color: var(--text);
   margin-bottom: 6px;
 }
 

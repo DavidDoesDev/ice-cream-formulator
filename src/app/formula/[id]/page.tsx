@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Menu, Home, Moon, Sun, Settings, RotateCcw, X } from "lucide-react";
+import { Settings, RotateCcw, X } from "lucide-react";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
 import { RecipePanel } from "@/components/recipe/RecipePanel";
 import { MacrosPanel } from "@/components/formula/MacrosPanel";
 import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
+import { Header } from "@/components/shared/Header";
 import { Pill } from "@/components/shared/Pill";
 import { Toast } from "@/components/shared/Toast";
 import { seedRecipe } from "@/lib/recipe-seeder";
@@ -76,9 +76,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [ws, setWs] = useState<LiveWorkspace>(initialWs);
   const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
   const [notes, setNotes] = useState("");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [showConfig, setShowConfig] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [editName, setEditName] = useState(false);
   const [selector, setSelector] = useState<SelectorState | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -86,28 +84,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const ratios = workspaceRatios(ws, deps);
   const conflict = workspaceConflict(ws, deps);
   const total = totalGrams(ws.recipe);
-
-  // Theme: reflect stored/system choice, apply explicit override.
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    const next =
-      stored === "light" || stored === "dark"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
-    document.documentElement.setAttribute("data-theme", next);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing theme from localStorage/system on mount
-    setTheme(next);
-  }, []);
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
-      return next;
-    });
-  }, []);
 
   // Single source of truth for writing the workspace to storage.
   const persist = useCallback(
@@ -261,39 +237,17 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
 
   return (
     <>
-      <header className={styles.topbar}>
-        <div className={styles.menuWrap}>
-          <button className={styles.iconBtn} type="button" aria-label="Menu" onClick={() => setMenuOpen((o) => !o)}>
-            <Menu size={20} strokeWidth={2} />
-          </button>
-          {menuOpen && (
-            <>
-              <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
-              <div className={styles.menu}>
-                <Link href="/" className={styles.menuItem} onClick={() => setMenuOpen(false)}>
-                  <Home size={16} strokeWidth={2} /> Home
-                </Link>
-                <button className={styles.menuItem} type="button" onClick={toggleTheme}>
-                  {theme === "dark" ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
-                  {theme === "dark" ? "Light mode" : "Dark mode"}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-        <span className={styles.brand}>Ice Cream Lab</span>
-        <div className={styles.actions}>
-          <Pill tone="ghost" size="sm" onClick={() => setShowConfig(true)}>
-            <Settings size={15} strokeWidth={2} /> Config
-          </Pill>
-          <Pill tone="ghost" size="sm" onClick={onReset}>
-            <RotateCcw size={15} strokeWidth={2} /> Reset
-          </Pill>
-          <Pill tone="ink" size="sm" onClick={onSave}>
-            Save batch
-          </Pill>
-        </div>
-      </header>
+      <Header>
+        <Pill tone="ghost" size="sm" onClick={() => setShowConfig(true)}>
+          <Settings size={15} strokeWidth={2} /> Config
+        </Pill>
+        <Pill tone="ghost" size="sm" onClick={onReset}>
+          <RotateCcw size={15} strokeWidth={2} /> Reset
+        </Pill>
+        <Pill tone="ink" size="sm" onClick={onSave}>
+          Save batch
+        </Pill>
+      </Header>
 
       <div className={styles.content}>
           {editName ? (

@@ -1,11 +1,7 @@
 .main {
   width: min(1240px, 92vw);
   margin: 0 auto;
-  padding: calc(40px * var(--u)) 0 calc(90px * var(--u));
-}
-
-.pageMenu {
-  padding-top: calc(16px * var(--u));
+  padding: 0 0 calc(90px * var(--u));
 }
 
 /* ---- hero ---- */
@@ -17,12 +13,15 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  border: 2.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 12px 22px;
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 22px;
+  margin-bottom: 4px;
 }
 
 .title {
@@ -32,7 +31,7 @@
   font-size: clamp(58px, 12.5vw, 178px);
   line-height: 0.82;
   letter-spacing: -0.005em;
-  margin: 0;
+  margin: calc(10px * var(--u)) 0 calc(36px * var(--u));
 }
 
 .titleRow {
@@ -99,20 +98,23 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 2.5px solid var(--line);
+  background: var(--paper-2);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
   border-radius: var(--radius-pill);
-  padding: 13px 22px;
+  padding: 14px 24px;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 15px;
-  color: var(--text);
+  font-size: 17px;
   text-decoration: none;
-  transition: border-color var(--duration-fast), transform var(--duration-fast) var(--ease-jelly);
+  box-shadow: var(--sh);
+  transition: transform var(--duration-fast) var(--ease-jelly), box-shadow var(--duration-fast);
 }
 
 .ctaGhost:hover {
-  border-color: var(--ink);
-  transform: translateY(-2px);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--sh-h);
+  color: var(--ink);
 }
 
 .dice {
@@ -125,14 +127,14 @@
   background: var(--paper-2);
   color: var(--ink);
   cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease-jelly), background var(--duration-fast),
-    color var(--duration-fast);
+  box-shadow: var(--sh);
+  transition: transform var(--duration-fast) var(--ease-jelly), box-shadow var(--duration-fast);
 }
 
 .dice:hover:not(:disabled) {
-  transform: translateY(-2px);
-  background: var(--ink);
-  color: var(--paper);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--sh-h);
+  color: var(--ink);
 }
 
 .dice:disabled {
@@ -339,13 +341,15 @@
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--accent);
+  // --text, not --accent: in light mode these resolve to the same blue, but in
+  // dark mode --accent (blue) collides with the blue tile; --text stays cream.
+  color: var(--text);
   text-align: right;
 }
 
 .specimenCup {
   align-self: center;
-  margin: 6px 0 14px;
+  margin: 18px 0 14px;
 }
 
 .specimenName {

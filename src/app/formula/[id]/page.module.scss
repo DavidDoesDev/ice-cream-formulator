@@ -11,39 +11,7 @@
   font-family: var(--font-mono);
 }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: calc(16px * var(--u)) 0;
-  background: color-mix(in oklab, var(--paper) 86%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border-bottom: 2px solid var(--line);
-}
-
-.brand {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-left: auto;
-}
-
-.menuWrap {
-  position: relative;
-}
-
+// The config-modal close button reuses this icon-button style.
 .iconBtn {
   display: inline-grid;
   place-items: center;
@@ -54,49 +22,6 @@
   background: var(--paper-2);
   color: var(--ink);
   cursor: pointer;
-}
-
-.menuBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-}
-
-.menu {
-  position: absolute;
-  z-index: 50;
-  top: calc(100% + 8px);
-  left: 0;
-  background: var(--paper-2);
-  border: 2.5px solid var(--ink);
-  border-radius: var(--radius-md);
-  box-shadow: var(--sh);
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 180px;
-}
-
-.menuItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  padding: 10px 13px;
-  border-radius: 10px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.menuItem:hover {
-  background: color-mix(in oklab, var(--ink) 10%, transparent);
 }
 
 .content {

@@ -3,13 +3,12 @@
 import { useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
-import Link from "next/link";
 import { ARCHETYPES } from "@/data/archetypes";
 import type { Archetype } from "@/data/types";
 import { ArchetypeTile } from "@/components/shared/ArchetypeTile";
 import { SearchModule } from "@/components/shared/SearchModule";
 import { Icon } from "@/components/shared/Icon";
-import { SiteMenu } from "@/components/shared/SiteMenu";
+import { Header } from "@/components/shared/Header";
 import { matchTemplate, type MatchResult } from "@/lib/template-matcher";
 import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
 import { saveFormula } from "@/lib/persistence";
@@ -42,19 +41,12 @@ function NewFormulaInner() {
 
   return (
     <main className={styles.main}>
-      <div className={styles.pageMenu}>
-        <SiteMenu />
-      </div>
-      <header className={styles.header}>
-        <Link href="/" className={styles.back}>
-          <Icon name="arrow" size={16} style={{ transform: "rotate(180deg)" }} />
-          Back
-        </Link>
+      <Header>
         <div className={styles.eyebrow}>
           <Icon name="flask" size={16} />
           <span>Start a batch</span>
         </div>
-      </header>
+      </Header>
 
       <h1 className={styles.title}>New Formula</h1>
 

@@ -34,7 +34,7 @@
   display: grid;
   place-items: center;
   gap: 10px;
-  padding: 10px 0 18px;
+  padding: calc(28px * var(--u)) 0 18px;
 }
 
 .cupTag {

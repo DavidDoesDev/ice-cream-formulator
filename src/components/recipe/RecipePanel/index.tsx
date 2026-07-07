@@ -62,7 +62,6 @@ export function RecipePanel({
   const activeMixes = recipe.smartMixes.filter(
     (m) => (getPresetById(m.presetId)?.ingredients.length ?? 0) > 0,
   );
-  const count = activeMixes.length + recipe.additionalIngredients.length;
   const present = new Set(recipe.additionalIngredients.map((a) => a.ingredientId));
   const quick = QUICK.filter((q) => !present.has(q.id)).slice(0, 3);
 
@@ -73,7 +72,7 @@ export function RecipePanel({
         <span className={styles.eyebrow}>grams · drag or type</span>
       </div>
 
-      <SectionHeader role="ingredients" label={`Ingredients — ${count}`} />
+      <SectionHeader role="ingredients" label="Ingredients" />
 
       {activeMixes.map((mix) => (
         <div key={mix.presetId} className={styles.row}>
