@@ -19,7 +19,6 @@ const SLIDERS: { key: MacroKey; label: string }[] = [
   { key: "stabilizer", label: "Stabilizer" },
   { key: "emulsifier", label: "Emulsifier" },
   { key: "alcohol", label: "Alcohol" },
-  { key: "water", label: "Water" },
 ];
 
 // Candy fill color per macro; water reads as sky (it has no macro swatch).
@@ -112,6 +111,14 @@ export function MacrosPanel({
           </div>
         );
       })}
+
+      <div className={styles.waterRow}>
+        <span className={styles.sliderKey}>
+          <MacroDot macro="water" /> Water
+        </span>
+        <span className={styles.waterVal}>{formatPercent(ratios.water * 100)}%</span>
+        <span className={styles.waterNote}>inferred</span>
+      </div>
 
       <SectionHeader role="balance" label="Balance check" />
       <div className={styles.scoreRow}>

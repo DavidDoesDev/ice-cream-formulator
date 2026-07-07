@@ -149,6 +149,30 @@
   color: var(--accent);
 }
 
+.waterRow {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0;
+}
+
+.waterVal {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  text-align: right;
+  color: var(--muted);
+}
+
+.waterNote {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .scoreRow {
   display: flex;
   align-items: baseline;
