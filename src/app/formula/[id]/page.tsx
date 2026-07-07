@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Menu, Home, Moon, Sun, Settings, RotateCcw, X } from "lucide-react";
@@ -109,18 +109,45 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     });
   }, []);
 
-  // Auto-save committed workspace + meta.
+  // Single source of truth for writing the workspace to storage.
+  const persist = useCallback(
+    (w: LiveWorkspace, name: string, style: string) => {
+      saveFormula({
+        ...saved,
+        name,
+        style,
+        updatedAt: Date.now(),
+        state: stateFromRatios(workspaceRatios(w, deps), w.yieldGrams),
+        recipe: w.recipe,
+      });
+    },
+    [saved, deps],
+  );
+
+  // Latest workspace/meta, for the unmount flush below (kept out of effect deps).
+  const latest = useRef({ ws, meta });
+  latest.current = { ws, meta };
+
+  // Auto-save committed workspace + meta — debounced. `ws` changes on every
+  // slider drag frame; writing localStorage synchronously each frame stalls the
+  // main thread badly on Safari (which flushes localStorage to disk far more
+  // aggressively than Chrome), making drags lag and the controlled thumb snap
+  // back. The debounce keeps a live drag off disk entirely — the settled state
+  // persists ~400ms after the last change. The cleanup cancels the pending write
+  // on each new change, so only the final frame is written.
   useEffect(() => {
-    const derived = workspaceRatios(ws, deps);
-    saveFormula({
-      ...saved,
-      name: meta.name,
-      style: meta.style,
-      updatedAt: Date.now(),
-      state: stateFromRatios(derived, ws.yieldGrams),
-      recipe: ws.recipe,
-    });
-  }, [ws, meta, saved, deps]);
+    const handle = setTimeout(() => persist(ws, meta.name, meta.style), 400);
+    return () => clearTimeout(handle);
+  }, [ws, meta, persist]);
+
+  // Flush the final state on unmount so navigating away inside the debounce
+  // window can't drop the last edit.
+  useEffect(() => {
+    return () => {
+      const { ws, meta } = latest.current;
+      persist(ws, meta.name, meta.style);
+    };
+  }, [persist]);
 
   // --- Recipe (grams) edits ---
   const onMixGrams = useCallback((pid: string, g: number) => setWs((w) => setMixGrams(w, pid, g)), []);
@@ -228,16 +255,9 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     setMeta({ name: saved.name, style: saved.style });
   }, [initialWs, saved]);
   const onSave = useCallback(() => {
-    saveFormula({
-      ...saved,
-      name: meta.name,
-      style: meta.style,
-      updatedAt: Date.now(),
-      state: stateFromRatios(workspaceRatios(ws, deps), ws.yieldGrams),
-      recipe: ws.recipe,
-    });
+    persist(ws, meta.name, meta.style);
     setToast("Saved to your vault");
-  }, [saved, meta, ws, deps]);
+  }, [persist, ws, meta]);
 
   return (
     <>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { memo, useEffect, useId, useRef } from "react";
 import styles from "./PintCup.module.scss";
 import type { MacroRatios } from "@/lib/formula-engine";
 
@@ -90,7 +90,12 @@ function waterPath(meanY: number, t: number): string {
   return `${d} L ${x1},${VH} Z`;
 }
 
-export function PintCup({ ratios, size = "full", width }: PintCupProps) {
+// Memoized: during a slider drag the parent panel re-renders on every input
+// event (to move the thumb), but the cup only needs to redraw when the macro
+// ratios actually change — once per coalesced solve frame. Without this the SVG
+// (and its per-frame ripple repaint) rebuilds on every event, which WebKit paints
+// far more slowly than Chromium — the bulk of the Safari drag lag.
+function PintCupImpl({ ratios, size = "full", width }: PintCupProps) {
   const uid = useId().replace(/:/g, "-");
   const clipId = `pint-cup-clip${uid}`;
   const total = Object.values(ratios).reduce((a, b) => a + b, 0);
@@ -220,3 +225,5 @@ export function PintCup({ ratios, size = "full", width }: PintCupProps) {
     </div>
   );
 }
+
+export const PintCup = memo(PintCupImpl);
