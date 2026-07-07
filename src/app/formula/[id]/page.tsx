@@ -1,53 +1,95 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Menu, Share2, Settings, Home, Moon, Sun } from "lucide-react";
-import { FormulaProvider } from "@/context/FormulaContext";
-import { useFormulaContext } from "@/context/FormulaContext";
+import { Menu, Home, Moon, Sun, Settings, RotateCcw } from "lucide-react";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
-import { FormulaPreview } from "@/components/formula/FormulaPreview";
-import { FormulaEdit, type FormulaEditHandle } from "@/components/formula/FormulaEdit";
-import { RecipePreview } from "@/components/recipe/RecipePreview";
-import { RecipeEdit, type RecipeEditHandle } from "@/components/recipe/RecipeEdit";
+import { RecipePanel } from "@/components/recipe/RecipePanel";
+import { MacrosPanel } from "@/components/formula/MacrosPanel";
 import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
+import { Pill } from "@/components/shared/Pill";
+import { Toast } from "@/components/shared/Toast";
 import { seedRecipe } from "@/lib/recipe-seeder";
-import { solveRecipe, computeRatiosFromRecipe } from "@/lib/recipe-solver";
+import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
+import {
+  totalGrams,
+  workspaceRatios,
+  workspaceConflict,
+  setMixGrams,
+  setAdditionalGrams,
+  setMacroTarget,
+  setYield,
+  addAdditionalIngredient,
+  removeAdditionalIngredient,
+  rebalanceWorkspace,
+  type LiveWorkspace,
+  type WorkspaceDeps,
+} from "@/lib/live-workspace";
+import { computeRatios, type MacroRatios, type Ingredient } from "@/lib/formula-engine";
+import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById, registerCustomPreset, buildCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
-import type { FormulaState, Ingredient } from "@/lib/formula-engine";
-import type { Recipe, StyleCategory, SmartMixKind, MixPreset } from "@/data/types";
+import type { StyleCategory, SmartMixKind, MixPreset } from "@/data/types";
 import styles from "./page.module.scss";
 
-type WorkspaceView = "formula" | "recipe";
-type WorkspaceMode = "preview" | "edit";
+// Empty-by-default mixes that activate a real ingredient the first time their
+// slider rises above zero.
+const AUTO_ACTIVATE: Partial<
+  Record<keyof MacroRatios, { kind: SmartMixKind; label: string; empty: string; default: string }>
+> = {
+  alcohol: { kind: "alcohol", label: "Alcohol", empty: "alcohol-empty", default: "alcohol-vodka" },
+  emulsifier: { kind: "emulsifier", label: "Emulsifier", empty: "emulsifier-empty", default: "emulsifier-lecithin" },
+};
 
-interface IngredientSelectorState {
+interface SelectorState {
   context: string;
   onAdd: (ingredient: Ingredient) => void;
 }
 
-function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew?: boolean }) {
-  const { state, reset } = useFormulaContext();
-  const [view, setView] = useState<WorkspaceView>("formula");
-  const [mode, setMode] = useState<WorkspaceMode>("preview");
+function WorkspaceContent({ saved }: { saved: SavedFormula }) {
+  const deps: WorkspaceDeps = useMemo(
+    () => ({ getPreset: getPresetById, resolveIngredient: (id) => getIngredientById(id)?.macros }),
+    [],
+  );
+
+  const initialWs = useMemo<LiveWorkspace>(() => {
+    const recipe = saved.recipe ?? seedRecipe(saved.style as StyleCategory);
+    (recipe.customPresets ?? []).forEach(registerCustomPreset);
+    const yieldGrams = saved.state?.yieldGrams || totalGrams(recipe) || 1000;
+    return { recipe, yieldGrams };
+  }, [saved]);
+
+  const baseRatios = useMemo(() => computeRatios(saved.state), [saved.state]);
+
+  const [ws, setWs] = useState<LiveWorkspace>(initialWs);
+  const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
+  const [notes, setNotes] = useState("");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [showConfig, setShowConfig] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [editName, setEditName] = useState(false);
+  const [selector, setSelector] = useState<SelectorState | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
-  // Reflect the saved theme (or system) and apply the explicit override.
+  const ratios = workspaceRatios(ws, deps);
+  const conflict = workspaceConflict(ws, deps);
+  const total = totalGrams(ws.recipe);
+
+  // Theme: reflect stored/system choice, apply explicit override.
   useEffect(() => {
     const stored = localStorage.getItem("theme");
-    if (stored === "light" || stored === "dark") {
-      setTheme(stored);
-      document.documentElement.setAttribute("data-theme", stored);
-    } else {
-      setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    }
+    const next =
+      stored === "light" || stored === "dark"
+        ? stored
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing theme from localStorage/system on mount
+    setTheme(next);
   }, []);
-
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
       const next = prev === "dark" ? "light" : "dark";
@@ -56,304 +98,237 @@ function WorkspaceContent({ saved, isNew = false }: { saved: SavedFormula; isNew
       return next;
     });
   }, []);
-  const [ingredientSelector, setIngredientSelector] = useState<IngredientSelectorState | null>(null);
-  const [notes, setNotes] = useState("");
-  const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
-  const [recipe, setRecipe] = useState<Recipe>(() => {
-    const r = saved.recipe ?? seedRecipe(saved.style as StyleCategory);
-    // Register any per-formula custom systems before first render resolves them.
-    (r.customPresets ?? []).forEach(registerCustomPreset);
-    return r;
-  });
 
-  const formulaEditRef = useRef<FormulaEditHandle>(null);
-  const recipeEditRef = useRef<RecipeEditHandle>(null);
-
-  // Auto-save whenever committed state or recipe changes
+  // Auto-save committed workspace + meta.
   useEffect(() => {
+    const derived = workspaceRatios(ws, deps);
     saveFormula({
       ...saved,
       name: meta.name,
       style: meta.style,
       updatedAt: Date.now(),
-      state,
-      recipe,
+      state: stateFromRatios(derived, ws.yieldGrams),
+      recipe: ws.recipe,
     });
-  }, [state, meta, saved, recipe]);
+  }, [ws, meta, saved, deps]);
 
-  const openIngredientSelector = useCallback(
-    (context: string, onAdd: (ingredient: Ingredient) => void) => {
-      setIngredientSelector({ context, onAdd });
-    },
-    []
-  );
+  // --- Recipe (grams) edits ---
+  const onMixGrams = useCallback((pid: string, g: number) => setWs((w) => setMixGrams(w, pid, g)), []);
+  const onAdditionalGrams = useCallback((id: string, g: number) => setWs((w) => setAdditionalGrams(w, id, g)), []);
+  const onYield = useCallback((g: number) => setWs((w) => setYield(w, g)), []);
+  const onRemoveAdditional = useCallback((id: string) => setWs((w) => removeAdditionalIngredient(w, id)), []);
 
-  const handleFormulaDone = useCallback(
-    (newState: FormulaState, newRecipe: Recipe) => {
-      reset(newState);
-      setRecipe(newRecipe);
-      setMode("preview");
-    },
-    [reset],
-  );
+  const onMixNote = useCallback((pid: string, note: string) => {
+    setWs((w) => ({
+      ...w,
+      recipe: { ...w.recipe, smartMixes: w.recipe.smartMixes.map((m) => (m.presetId === pid ? { ...m, note } : m)) },
+    }));
+  }, []);
+  const onAdditionalNote = useCallback((id: string, note: string) => {
+    setWs((w) => ({
+      ...w,
+      recipe: {
+        ...w.recipe,
+        additionalIngredients: w.recipe.additionalIngredients.map((a) =>
+          a.ingredientId === id ? { ...a, note } : a,
+        ),
+      },
+    }));
+  }, []);
 
-  const handlePresetChange = useCallback(
-    (kind: SmartMixKind, presetId: string) => {
-      setRecipe((prev) => {
-        const updatedMixes = prev.smartMixes.map((m) =>
-          m.kind === kind ? { ...m, presetId } : m,
-        );
-        const updatedRecipe: Recipe = { ...prev, smartMixes: updatedMixes };
-        const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, (id) => getIngredientById(id)?.macros);
-        const totalGrams = updatedMixes.reduce((s, m) => s + m.grams, 0) + prev.additionalIngredients.reduce((s, a) => s + a.grams, 0) || 1000;
-        const solved = solveRecipe(
-          targets,
-          totalGrams,
-          prev.additionalIngredients,
-          updatedMixes,
-          getPresetById,
-          (id) => getIngredientById(id)?.macros,
-        );
-        return { ...prev, smartMixes: solved };
+  const openSelector = useCallback((context: string, onAdd: (ing: Ingredient) => void) => {
+    setSelector({ context, onAdd });
+  }, []);
+  const onAddIngredient = useCallback(() => {
+    openSelector("general", (ing) => setWs((w) => addAdditionalIngredient(w, ing.id, ing.grams)));
+  }, [openSelector]);
+
+  // --- Macro (slider) edits: continuous, yield-conserving, with auto-activate ---
+  const onMacroTarget = useCallback(
+    (macro: keyof MacroRatios, target: number) => {
+      setWs((w) => {
+        let cur = w;
+        const auto = AUTO_ACTIVATE[macro];
+        if (auto && target > 0) {
+          const mixes = cur.recipe.smartMixes;
+          const next = mixes.some((m) => m.kind === auto.kind)
+            ? mixes.map((m) => (m.kind === auto.kind && m.presetId === auto.empty ? { ...m, presetId: auto.default } : m))
+            : [...mixes, { kind: auto.kind, label: auto.label, presetId: auto.default, grams: 0 }];
+          cur = { ...cur, recipe: { ...cur.recipe, smartMixes: next } };
+        }
+        return setMacroTarget(cur, macro, target, deps);
       });
     },
-    [],
+    [deps],
   );
+  const onRebalance = useCallback(() => setWs((w) => rebalanceWorkspace(w, deps)), [deps]);
 
-  const handleCustomPreset = useCallback(
-    (kind: SmartMixKind, preset: MixPreset) => {
-      registerCustomPreset(preset);
-      setRecipe((prev) => {
-        const customPresets = [...(prev.customPresets ?? []).filter((p) => p.kind !== kind), preset];
-        const updatedMixes = prev.smartMixes.map((m) =>
-          m.kind === kind ? { ...m, presetId: preset.id } : m,
-        );
-        const updatedRecipe: Recipe = { ...prev, smartMixes: updatedMixes, customPresets };
-        const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, (id) => getIngredientById(id)?.macros);
-        const totalGrams = updatedMixes.reduce((s, m) => s + m.grams, 0) + prev.additionalIngredients.reduce((s, a) => s + a.grams, 0) || 1000;
-        const solved = solveRecipe(
-          targets,
-          totalGrams,
-          prev.additionalIngredients,
-          updatedMixes,
-          getPresetById,
-          (id) => getIngredientById(id)?.macros,
-        );
-        return { ...prev, smartMixes: solved, customPresets };
-      });
+  // --- Config (base systems) — re-solve at fixed yield on any change ---
+  const resolveSolve = useCallback(
+    (mixes: LiveWorkspace["recipe"]["smartMixes"], w: LiveWorkspace) => {
+      const updatedRecipe = { ...w.recipe, smartMixes: mixes };
+      const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, deps.resolveIngredient);
+      return solveRecipe(targets, w.yieldGrams, w.recipe.additionalIngredients, mixes, getPresetById, deps.resolveIngredient);
     },
-    [],
+    [deps],
   );
-
-  // Milk base is a set of individual included ingredients (no ratios), so config
-  // adds/removes single-ingredient milk mixes rather than picking a blend.
+  const handlePresetChange = useCallback((kind: SmartMixKind, presetId: string) => {
+    setWs((w) => {
+      const mixes = w.recipe.smartMixes.map((m) => (m.kind === kind ? { ...m, presetId } : m));
+      return { ...w, recipe: { ...w.recipe, smartMixes: resolveSolve(mixes, w) } };
+    });
+  }, [resolveSolve]);
+  const handleCustomPreset = useCallback((kind: SmartMixKind, preset: MixPreset) => {
+    registerCustomPreset(preset);
+    setWs((w) => {
+      const customPresets = [...(w.recipe.customPresets ?? []).filter((p) => p.kind !== kind), preset];
+      const mixes = w.recipe.smartMixes.map((m) => (m.kind === kind ? { ...m, presetId: preset.id } : m));
+      return { ...w, recipe: { ...w.recipe, smartMixes: resolveSolve(mixes, w), customPresets } };
+    });
+  }, [resolveSolve]);
   const handleAddMilkIngredient = useCallback((ing: Ingredient) => {
     const preset = buildCustomPreset("milk", ing.name, [{ ingredientId: ing.id, proportion: 1 }]);
     registerCustomPreset(preset);
-    setRecipe((prev) => {
-      const already = prev.smartMixes.some(
+    setWs((w) => {
+      const already = w.recipe.smartMixes.some(
         (m) => m.kind === "milk" && getPresetById(m.presetId)?.ingredients[0]?.ingredientId === ing.id,
       );
-      if (already) return prev;
-      const customPresets = [...(prev.customPresets ?? []), preset];
-      const updatedMixes = [...prev.smartMixes, { kind: "milk" as SmartMixKind, label: ing.name, presetId: preset.id, grams: 0 }];
-      const updatedRecipe: Recipe = { ...prev, smartMixes: updatedMixes, customPresets };
-      const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, (id) => getIngredientById(id)?.macros);
-      const totalGrams = updatedMixes.reduce((s, m) => s + m.grams, 0) + prev.additionalIngredients.reduce((s, a) => s + a.grams, 0) || 1000;
-      const solved = solveRecipe(targets, totalGrams, prev.additionalIngredients, updatedMixes, getPresetById, (id) => getIngredientById(id)?.macros);
-      return { ...prev, smartMixes: solved, customPresets };
+      if (already) return w;
+      const customPresets = [...(w.recipe.customPresets ?? []), preset];
+      const mixes = [...w.recipe.smartMixes, { kind: "milk" as SmartMixKind, label: ing.name, presetId: preset.id, grams: 0 }];
+      return { ...w, recipe: { ...w.recipe, smartMixes: resolveSolve(mixes, w), customPresets } };
     });
-  }, []);
-
+  }, [resolveSolve]);
   const handleRemoveMilkIngredient = useCallback((presetId: string) => {
-    setRecipe((prev) => {
-      const updatedMixes = prev.smartMixes.filter((m) => !(m.kind === "milk" && m.presetId === presetId));
-      const updatedRecipe: Recipe = { ...prev, smartMixes: updatedMixes };
-      const targets = computeRatiosFromRecipe(updatedRecipe, getPresetById, (id) => getIngredientById(id)?.macros);
-      const totalGrams = updatedMixes.reduce((s, m) => s + m.grams, 0) + prev.additionalIngredients.reduce((s, a) => s + a.grams, 0) || 1000;
-      const solved = solveRecipe(targets, totalGrams, prev.additionalIngredients, updatedMixes, getPresetById, (id) => getIngredientById(id)?.macros);
-      return { ...prev, smartMixes: solved };
+    setWs((w) => {
+      const mixes = w.recipe.smartMixes.filter((m) => !(m.kind === "milk" && m.presetId === presetId));
+      return { ...w, recipe: { ...w.recipe, smartMixes: resolveSolve(mixes, w) } };
     });
-  }, []);
+  }, [resolveSolve]);
 
-  const handleRecipeDone = useCallback(
-    (newRecipe: Recipe, newState: FormulaState, newNotes: string) => {
-      setRecipe(newRecipe);
-      reset(newState);
-      setNotes(newNotes);
-      setMode("preview");
-    },
-    [reset],
-  );
-
-  const headerLeft = showConfig ? (
-    <button className={styles.headerBtn} type="button" onClick={() => setShowConfig(false)}>
-      ← Back
-    </button>
-  ) : mode === "preview" ? (
-    <div className={styles.menuWrap}>
-      <button
-        className={styles.headerBtn}
-        type="button"
-        aria-label="Menu"
-        onClick={() => setMenuOpen((o) => !o)}
-      >
-        <Menu size={20} strokeWidth={2} />
-      </button>
-      {menuOpen && (
-        <>
-          <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
-          <div className={styles.menu}>
-            <Link href="/" className={styles.menuItem} onClick={() => setMenuOpen(false)}>
-              <Home size={16} strokeWidth={2} />
-              Home
-            </Link>
-            <button className={styles.menuItem} type="button" onClick={toggleTheme}>
-              {theme === "dark" ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
-              {theme === "dark" ? "Light mode" : "Dark mode"}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  ) : (
-    <div className={styles.headerSlot} />
-  );
-
-  const headerRight = (!showConfig && mode === "preview") ? (
-    <button className={`${styles.headerBtn} ${styles.headerBtnRight}`} type="button" aria-label="Share">
-      <Share2 size={20} strokeWidth={2} />
-    </button>
-  ) : (
-    <div className={styles.headerSlot} />
-  );
-
-  const headerTitle = showConfig ? (isNew ? "New Formula" : "Settings") : meta.name;
-  const isPreviewTitle = !showConfig && mode === "preview";
+  // --- Reset / save ---
+  const onReset = useCallback(() => {
+    setWs(initialWs);
+    setMeta({ name: saved.name, style: saved.style });
+  }, [initialWs, saved]);
+  const onSave = useCallback(() => {
+    saveFormula({
+      ...saved,
+      name: meta.name,
+      style: meta.style,
+      updatedAt: Date.now(),
+      state: stateFromRatios(workspaceRatios(ws, deps), ws.yieldGrams),
+      recipe: ws.recipe,
+    });
+    setToast("Saved to your vault");
+  }, [saved, meta, ws, deps]);
 
   return (
     <>
-      <header className={styles.header}>
-        {headerLeft}
-        <span
-          className={`${styles.headerTitle} ${
-            mode === "edit" && !showConfig ? styles.headerTitleEdit : ""
-          } ${isPreviewTitle ? styles.headerTitleUpper : ""}`}
-        >
-          {headerTitle}
-        </span>
-        {headerRight}
+      <header className={styles.topbar}>
+        <div className={styles.menuWrap}>
+          <button className={styles.iconBtn} type="button" aria-label="Menu" onClick={() => setMenuOpen((o) => !o)}>
+            <Menu size={20} strokeWidth={2} />
+          </button>
+          {menuOpen && (
+            <>
+              <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
+              <div className={styles.menu}>
+                <Link href="/" className={styles.menuItem} onClick={() => setMenuOpen(false)}>
+                  <Home size={16} strokeWidth={2} /> Home
+                </Link>
+                <button className={styles.menuItem} type="button" onClick={toggleTheme}>
+                  {theme === "dark" ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+                  {theme === "dark" ? "Light mode" : "Dark mode"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+        <span className={styles.brand}>Ice Cream Lab</span>
+        <div className={styles.actions}>
+          <Pill tone="ghost" size="sm" onClick={() => setShowConfig(true)}>
+            <Settings size={15} strokeWidth={2} /> Config
+          </Pill>
+          <Pill tone="ghost" size="sm" onClick={onReset}>
+            <RotateCcw size={15} strokeWidth={2} /> Reset
+          </Pill>
+          <Pill tone="ink" size="sm" onClick={onSave}>
+            Save batch
+          </Pill>
+        </div>
       </header>
 
-      <div className={styles.content}>
-        {showConfig ? (
+      {showConfig ? (
+        <div className={styles.content}>
+          <button className={styles.configBack} type="button" onClick={() => setShowConfig(false)}>
+            ← Back to workspace
+          </button>
           <ConfigPanel
             formulaName={meta.name}
             formulaStyle={meta.style}
-            recipe={recipe}
+            recipe={ws.recipe}
             onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
             onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
             onPresetChange={handlePresetChange}
             onCustomPreset={handleCustomPreset}
             onAddMilkIngredient={handleAddMilkIngredient}
             onRemoveMilkIngredient={handleRemoveMilkIngredient}
-            onOpenIngredientSelector={openIngredientSelector}
+            onOpenIngredientSelector={openSelector}
           />
-        ) : (
-          <>
-            {view === "formula" && mode === "preview" && <FormulaPreview recipe={recipe} />}
-            {view === "formula" && mode === "edit" && (
-              <FormulaEdit
-                ref={formulaEditRef}
-                initial={state}
-                recipe={recipe}
-                onDone={handleFormulaDone}
-                onOpenIngredientSelector={(onAdd) => openIngredientSelector("specific", onAdd)}
-              />
-            )}
-            {view === "recipe" && mode === "preview" && (
-              <RecipePreview recipe={recipe} notes={notes} />
-            )}
-            {view === "recipe" && mode === "edit" && (
-              <RecipeEdit
-                ref={recipeEditRef}
-                recipe={recipe}
-                initialNotes={notes}
-                onDone={handleRecipeDone}
-                onOpenIngredientSelector={(onAdd) => openIngredientSelector("general", onAdd)}
-              />
-            )}
-          </>
-        )}
+        </div>
+      ) : (
+        <div className={styles.content}>
+          {editName ? (
+            <input
+              autoFocus
+              className={styles.nameInput}
+              value={meta.name}
+              onChange={(e) => setMeta((m) => ({ ...m, name: e.target.value }))}
+              onBlur={() => setEditName(false)}
+              onKeyDown={(e) => e.key === "Enter" && setEditName(false)}
+            />
+          ) : (
+            <h1 className={styles.name} onClick={() => setEditName(true)} title="Click to rename">
+              {meta.name}
+            </h1>
+          )}
 
-        {ingredientSelector && (
-          <IngredientSelector
-            context={ingredientSelector.context}
-            onAdd={ingredientSelector.onAdd}
-            onDismiss={() => setIngredientSelector(null)}
-          />
-        )}
-      </div>
+          <div className={styles.work}>
+            <RecipePanel
+              recipe={ws.recipe}
+              yieldGrams={ws.yieldGrams}
+              total={total}
+              notes={notes}
+              onMixGrams={onMixGrams}
+              onAdditionalGrams={onAdditionalGrams}
+              onMixNote={onMixNote}
+              onAdditionalNote={onAdditionalNote}
+              onRemoveAdditional={onRemoveAdditional}
+              onAddIngredient={onAddIngredient}
+              onYield={onYield}
+              onNotes={setNotes}
+            />
+            <MacrosPanel
+              ratios={ratios}
+              baseRatios={baseRatios}
+              style={meta.style}
+              conflict={conflict}
+              onMacroTarget={onMacroTarget}
+              onRebalance={onRebalance}
+            />
+          </div>
+        </div>
+      )}
 
-      <div className={styles.bottomBar}>
-        {showConfig ? (
-          <>
-            <div className={styles.barSlot} />
-            {isNew ? (
-              <button
-                className={`${styles.barCenter} ${styles.barCreate}`}
-                type="button"
-                onClick={() => setShowConfig(false)}
-              >
-                CREATE
-              </button>
-            ) : (
-              <button className={styles.barCenter} type="button" onClick={() => setShowConfig(false)}>
-                Done
-              </button>
-            )}
-            <div className={styles.barSlot} />
-          </>
-        ) : mode === "preview" ? (
-          <>
-            <button className={styles.barLeft} type="button" onClick={() => setMode("edit")}>
-              Edit
-            </button>
-            <button
-              className={styles.barCenter}
-              type="button"
-              onClick={() => setView(view === "formula" ? "recipe" : "formula")}
-            >
-              {view === "formula" ? "View Recipe" : "View Formula"}
-            </button>
-            <button
-              className={styles.barRight}
-              type="button"
-              onClick={() => setShowConfig(true)}
-              aria-label="Settings"
-            >
-              <Settings size={20} strokeWidth={2} />
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              className={styles.barLeft}
-              type="button"
-              onClick={() => {
-                if (view === "formula") formulaEditRef.current?.commit();
-                else recipeEditRef.current?.commit();
-              }}
-            >
-              Done
-            </button>
-            <div className={styles.barSlot} />
-            <button className={styles.barRight} type="button" onClick={() => setMode("preview")}>
-              Cancel
-            </button>
-          </>
-        )}
-      </div>
+      {selector && (
+        <IngredientSelector
+          context={selector.context}
+          onAdd={selector.onAdd}
+          onDismiss={() => setSelector(null)}
+        />
+      )}
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </>
   );
 }
@@ -370,6 +345,7 @@ export default function FormulaWorkspace() {
       router.replace("/");
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loading persisted formula on mount
     setSaved(formula);
   }, [params?.id, router]);
 
@@ -383,9 +359,7 @@ export default function FormulaWorkspace() {
 
   return (
     <main className={styles.main}>
-      <FormulaProvider initial={saved.state}>
-        <WorkspaceContent saved={saved} />
-      </FormulaProvider>
+      <WorkspaceContent saved={saved} />
     </main>
   );
 }
