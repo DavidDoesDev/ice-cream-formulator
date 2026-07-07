@@ -4,16 +4,10 @@ import { useState, useCallback, useEffect } from "react";
 import { INGREDIENTS } from "@/data/ingredients";
 import type { CatalogIngredient, IngredientCategory } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
+import { Pill } from "@/components/shared/Pill";
+import { Icon } from "@/components/shared/Icon";
+import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
 import styles from "./IngredientSelector.module.scss";
-
-const MACRO_COLORS: Record<string, string> = {
-  fat: "var(--color-macro-fat)",
-  sugar: "var(--color-macro-sugar)",
-  nonfatSolids: "var(--color-macro-nonfat)",
-  stabilizer: "var(--color-macro-stabilizer)",
-  emulsifier: "var(--color-macro-emulsifier)",
-  alcohol: "var(--color-macro-alcohol)",
-};
 
 const CONTEXT_CATEGORIES: Record<string, IngredientCategory[]> = {
   "sugar-mix": ["sweetener"],
@@ -28,6 +22,18 @@ const CONTEXT_CATEGORIES: Record<string, IngredientCategory[]> = {
   general: ["dairy", "sweetener", "stabilizer", "emulsifier", "inclusion", "alcohol", "fruit", "vegan-dairy", "misc"],
 };
 
+const CATEGORY_LABEL: Record<IngredientCategory, string> = {
+  dairy: "Dairy",
+  sweetener: "Sweeteners",
+  stabilizer: "Stabilizers",
+  emulsifier: "Emulsifiers",
+  inclusion: "Inclusions",
+  alcohol: "Alcohol",
+  fruit: "Fruit",
+  "vegan-dairy": "Vegan dairy",
+  misc: "Misc",
+};
+
 interface IngredientSelectorProps {
   context: string;
   onAdd: (ingredient: Ingredient) => void;
@@ -36,10 +42,12 @@ interface IngredientSelectorProps {
 
 export function IngredientSelector({ context, onAdd, onDismiss }: IngredientSelectorProps) {
   const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<IngredientCategory | "all">("all");
   const allowedCategories = CONTEXT_CATEGORIES[context] ?? CONTEXT_CATEGORIES.general;
 
   const filtered = INGREDIENTS.filter((ing) => {
     if (!allowedCategories.includes(ing.category)) return false;
+    if (category !== "all" && ing.category !== category) return false;
     if (!query) return true;
     const q = query.toLowerCase();
     return ing.name.toLowerCase().includes(q) || ing.description.toLowerCase().includes(q);
@@ -70,12 +78,13 @@ export function IngredientSelector({ context, onAdd, onDismiss }: IngredientSele
   }, [onDismiss]);
 
   return (
-    <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onDismiss()}>
+    <div className={styles.drawer}>
+      <div className={styles.scrim} onClick={onDismiss} />
       <div className={styles.sheet}>
         <div className={styles.header}>
-          <h2 className={styles.title}>Add ingredient</h2>
+          <h2 className={styles.title}>Pantry</h2>
           <button className={styles.closeBtn} type="button" onClick={onDismiss} aria-label="Close">
-            ×
+            <Icon name="close" size={20} />
           </button>
         </div>
 
@@ -90,6 +99,30 @@ export function IngredientSelector({ context, onAdd, onDismiss }: IngredientSele
           />
         </div>
 
+        {allowedCategories.length > 1 && (
+          <div className={styles.filters}>
+            <Pill
+              size="sm"
+              tone={category === "all" ? "ink" : "ghost"}
+              active={category === "all"}
+              onClick={() => setCategory("all")}
+            >
+              All
+            </Pill>
+            {allowedCategories.map((cat) => (
+              <Pill
+                key={cat}
+                size="sm"
+                tone={category === cat ? "ink" : "ghost"}
+                active={category === cat}
+                onClick={() => setCategory(cat)}
+              >
+                {CATEGORY_LABEL[cat]}
+              </Pill>
+            ))}
+          </div>
+        )}
+
         <div className={styles.list}>
           {filtered.length === 0 && (
             <p className={styles.empty}>No ingredients match your search.</p>
@@ -97,34 +130,28 @@ export function IngredientSelector({ context, onAdd, onDismiss }: IngredientSele
           {filtered.map((ing) => {
             const macroKeys = Object.keys(ing.macros).filter(
               (k) => k !== "water" && ing.macros[k as keyof typeof ing.macros] > 0
-            );
+            ) as MacroKey[];
             return (
-              <div key={ing.id} className={styles.card}>
+              <button
+                key={ing.id}
+                className={styles.card}
+                type="button"
+                onClick={() => handleAdd(ing)}
+              >
                 <div className={styles.cardBody}>
                   <p className={styles.ingName}>{ing.name}</p>
+                  <p className={styles.ingCat}>{CATEGORY_LABEL[ing.category]}</p>
                   <p className={styles.ingDesc}>{ing.description}</p>
                   <div className={styles.macros}>
                     {macroKeys.map((k) => (
-                      <span
-                        key={k}
-                        className={styles.macroDot}
-                        style={{ background: MACRO_COLORS[k] ?? "var(--color-border)" }}
-                        title={`${k}: ${(ing.macros[k as keyof typeof ing.macros] * 100).toFixed(0)}%`}
-                      />
+                      <MacroDot key={k} macro={k} size={9} />
                     ))}
-                    <span className={styles.macroLabel}>
-                      {macroKeys.map((k) => `${k.replace("nonfatSolids", "NFS")} ${(ing.macros[k as keyof typeof ing.macros] * 100).toFixed(0)}%`).join(" · ")}
-                    </span>
                   </div>
                 </div>
-                <button
-                  className={styles.addBtn}
-                  type="button"
-                  onClick={() => handleAdd(ing)}
-                >
-                  Add
-                </button>
-              </div>
+                <span className={styles.addBtn} aria-hidden>
+                  <Icon name="plus" size={18} />
+                </span>
+              </button>
             );
           })}
         </div>
