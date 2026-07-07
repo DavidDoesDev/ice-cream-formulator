@@ -1,18 +1,13 @@
 import { test, expect } from "@playwright/test";
 
 test("slider thumb is vertically centered on the track", async ({ page }) => {
-  // Navigate to a formula workspace in edit mode
+  // Navigate to the always-live formula workspace (sliders are always present).
   await page.goto("/new");
   const tile = page.locator("button[type='button']:has(p)").first();
   await tile.click();
   await expect(page).toHaveURL(/\/formula\/.+/, { timeout: 5000 });
 
-  // Click Edit formula
-  const editBtn = page.getByRole("button", { name: /edit formula/i });
-  await expect(editBtn).toBeVisible({ timeout: 5000 });
-  await editBtn.click();
-
-  // Wait for sliders to appear
+  // Sliders appear directly — no edit mode.
   const slider = page.locator("input[type='range']").first();
   await expect(slider).toBeVisible({ timeout: 3000 });
 

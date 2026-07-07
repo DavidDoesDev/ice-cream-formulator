@@ -5,7 +5,7 @@ test("slider bounds are archetype-centered, not global", async ({ page }) => {
   await page.locator("button[type='button']:has(p)").first().click();
   await expect(page).toHaveURL(/\/formula\/.+/, { timeout: 5000 });
 
-  await page.getByRole("button", { name: /edit formula/i }).click();
+  // Sliders are always live — no edit mode to enter.
   await expect(page.locator("input[type='range']").first()).toBeVisible({ timeout: 3000 });
 
   // Read min/max/value from every slider

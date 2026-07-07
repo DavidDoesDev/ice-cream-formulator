@@ -1,6 +1,7 @@
 "use client";
 
-import { computeSliderBounds, type MacroRatios } from "@/lib/formula-engine";
+import { type MacroRatios } from "@/lib/formula-engine";
+import { sliderGeometry } from "@/lib/macro-bands";
 import { formatPercent } from "@/lib/measure";
 import { PintCup } from "@/components/shared/PintCup";
 import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
@@ -16,7 +17,15 @@ const SLIDERS: { key: MacroKey; label: string }[] = [
   { key: "stabilizer", label: "Stabilizer" },
   { key: "emulsifier", label: "Emulsifier" },
   { key: "alcohol", label: "Alcohol" },
+  { key: "water", label: "Water" },
 ];
+
+// Candy fill color per macro; water reads as sky (it has no macro swatch).
+function fillVar(key: MacroKey): string {
+  if (key === "water") return "var(--c-sky)";
+  const suffix = key === "nonfatSolids" ? "nonfat" : key;
+  return `var(--color-macro-${suffix})`;
+}
 
 interface MacrosPanelProps {
   ratios: MacroRatios;
@@ -28,7 +37,9 @@ interface MacrosPanelProps {
 }
 
 // Right workspace panel: the composition as a live cup + draggable macro sliders.
-// Dragging a slider re-solves the recipe at fixed yield (handled by the parent).
+// Each track marks its healthy window with edge ticks (drawn over the fill) and
+// flips its fill color when the value strays out of range. Dragging re-solves
+// the recipe at fixed yield (handled by the parent) continuously.
 export function MacrosPanel({
   ratios,
   baseRatios,
@@ -52,38 +63,36 @@ export function MacrosPanel({
       <SectionHeader role="composition" label="Composition" />
 
       {SLIDERS.map(({ key, label }) => {
-        const [min, max] = computeSliderBounds(key, baseRatios[key]);
-        const value = Math.max(min, Math.min(max, ratios[key]));
-        const fillPct = max > min ? ((value - min) / (max - min)) * 100 : 0;
+        const g = sliderGeometry(key, ratios[key], baseRatios[key]);
         return (
           <div key={key} className={styles.sliderRow}>
             <span className={styles.sliderKey}>
               <MacroDot macro={key} /> {label}
             </span>
             <span className={styles.sliderTrack}>
-              <span className={styles.sliderFill} style={{ width: `${fillPct}%`, background: `var(--color-macro-${cssMacro(key)})` }} />
+              <span
+                className={`${styles.sliderFill} ${g.inRange ? "" : styles.fillOut}`}
+                style={{ width: `${g.fillPct}%`, background: g.inRange ? fillVar(key) : undefined }}
+              />
+              <span className={styles.tick} style={{ left: `${g.bandLoPct}%` }} aria-hidden />
+              <span className={styles.tick} style={{ left: `${g.bandHiPct}%` }} aria-hidden />
               <input
                 type="range"
                 className={styles.slider}
-                min={min}
-                max={max}
+                min={g.min}
+                max={g.max}
                 step="any"
-                value={value}
+                value={g.value}
                 aria-label={label}
                 onChange={(e) => onMacroTarget(key, parseFloat(e.target.value))}
               />
             </span>
-            <span className={styles.sliderVal}>{formatPercent(ratios[key] * 100)}%</span>
+            <span className={`${styles.sliderVal} ${g.inRange ? "" : styles.valOut}`}>
+              {formatPercent(ratios[key] * 100)}%
+            </span>
           </div>
         );
       })}
-
-      <div className={styles.waterRow}>
-        <span className={styles.sliderKey}>
-          <MacroDot macro="water" /> Water
-        </span>
-        <span className={styles.waterVal}>{formatPercent(ratios.water * 100)}%</span>
-      </div>
 
       {conflict && (
         <div className={styles.conflict}>
@@ -97,9 +106,4 @@ export function MacrosPanel({
       )}
     </section>
   );
-}
-
-// Macro key → the css var suffix used in globals (nonfatSolids maps to "nonfat").
-function cssMacro(key: MacroKey): string {
-  return key === "nonfatSolids" ? "nonfat" : key;
 }
