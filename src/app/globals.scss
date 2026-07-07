@@ -1,25 +1,41 @@
+// Press design tokens. Color values mirror src/styles/palette.ts (the tested
+// source of truth) — keep them in sync. Flat, class-targeted rules only.
+
 :root {
+  // type
+  --font-poster: var(--font-anton), "Arial Narrow", system-ui, sans-serif;
   --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, monospace;
+  --font-body: var(--font-bricolage), system-ui, sans-serif;
 
-  --color-bg: #fafaf7;
-  --color-surface: #ffffff;
-  --color-text: #1c1812;
-  --color-text-secondary: #8c8680;
-  --color-accent: #d92814;
-  --color-on-accent: #ffffff;
-  --color-border: #e8e4de;
+  // candy constants (shared by every theme)
+  --c-pink: #ff9bb4;
+  --c-mint: #79e4b4;
+  --c-yellow: #ffcf43;
+  --c-sky: #6fcbf2;
+  --c-peach: #ffad63;
+  --c-lilac: #c1adff;
 
-  --color-macro-sugar: #f6d98a;
-  --color-macro-fat: #f0c4a8;
-  --color-macro-nonfat: #a8d8c8;
-  --color-macro-stabilizer: #c8d8f0;
-  --color-macro-emulsifier: #d4c0e8;
-  --color-macro-alcohol: #f0b8c0;
+  // macro → candy
+  --color-macro-fat: var(--c-yellow);
+  --color-macro-sugar: var(--c-pink);
+  --color-macro-nonfat: var(--c-sky);
+  --color-macro-stabilizer: var(--c-mint);
+  --color-macro-emulsifier: var(--c-lilac);
+  --color-macro-alcohol: var(--c-peach);
 
+  // blue-violet ink / accent
+  --accent: #4b39f2;
+
+  // shape
+  --radius: 22px;
+  --radius-lg: 34px;
   --radius-sm: 12px;
   --radius-md: 20px;
-  --radius-lg: 32px;
   --radius-pill: 999px;
+
+  // density (roomy baseline)
+  --u: 1.2;
 
   --ease-jelly: cubic-bezier(0.34, 1.45, 0.64, 1);
   --duration-fast: 160ms;
@@ -40,14 +56,49 @@
   --space-24: 96px;
 }
 
+// press · light (default) — mirrors palette.ts pressLight
+:root {
+  --paper: #f0e6d3;
+  --paper-2: #fbf5e9;
+  --panel: #ece0cb;
+  --ink: var(--accent);
+  --text: var(--accent);
+  --muted: color-mix(in oklab, var(--accent) 42%, #9c8f78);
+  --line: color-mix(in oklab, var(--accent) 20%, transparent);
+  --sh: 6px 6px 0 var(--ink);
+  --sh-h: 10px 10px 0 var(--ink);
+  --grain: 0.55;
+
+  // back-compat aliases for not-yet-restyled components
+  --color-bg: var(--paper);
+  --color-surface: var(--paper-2);
+  --color-text: var(--text);
+  --color-text-secondary: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: #fff;
+  --color-border: var(--line);
+}
+
 @mixin dark-theme {
-  --color-bg: #0b0a0a;
-  --color-surface: #252018;
-  --color-text: #f0ede8;
-  --color-text-secondary: #8c8680;
-  --color-accent: #f0442a;
-  --color-on-accent: #f0ede8;
-  --color-border: #3a3228;
+  // press · dark — mirrors palette.ts pressDark
+  --paper: var(--accent);
+  --paper-2: #5b4bf4;
+  --panel: #3f2fc9;
+  --ink: #f7efdd;
+  --text: #f7efdd;
+  --muted: color-mix(in oklab, #f7efdd 55%, var(--accent));
+  --line: rgba(247, 239, 221, 0.26);
+  --sh: 6px 6px 0 rgba(6, 2, 28, 0.4);
+  --sh-h: 10px 10px 0 rgba(6, 2, 28, 0.45);
+  --grain: 0.4;
+
+  --color-bg: var(--paper);
+  --color-surface: var(--paper-2);
+  --color-text: var(--text);
+  --color-text-secondary: var(--muted);
+  --color-accent: #f7efdd;
+  --color-on-accent: #1a1024;
+  --color-border: var(--line);
 }
 
 // Follow the system unless the user has explicitly chosen light…
@@ -70,19 +121,37 @@
 }
 
 body {
-  font-family: var(--font-display);
-  background: var(--color-bg);
-  color: var(--color-text);
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--text);
   margin: 0;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--accent);
 }
 
-/* Active vertical scrub (e.g. yield): no selection anywhere, up/down cursor everywhere. */
+::selection {
+  background: var(--c-mint);
+  color: #141018;
+}
+
+// Riso film-grain overlay — fixed, non-interactive, multiplies over the page.
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  mix-blend-mode: multiply;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+// Active vertical scrub (e.g. yield): no selection anywhere, up/down cursor.
 body.scrubbing {
   user-select: none;
   -webkit-user-select: none;
@@ -95,4 +164,10 @@ body.scrubbing * {
 
 body.scrubbing ::selection {
   background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
 }

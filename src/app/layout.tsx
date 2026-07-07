@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
+import { Bricolage_Grotesque, Anton, Space_Mono } from "next/font/google";
 import "./globals.scss";
 
 const bricolage = Bricolage_Grotesque({
@@ -7,9 +7,21 @@ const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
 });
 
+const anton = Anton({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-anton",
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-space-mono",
+});
+
 export const metadata: Metadata = {
-  title: "Ice Cream Formulator",
-  description: "Ice cream recipe and formula tool",
+  title: "Ice Cream Lab",
+  description: "A test kitchen for frozen formulas",
 };
 
 export default function RootLayout({
@@ -18,8 +30,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={bricolage.variable} suppressHydrationWarning>
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={`${bricolage.variable} ${anton.variable} ${spaceMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body>
+        {children}
+        <div className="grain" aria-hidden />
+      </body>
     </html>
   );
 }
