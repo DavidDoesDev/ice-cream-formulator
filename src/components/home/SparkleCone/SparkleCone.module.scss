@@ -4,17 +4,20 @@
   // z-index: 2 paints over it, so z-index stays unset here.
   position: absolute;
   right: 0;
-  // Width-driven: fills the whitespace right of the title ink (~610-720px
-  // across desktop widths) with breathing room; height follows the ratio.
-  --w: var(--sparkle-cone-w, min(600px, 44vw));
+  // Width-driven, height follows the ratio. Sized as a statement piece: the
+  // cone ink runs right up to the title's edge and the tip dives past the
+  // caution tape (which paints over it, z-index: 2). The 100vw term shrinks
+  // the cone 1:1 with the viewport, holding a fixed ~640px column on the left
+  // so the ink never swallows the lead paragraph on narrower desktops.
+  --w: var(--sparkle-cone-w, min(760px, calc(100vw - 640px)));
   width: var(--w);
-  aspect-ratio: 1023 / 1537;
-  // Top-aligns the scoop ink — not the image box — with the title: the photo
-  // bakes in a white margin above the scoop (73/1537 of its height = 7.14% of
+  aspect-ratio: 720 / 1280;
+  // Top-aligns the scoop ink — not the video box — with the title: the footage
+  // bakes in a white margin above the scoop (61/1280 of its height = 8.47% of
   // its width). Computed via top rather than translate: a transform here would
   // create a stacking context, isolating the cone's multiply blend from the
   // page and bringing the white box back.
-  top: calc(var(--sparkle-cone-top, calc(48px * var(--u))) - 0.0714 * var(--w));
+  top: calc(var(--sparkle-cone-top, calc(48px * var(--u))) - 0.0847 * var(--w));
   pointer-events: none;
 }
 
@@ -23,9 +26,24 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  // Melts the photo's white background into the paper. Trade-off, accepted
-  // for now: on the dark theme the whole image takes the paper tint.
+  // Melts the footage's white background into the paper. Trade-off, accepted
+  // for now: on the dark theme the whole video takes the paper tint.
   mix-blend-mode: multiply;
+  will-change: transform;
+}
+
+// Parallax planes: JS writes translate3d here, not on the layers themselves.
+// The drift plane (sparkles + chemistry) floats nearer the viewer; the
+// annotation plane moves with the cone so callout markers stay pinned to it.
+.fxPlane {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.annoPlane {
+  position: absolute;
+  inset: 0;
   will-change: transform;
 }
 
@@ -43,7 +61,248 @@
   background-size: 800% 2300%;
   background-position: 0% 0%;
   background-repeat: no-repeat;
-  will-change: transform;
+}
+
+.atoms {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- notation: drifting molecular formulas ---- */
+.notes {
+  position: absolute;
+  inset: 0;
+}
+
+.note {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--ink);
+  opacity: 0;
+  animation: notefloat linear infinite;
+}
+
+@keyframes notefloat {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  12% {
+    opacity: var(--peak, 0.5);
+  }
+
+  80% {
+    opacity: var(--peak, 0.5);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+}
+
+/* ---- structures: skeletal ring diagrams ---- */
+.structs {
+  position: absolute;
+  inset: 0;
+}
+
+.struct {
+  position: absolute;
+  color: var(--ink);
+  animation: structdrift ease-in-out infinite alternate;
+}
+
+.structPath {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.structO {
+  fill: currentColor;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+@keyframes structdrift {
+  from {
+    transform: rotate(-5deg) translateY(0);
+  }
+
+  to {
+    transform: rotate(5deg) translateY(-18px);
+  }
+}
+
+/* ---- callouts: textbook figure labels ---- */
+.callouts {
+  position: absolute;
+  inset: 0;
+}
+
+// Keyed per entry so the animations restart, while the measuring wrapper
+// above stays mounted.
+.calloutFig {
+  position: absolute;
+  inset: 0;
+}
+
+.calloutLines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.calloutLine {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5px;
+  stroke-dasharray: 1;
+  animation: calloutline 4.8s linear both;
+}
+
+@keyframes calloutline {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+
+  16% {
+    stroke-dashoffset: 0;
+  }
+
+  88% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+.calloutDot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: calloutdot 4.8s ease both;
+}
+
+@keyframes calloutdot {
+  0% {
+    opacity: 0;
+    scale: 0.2;
+  }
+
+  8% {
+    opacity: 1;
+    scale: 1;
+  }
+
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.calloutLabel {
+  // Right edge sits at the elbow; the underline is the label's own border so
+  // it always spans exactly the text, however long the macro name runs.
+  position: absolute;
+  transform: translateY(-100%);
+  padding: 0 4px 3px 2px;
+  border-bottom: 1.5px solid var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+  animation: calloutlabel 4.8s ease both;
+}
+
+@keyframes calloutlabel {
+  0%,
+  10% {
+    opacity: 0;
+    translate: -8px 0;
+  }
+
+  20% {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---- dev panel ---- */
+.panel {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  // Above the grain overlay (z-index: 60) so it stays crisp and clickable.
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--paper-2);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--sh);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink);
+  // The scene disables pointer events; the panel needs them back.
+  pointer-events: auto;
+}
+
+.panelTitle {
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.panelRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.panelCheck {
+  accent-color: var(--accent);
+}
+
+.panelRange {
+  width: 90px;
+  accent-color: var(--accent);
 }
 
 @media (max-width: 1020px) {
