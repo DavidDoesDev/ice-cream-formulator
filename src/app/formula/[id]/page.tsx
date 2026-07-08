@@ -266,6 +266,17 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
           )}
 
           <div className={styles.work}>
+            {/* Macros first in the DOM so it stacks on top on narrow screens
+                (macros-first matches the product thesis); on desktop the .work
+                grid uses `order` to restore recipe-left / macros-right. */}
+            <MacrosPanel
+              ratios={ratios}
+              baseRatios={baseRatios}
+              style={meta.style}
+              conflict={conflict}
+              onMacroTarget={onMacroTarget}
+              onRebalance={onRebalance}
+            />
             <RecipePanel
               recipe={ws.recipe}
               yieldGrams={ws.yieldGrams}
@@ -280,14 +291,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               onQuickAdd={onQuickAdd}
               onYield={onYield}
               onNotes={setNotes}
-            />
-            <MacrosPanel
-              ratios={ratios}
-              baseRatios={baseRatios}
-              style={meta.style}
-              conflict={conflict}
-              onMacroTarget={onMacroTarget}
-              onRebalance={onRebalance}
             />
           </div>
         </div>

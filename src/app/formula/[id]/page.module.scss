@@ -135,4 +135,14 @@
   .work {
     grid-template-columns: 1.05fr 1fr;
   }
+
+  // DOM is macros-first (so it stacks on top when narrow); on desktop restore
+  // the original two-column arrangement: recipe left, macros right.
+  .work > :first-child {
+    order: 2;
+  }
+
+  .work > :last-child {
+    order: 1;
+  }
 }
