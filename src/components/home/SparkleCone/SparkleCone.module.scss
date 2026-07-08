@@ -10,10 +10,11 @@
   right: calc(-0.055 * var(--w));
   // Width-driven, height follows the ratio. Sized as a statement piece: the
   // cone ink runs right up to the title's edge and the tip dives past the
-  // caution tape (which paints over it, z-index: 2). The 100vw term shrinks
-  // the cone 1:1 with the viewport, holding a fixed ~640px column on the left
-  // so the ink never swallows the lead paragraph on narrower desktops.
-  --w: var(--sparkle-cone-w, min(760px, calc(100vw - 640px)));
+  // caution tape (which paints over it, z-index: 2). On wide screens (>~1067px)
+  // the 100vw term wins, holding a fixed ~640px left column so the ink never
+  // swallows the lead paragraph. Below that the 40vw floor takes over so the
+  // cone stays beside the hero on phones/tablets instead of collapsing.
+  --w: var(--sparkle-cone-w, min(760px, max(40vw, calc(100vw - 640px))));
   width: var(--w);
   aspect-ratio: 720 / 1280;
   // Top-aligns the scoop ink — not the video box — with the title: the footage
@@ -376,8 +377,30 @@
   outline-offset: 1px;
 }
 
-@media (max-width: 1020px) {
+// Phone: the cone becomes a centred backdrop behind the hero title (the hero's
+// own phone rules centre the content column and lift it above this). Centred
+// via left/right/margin — never a transform, which would give .scene a
+// stacking context and isolate the multiply blend from the paper.
+@media (max-width: 640px) {
   .scene {
+    --sparkle-cone-w: 62vw;
+    // Right-aligned (left stays auto) with a deeper overhang than desktop, so
+    // the cone pushes off the right edge behind the left-aligned title.
+    right: calc(-0.14 * var(--w));
+    top: calc(60px * var(--u));
+  }
+
+  // Dissolve the lower cone into the paper: the scoop reads as a full cone
+  // behind the title, then melts away so the body text below sits on clean
+  // ground. -webkit- prefix for iOS Safari. Masking the already-blended video
+  // keeps the visible pixels multiplying against the paper.
+  .cone {
+    -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 72%);
+    mask-image: linear-gradient(to bottom, #000 40%, transparent 72%);
+  }
+
+  // Callout labels trail left into a paper margin that doesn't exist here.
+  .annoPlane {
     display: none;
   }
 }

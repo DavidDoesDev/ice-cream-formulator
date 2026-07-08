@@ -433,6 +433,30 @@
   border-color: var(--accent);
 }
 
+@media (max-width: 640px) {
+  // Poster layout: left-aligned content column with the SparkleCone as an
+  // absolute backdrop hugging the right (see SparkleCone). Left alignment is
+  // the block default, so the hero just needs its content lifted above the
+  // cone — which stays z-index-free so its multiply blend fuses to the paper.
+  .brandLockup,
+  .title,
+  .lead,
+  .cta {
+    position: relative;
+    z-index: 1;
+  }
+
+  .title {
+    // Bigger on phone — it's the hero now, sitting over the cone.
+    font-size: clamp(70px, 19vw, 128px);
+  }
+
+  .brandMark {
+    // Smaller mark on phone; the wordmark keeps its size.
+    height: 52px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marqueeTrack {
     animation: none;
