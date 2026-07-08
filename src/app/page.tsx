@@ -13,6 +13,10 @@ import { Header } from "@/components/shared/Header";
 import styles from "./page.module.scss";
 
 const MARQUEE_ITEMS = ["TEST BATCH", "IN PROGRESS"];
+// One run's worth of items: the phrases repeated enough to overflow wide
+// viewports, so the two-run -50% loop never exposes a gap on reset. Both runs
+// render this same list, which is what keeps the loop seamless.
+const MARQUEE_RUN = Array.from({ length: 4 }, () => MARQUEE_ITEMS).flat();
 
 // Sentence case for filter labels: "philadelphia" -> "Philadelphia".
 const sentenceCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
@@ -98,7 +102,7 @@ export default function Home() {
       <div className={styles.marquee} aria-hidden>
         <div className={styles.marqueeTrack}>
           <div className={styles.marqueeRun}>
-            {MARQUEE_ITEMS.concat(MARQUEE_ITEMS).map((word, i) => (
+            {MARQUEE_RUN.map((word, i) => (
               <span key={`a${i}`} className={styles.marqueeItem}>
                 <span className={styles.marqueeText}>{word}</span>
                 <Icon name="snow" size={26} />
@@ -106,7 +110,7 @@ export default function Home() {
             ))}
           </div>
           <div className={styles.marqueeRun}>
-            {MARQUEE_ITEMS.concat(MARQUEE_ITEMS).map((word, i) => (
+            {MARQUEE_RUN.map((word, i) => (
               <span key={`b${i}`} className={styles.marqueeItem}>
                 <span className={styles.marqueeText}>{word}</span>
                 <Icon name="snow" size={26} />
