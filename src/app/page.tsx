@@ -10,6 +10,7 @@ import { PintCup } from "@/components/shared/PintCup";
 import { Icon } from "@/components/shared/Icon";
 import { Pill } from "@/components/shared/Pill";
 import { Header } from "@/components/shared/Header";
+import { SparkleCone } from "@/components/home/SparkleCone";
 import styles from "./page.module.scss";
 
 const MARQUEE_ITEMS = ["TEST BATCH", "IN PROGRESS"];
@@ -97,6 +98,7 @@ export default function Home() {
             <Icon name="dice" size={22} />
           </button>
         </div>
+        <SparkleCone />
       </section>
 
       <div className={styles.marquee} aria-hidden>

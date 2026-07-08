@@ -6,6 +6,8 @@
 
 /* ---- hero ---- */
 .hero {
+  // Positioning context for the SparkleCone overlay in the right whitespace.
+  position: relative;
   padding: calc(30px * var(--u)) 0 calc(28px * var(--u));
 }
 
@@ -141,6 +143,10 @@
   overflow: hidden;
   background: var(--c-yellow);
   transform: rotate(-2deg);
+  // Above the SparkleCone, which pokes down from the hero; if they meet, the
+  // tape crosses over the cone.
+  position: relative;
+  z-index: 2;
 }
 
 .marqueeTrack {

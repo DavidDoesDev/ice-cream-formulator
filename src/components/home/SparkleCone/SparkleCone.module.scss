@@ -1,0 +1,53 @@
+.scene {
+  // Top-aligned with the hero title (hero padding + h1 margin). It may or may
+  // not reach the caution tape depending on viewport; if it does, the tape's
+  // z-index: 2 paints over it, so z-index stays unset here.
+  position: absolute;
+  right: 0;
+  // Width-driven: fills the whitespace right of the title ink (~610-720px
+  // across desktop widths) with breathing room; height follows the ratio.
+  --w: var(--sparkle-cone-w, min(600px, 44vw));
+  width: var(--w);
+  aspect-ratio: 1023 / 1537;
+  // Top-aligns the scoop ink — not the image box — with the title: the photo
+  // bakes in a white margin above the scoop (73/1537 of its height = 7.14% of
+  // its width). Computed via top rather than translate: a transform here would
+  // create a stacking context, isolating the cone's multiply blend from the
+  // page and bringing the white box back.
+  top: calc(var(--sparkle-cone-top, calc(48px * var(--u))) - 0.0714 * var(--w));
+  pointer-events: none;
+}
+
+.cone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  // Melts the photo's white background into the paper. Trade-off, accepted
+  // for now: on the dark theme the whole image takes the paper tint.
+  mix-blend-mode: multiply;
+  will-change: transform;
+}
+
+.sparkles {
+  // One 600×550 frame of the 8×12 sheet; frame-stepping happens in JS via
+  // background-position. Keeps the frame's own aspect ratio (stretching it to
+  // the cone's would oval the sparkles) and oversizes it so glints spill past
+  // the scoop's silhouette.
+  position: absolute;
+  top: -4%;
+  left: -14%;
+  width: 128%;
+  aspect-ratio: 600 / 550;
+  background-image: url("/home/sparkle-sprites.webp");
+  background-size: 800% 1200%;
+  background-position: 0% 0%;
+  background-repeat: no-repeat;
+  will-change: transform;
+}
+
+@media (max-width: 1020px) {
+  .scene {
+    display: none;
+  }
+}
