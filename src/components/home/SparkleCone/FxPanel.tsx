@@ -1,12 +1,16 @@
 import { useState } from "react";
 import styles from "./SparkleCone.module.scss";
+import { PRESETS, ramp } from "./palette";
+
+// Per-layer tint: off → theme ink; on → ramp(t) off the shared colour ramp.
+export type LayerColor = { on: boolean; t: number };
 
 export type FxConfig = {
   sparkles: { on: boolean };
-  atoms: { on: boolean; density: number; size: number; opacity: number };
-  notation: { on: boolean; density: number; opacity: number };
-  structures: { on: boolean; density: number; opacity: number };
-  callouts: { on: boolean };
+  atoms: { on: boolean; density: number; size: number; opacity: number; color: LayerColor };
+  notation: { on: boolean; density: number; opacity: number; color: LayerColor };
+  structures: { on: boolean; density: number; opacity: number; color: LayerColor };
+  callouts: { on: boolean; color: LayerColor };
 };
 
 type LayerKey = keyof FxConfig;
@@ -15,11 +19,14 @@ type LayerKey = keyof FxConfig;
 // it per element), so the slider reading is meaningful on its own.
 export const defaultFx: FxConfig = {
   sparkles: { on: true },
-  atoms: { on: false, density: 1, size: 1, opacity: 0.6 },
-  notation: { on: false, density: 1, opacity: 0.5 },
-  structures: { on: false, density: 1, opacity: 0.2 },
-  callouts: { on: false },
+  atoms: { on: false, density: 1, size: 1, opacity: 0.6, color: { on: false, t: 0.67 } },
+  notation: { on: false, density: 1, opacity: 0.5, color: { on: false, t: 0.67 } },
+  structures: { on: false, density: 1, opacity: 0.2, color: { on: false, t: 0.67 } },
+  callouts: { on: true, color: { on: false, t: 0.67 } },
 };
+
+// Layers that expose a colour picker (sparkles is a sprite sheet — no tint).
+const COLORABLE: LayerKey[] = ["atoms", "notation", "structures", "callouts"];
 
 // Tiny external store (for useSyncExternalStore) so the config loads from and
 // persists to localStorage without any setState-in-effect. Server snapshot is
@@ -83,20 +90,69 @@ const DRAWERS: Partial<Record<LayerKey, SliderDef[]>> = {
   structures: [DENSITY, OPACITY],
 };
 
-// Dev-only tuning panel for auditioning the effect layers. Layers with
-// specifics get a drawer of sliders, each with a live value readout so a
-// preferred setting can be read off and reported.
+// One layer's colour control: an ink swatch (theme default), the named preset
+// swatches, and a continuous slider across the full ramp with a live readout.
+function ColorPicker({ color, onPatch }: { color: LayerColor; onPatch: (p: Partial<LayerColor>) => void }) {
+  return (
+    <div className={styles.panelColor}>
+      <div className={styles.panelSwatches}>
+        <button
+          type="button"
+          className={`${styles.panelSwatch} ${!color.on ? styles.panelSwatchOn : ""}`}
+          style={{ background: "var(--ink)" }}
+          title="ink"
+          onClick={() => onPatch({ on: false })}
+        />
+        {PRESETS.map((p) => (
+          <button
+            key={p.label}
+            type="button"
+            className={`${styles.panelSwatch} ${color.on && color.t === p.t ? styles.panelSwatchOn : ""}`}
+            style={{ background: ramp(p.t) }}
+            title={p.label}
+            onClick={() => onPatch({ on: true, t: p.t })}
+          />
+        ))}
+      </div>
+      <label className={styles.panelRow}>
+        <input
+          type="range"
+          className={styles.panelRange}
+          min={0}
+          max={1}
+          step={0.01}
+          value={color.t}
+          onChange={(e) => onPatch({ on: true, t: Number(e.target.value) })}
+        />
+        <span className={styles.panelSwatch} style={{ background: color.on ? ramp(color.t) : "var(--ink)" }} />
+        <span className={styles.panelVal}>{color.t.toFixed(2)}</span>
+      </label>
+    </div>
+  );
+}
+
+// Dev-only tuning panel for auditioning the effect layers. Each layer with
+// specifics gets a drawer: sliders (with live readouts) and, for the
+// annotation layers, its own colour picker.
 export function FxPanel({ value, onChange }: { value: FxConfig; onChange: (v: FxConfig) => void }) {
   const [open, setOpen] = useState<LayerKey | null>(null);
 
   const setLayer = (k: LayerKey, patch: Record<string, number | boolean>) =>
     onChange({ ...value, [k]: { ...value[k], ...patch } } as FxConfig);
 
+  const setColor = (k: LayerKey, patch: Partial<LayerColor>) =>
+    onChange({
+      ...value,
+      [k]: { ...value[k], color: { ...(value[k] as { color: LayerColor }).color, ...patch } },
+    } as FxConfig);
+
   return (
     <div className={styles.panel}>
       <span className={styles.panelTitle}>cone fx</span>
       {LAYERS.map((k) => {
         const sliders = DRAWERS[k];
+        const colorable = COLORABLE.includes(k);
+        const hasDrawer = !!sliders || colorable;
         return (
           <div key={k} className={styles.panelGroup}>
             <div className={styles.panelRow}>
@@ -109,7 +165,7 @@ export function FxPanel({ value, onChange }: { value: FxConfig; onChange: (v: Fx
                 />
                 {k}
               </label>
-              {sliders && (
+              {hasDrawer && (
                 <button
                   type="button"
                   className={styles.panelCaret}
@@ -119,9 +175,9 @@ export function FxPanel({ value, onChange }: { value: FxConfig; onChange: (v: Fx
                 </button>
               )}
             </div>
-            {sliders && open === k && (
+            {hasDrawer && open === k && (
               <div className={styles.panelDrawer}>
-                {sliders.map((s) => {
+                {sliders?.map((s) => {
                   const v = (value[k] as unknown as Record<string, number>)[s.key];
                   return (
                     <label key={s.key} className={styles.panelRow}>
@@ -139,6 +195,12 @@ export function FxPanel({ value, onChange }: { value: FxConfig; onChange: (v: Fx
                     </label>
                   );
                 })}
+                {colorable && (
+                  <ColorPicker
+                    color={(value[k] as { color: LayerColor }).color}
+                    onPatch={(p) => setColor(k, p)}
+                  />
+                )}
               </div>
             )}
           </div>

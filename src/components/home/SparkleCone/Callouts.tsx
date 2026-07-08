@@ -33,7 +33,7 @@ const ENTRIES = [
 // with preserveAspectRatio="none" needs non-scaling-stroke, which breaks
 // pathLength normalization in Chrome and turns the draw-on dash into a
 // dotted line.
-export function Callouts() {
+export function Callouts({ color }: { color: string }) {
   const [idx, setIdx] = useState(0);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -73,7 +73,7 @@ export function Callouts() {
   }
 
   return (
-    <div ref={ref} className={styles.callouts}>
+    <div ref={ref} className={styles.callouts} style={{ color }}>
       <div className={styles.calloutFig} key={idx}>
         {box && (
           <svg className={styles.calloutLines} viewBox={`0 0 ${box.w} ${box.h}`}>

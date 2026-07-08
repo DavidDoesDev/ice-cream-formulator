@@ -1,6 +1,16 @@
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import styles from "./SparkleCone.module.scss";
-import { SCOOP_X, SCOOP_Y, SPREAD_X, SPREAD_Y, gauss } from "./scatter";
+import { SCOOP_X, SCOOP_Y, SPREAD_X, SPREAD_Y, gauss, domeZ, centerFade } from "./scatter";
+
+// Peak per-diagram parallax travel at the dome apex, in px; scaled by each
+// item's dome-z. The CSS `translate` property composes with the existing
+// `scale` (sizing) and the structdrift keyframe on `transform`. The back plane
+// swings opposite the front (and gentler) with an inverted size gradient, so
+// the two planes read as one sphere's near and far faces.
+const DEPTH_PX = 20;
+const BACK_SWING = 0.7;
+const SIZE_DEPTH = 0.4;
 
 // Hand-plotted skeletal rings, textbook style: a pyranose hexagon, a furanose
 // pentagon, and a two-ring disaccharide with a glycosidic-oxygen bridge. The
@@ -38,6 +48,7 @@ type Item = {
   kind: number;
   left: number;
   top: number;
+  z: number;
   scale: number;
   opacity: number;
   dur: number;
@@ -48,35 +59,59 @@ type Item = {
 // randomized in the state initializer — safe because this layer only mounts
 // client-side (motion-gated), and the parent keys it by density so changes
 // remount with a fresh spread.
-export function Structures({ density, opacity }: { density: number; opacity: number }) {
+export function Structures({
+  density,
+  opacity,
+  color,
+  back = false,
+}: {
+  density: number;
+  opacity: number;
+  color: string;
+  back?: boolean;
+}) {
   const [items] = useState<Item[]>(() =>
-    Array.from({ length: Math.round(5 * density) }, (_, i) => ({
-      kind: i % 3,
+    Array.from({ length: Math.round(5 * density) }, (_, i) => {
       // Leaning toward the scoop, clamped to keep diagrams inside the box.
-      left: Math.min(74, Math.max(0, gauss(SCOOP_X * 100 - 8, SPREAD_X * 100))),
-      top: Math.min(70, Math.max(0, gauss(SCOOP_Y * 100, SPREAD_Y * 100))),
-      scale: 0.9 + Math.random() * 0.9,
-      // Per-item jitter around the configured opacity level.
-      opacity: 0.7 + Math.random() * 0.6,
-      dur: 14 + Math.random() * 14,
-      delay: -Math.random() * 28,
-    })),
+      const left = Math.min(74, Math.max(0, gauss(SCOOP_X * 100 - 8, SPREAD_X * 100)));
+      const top = Math.min(70, Math.max(0, gauss(SCOOP_Y * 100, SPREAD_Y * 100)));
+      const z = domeZ(left / 100, top / 100);
+      const near = back ? -z : z;
+      return {
+        kind: i % 3,
+        left,
+        top,
+        z,
+        // Near-face diagrams render larger than far-face ones, reinforcing depth.
+        scale: (0.9 + Math.random() * 0.9) * (1 + SIZE_DEPTH * near),
+        // Per-item jitter around the configured opacity level; the back plane
+        // fades toward the scoop centre so it doesn't ghost through.
+        opacity: (0.7 + Math.random() * 0.6) * (back ? centerFade(z) : 1),
+        dur: 14 + Math.random() * 14,
+        delay: -Math.random() * 28,
+      };
+    }),
   );
 
+  const swing = back ? DEPTH_PX * BACK_SWING : -DEPTH_PX;
+
   return (
-    <div className={styles.structs}>
+    <div className={styles.structs} style={{ color }}>
       {items.map((s, i) => (
         <span
           key={i}
           className={styles.struct}
-          style={{
-            left: `${s.left}%`,
-            top: `${s.top}%`,
-            scale: String(s.scale),
-            opacity: Math.min(1, s.opacity * opacity),
-            animationDuration: `${s.dur}s`,
-            animationDelay: `${s.delay}s`,
-          }}
+          style={
+            {
+              left: `${s.left}%`,
+              top: `${s.top}%`,
+              translate: `calc(var(--fx-px, 0) * ${swing}px * ${s.z.toFixed(3)}) calc(var(--fx-py, 0) * ${swing}px * ${s.z.toFixed(3)})`,
+              scale: String(s.scale),
+              opacity: Math.min(1, s.opacity * opacity),
+              animationDuration: `${s.dur}s`,
+              animationDelay: `${s.delay}s`,
+            } as CSSProperties
+          }
         >
           <Shape kind={s.kind} />
         </span>

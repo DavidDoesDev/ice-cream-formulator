@@ -7,6 +7,7 @@ import { Callouts } from "./Callouts";
 import { Notation } from "./Notation";
 import { Structures } from "./Structures";
 import { FxPanel, getFx, getServerFx, setFx, subscribeFx } from "./FxPanel";
+import { ramp } from "./palette";
 
 // Sprite-sheet geometry: 180 frames at 30fps in an 8×23 grid (last row holds
 // only 4 frames, so playback steps by frame index — a pure-CSS steps()
@@ -49,6 +50,15 @@ function subscribeMotion(cb: () => void) {
 const getMotionOK = () => !window.matchMedia(MOTION_QUERY).matches;
 const getServerMotionOK = () => false;
 
+// The dev tuning panel is opt-in via a ?dev query param (any environment), so
+// it never ships to real visitors but can be summoned on the deployed site.
+// Read through an external store — false on the server, actual after hydration.
+function subscribeDev() {
+  return () => {};
+}
+const getDevPanel = () => new URLSearchParams(window.location.search).has("dev");
+const getServerDevPanel = () => false;
+
 // Layered hero visual: the cone video (multiply-blended so its white
 // background melts into the paper) sandwiched between two planes of effect
 // layers — behind-the-cone particles read through the blend like they're in
@@ -65,8 +75,12 @@ export function SparkleCone() {
   const backRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
   const annoRef = useRef<HTMLDivElement>(null);
+  // Live lerped pointer offset (-0.5..0.5), shared with the canvas layers so
+  // each atom can add its own dome-depth parallax on top of the plane drift.
+  const pointerRef = useRef({ x: 0, y: 0 });
   const fx = useSyncExternalStore(subscribeFx, getFx, getServerFx);
   const motionOK = useSyncExternalStore(subscribeMotion, getMotionOK, getServerMotionOK);
+  const devPanel = useSyncExternalStore(subscribeDev, getDevPanel, getServerDevPanel);
 
   useEffect(() => {
     const cone = coneRef.current;
@@ -129,6 +143,15 @@ export function SparkleCone() {
       cx += (tx - cx) * 0.08;
       cy += (ty - cy) * 0.08;
       cz += (tz - cz) * 0.08;
+      // Publish the offset for the depth layers: the canvas reads pointerRef
+      // directly; the DOM layers read the CSS vars to scale their own travel.
+      pointerRef.current.x = cx;
+      pointerRef.current.y = cy;
+      const scene = sceneRef.current;
+      if (scene) {
+        scene.style.setProperty("--fx-px", cx.toFixed(4));
+        scene.style.setProperty("--fx-py", cy.toFixed(4));
+      }
       layer(coneRef.current, CONE_SHIFT, CONE_ZOOM, CONE_TILT);
       // Callouts share the cone's exact transform so markers stay pinned.
       layer(annoRef.current, CONE_SHIFT, CONE_ZOOM, CONE_TILT);
@@ -149,17 +172,26 @@ export function SparkleCone() {
   // structures are keyed by density so a slider change deals a fresh layout.
   const { atoms, notation, structures } = fx;
 
+  // Per-layer tint: each annotation layer resolves to its chosen colour or
+  // the theme ink. The canvas takes null and resolves --ink itself; the DOM
+  // layers take a concrete CSS colour applied inline (their SCSS uses
+  // currentColor).
+  const atomsColor = atoms.color.on ? ramp(atoms.color.t) : "var(--ink)";
+  const notationColor = notation.color.on ? ramp(notation.color.t) : "var(--ink)";
+  const structuresColor = structures.color.on ? ramp(structures.color.t) : "var(--ink)";
+  const calloutsColor = fx.callouts.color.on ? ramp(fx.callouts.color.t) : "var(--ink)";
+
   return (
     <div ref={sceneRef} className={styles.scene} aria-hidden>
       <div ref={backRef} className={styles.fxPlane}>
         {motionOK && atoms.on && (
-          <Atoms density={atoms.density * 0.5} size={atoms.size} opacity={atoms.opacity} />
+          <Atoms density={atoms.density * 0.5} size={atoms.size} opacity={atoms.opacity} pointer={pointerRef} color={atomsColor} back />
         )}
         {motionOK && notation.on && (
-          <Notation key={`nb${notation.density}`} density={notation.density * 0.5} opacity={notation.opacity} />
+          <Notation key={`nb${notation.density}`} density={notation.density * 0.5} opacity={notation.opacity} color={notationColor} back />
         )}
         {motionOK && structures.on && (
-          <Structures key={`sb${structures.density}`} density={structures.density * 0.5} opacity={structures.opacity} />
+          <Structures key={`sb${structures.density}`} density={structures.density * 0.5} opacity={structures.opacity} color={structuresColor} back />
         )}
       </div>
       {/* 9.5s loop with the seam crossfaded away at export time; muted +
@@ -176,19 +208,19 @@ export function SparkleCone() {
       <div ref={frontRef} className={styles.fxPlane}>
         {fx.sparkles.on && <div ref={sparkRef} className={styles.sparkles} />}
         {motionOK && atoms.on && (
-          <Atoms density={atoms.density * 0.75} size={atoms.size} opacity={atoms.opacity} />
+          <Atoms density={atoms.density * 0.75} size={atoms.size} opacity={atoms.opacity} pointer={pointerRef} color={atomsColor} />
         )}
         {motionOK && notation.on && (
-          <Notation key={`nf${notation.density}`} density={notation.density * 0.75} opacity={notation.opacity} />
+          <Notation key={`nf${notation.density}`} density={notation.density * 0.75} opacity={notation.opacity} color={notationColor} />
         )}
         {motionOK && structures.on && (
-          <Structures key={`sf${structures.density}`} density={structures.density * 0.75} opacity={structures.opacity} />
+          <Structures key={`sf${structures.density}`} density={structures.density * 0.75} opacity={structures.opacity} color={structuresColor} />
         )}
       </div>
       <div ref={annoRef} className={styles.annoPlane}>
-        {motionOK && fx.callouts.on && <Callouts />}
+        {motionOK && fx.callouts.on && <Callouts color={calloutsColor} />}
       </div>
-      {process.env.NODE_ENV === "development" && <FxPanel value={fx} onChange={setFx} />}
+      {devPanel && <FxPanel value={fx} onChange={setFx} />}
     </div>
   );
 }
