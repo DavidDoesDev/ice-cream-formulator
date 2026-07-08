@@ -30,17 +30,17 @@
 }
 
 .sparkles {
-  // One 600×550 frame of the 8×12 sheet; frame-stepping happens in JS via
-  // background-position. Keeps the frame's own aspect ratio (stretching it to
-  // the cone's would oval the sparkles) and oversizes it so glints spill past
-  // the scoop's silhouette.
+  // One frame of the 8×23 sheet (source frames are 800×733); frame-stepping
+  // happens in JS via background-position. Keeps the frame's own aspect ratio
+  // (stretching it to the cone's would oval the sparkles) and oversizes it so
+  // glints spill past the scoop's silhouette.
   position: absolute;
   top: -4%;
   left: -14%;
   width: 128%;
-  aspect-ratio: 600 / 550;
+  aspect-ratio: 800 / 733;
   background-image: url("/home/sparkle-sprites.webp");
-  background-size: 800% 1200%;
+  background-size: 800% 2300%;
   background-position: 0% 0%;
   background-repeat: no-repeat;
   will-change: transform;

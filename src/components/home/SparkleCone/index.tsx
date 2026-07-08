@@ -3,12 +3,12 @@
 import { useEffect, useRef } from "react";
 import styles from "./SparkleCone.module.scss";
 
-// Sprite-sheet geometry: 90 frames at 30fps in an 8×12 grid (last row holds
-// only 2 frames, so playback steps by frame index — a pure-CSS steps()
-// animation would walk through the 6 empty cells).
+// Sprite-sheet geometry: 180 frames at 30fps in an 8×23 grid (last row holds
+// only 4 frames, so playback steps by frame index — a pure-CSS steps()
+// animation would walk through the 4 empty cells).
 const COLS = 8;
-const ROWS = 12;
-const FRAMES = 90;
+const ROWS = 23;
+const FRAMES = 180;
 const FPS = 30;
 
 // Max parallax displacement in px; the sparkle plane sits nearer the viewer
