@@ -78,8 +78,8 @@ export default function Home() {
             <Icon name="plus" size={18} />
             New formula
           </Link>
-          <a href="#vault" className={styles.ctaGhost}>
-            Open the vault
+          <a href="#batches" className={styles.ctaGhost}>
+            See my batches
             <Icon name="arrow" size={16} />
           </a>
           <button
@@ -116,9 +116,9 @@ export default function Home() {
         </div>
       </div>
 
-      <section className={styles.lib} id="vault">
+      <section className={styles.lib} id="batches">
         <div className={styles.libHead}>
-          <h2 className={styles.libTitle}>The vault</h2>
+          <h2 className={styles.libTitle}>My batches</h2>
           {hasFormulas && (
             <div className={styles.searchbar}>
               <Search size={18} strokeWidth={2} />

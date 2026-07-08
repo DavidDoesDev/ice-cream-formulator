@@ -232,7 +232,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   }, [initialWs, saved]);
   const onSave = useCallback(() => {
     persist(ws, meta.name, meta.style);
-    setToast("Saved to your vault");
+    setToast("Saved to your batches");
   }, [persist, ws, meta]);
 
   return (
