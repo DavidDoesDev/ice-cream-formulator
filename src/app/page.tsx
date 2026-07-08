@@ -62,10 +62,6 @@ export default function Home() {
     <main className={styles.main}>
       <Header />
       <section className={styles.hero}>
-        <div className={styles.eyebrow}>
-          <Icon name="flask" size={16} />
-          <span>Frozen formula studio</span>
-        </div>
         <h1 className={styles.title}>
           <span className={styles.titleRow}>Cold</span>
           <span className={`${styles.titleRow} ${styles.titleShift}`}>Hard</span>

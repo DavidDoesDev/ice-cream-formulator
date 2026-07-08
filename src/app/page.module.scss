@@ -9,24 +9,6 @@
   padding: calc(30px * var(--u)) 0 calc(28px * var(--u));
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  // Reversed sticker: green fill with blue accent text/icon (the accent is the
-  // same blue as the dark-mode background).
-  background: var(--c-mint);
-  border: 2.5px solid var(--accent);
-  border-radius: var(--radius-pill);
-  padding: 12px 22px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 4px;
-}
-
 .title {
   font-family: var(--font-poster);
   text-transform: uppercase;
@@ -46,9 +28,13 @@
 }
 
 .titleHollow {
+  // Opaque paper fill (not transparent) so where "Science" overlaps the rows
+  // above it, it occludes them; z-index lifts it on top of its siblings.
+  position: relative;
+  z-index: 2;
   font-style: normal;
   -webkit-text-stroke: 2.5px var(--ink);
-  color: transparent;
+  color: var(--paper);
 }
 
 .lead {
