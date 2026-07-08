@@ -11,6 +11,29 @@
   padding: calc(30px * var(--u)) 0 calc(28px * var(--u));
 }
 
+.brandLockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: calc(34px * var(--u));
+}
+
+.brandMark {
+  display: block;
+  height: 72px;
+  width: auto;
+}
+
+.brandWord {
+  // Same treatment as the header brand.
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
 .title {
   font-family: var(--font-poster);
   text-transform: uppercase;
@@ -18,7 +41,7 @@
   font-size: clamp(58px, 12.5vw, 178px);
   line-height: 0.82;
   letter-spacing: -0.005em;
-  margin: calc(18px * var(--u)) 0 calc(36px * var(--u));
+  margin: 0 0 calc(36px * var(--u));
 }
 
 .titleRow {

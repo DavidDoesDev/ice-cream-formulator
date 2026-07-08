@@ -65,8 +65,13 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <Header />
+      <Header revealOnScroll />
       <section className={styles.hero}>
+        <div className={styles.brandLockup}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Ice Cream Lab logo" className={styles.brandMark} />
+          <span className={styles.brandWord}>Ice Cream Lab</span>
+        </div>
         <h1 className={styles.title}>
           <span className={styles.titleRow}>Cold</span>
           <span className={`${styles.titleRow} ${styles.titleShift}`}>Hard</span>
