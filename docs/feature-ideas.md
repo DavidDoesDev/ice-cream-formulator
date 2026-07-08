@@ -30,3 +30,16 @@ already computes — why the macros matter, not just what they are.
   explains, so reading the lesson makes the formulator legible.
 - Could be one page or a short sequence of sections; press-styled like the rest
   of the app.
+
+## Share a recipe
+
+Send a saved formula to someone else — email, social, or just a link.
+
+## Print a recipe
+
+A clean print view for a saved formula: ingredients, amounts, macros, process
+notes. (Overlaps with the label maker's print stylesheet work.)
+
+## Link to my site
+
+Link from the app back to my personal site.
