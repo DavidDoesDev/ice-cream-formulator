@@ -21,15 +21,15 @@ const FPS = 30;
 // with vertical mouse position (up = out, down = in), stronger for nearer
 // planes so the stack stretches like a real dolly move; tilts bank each plane
 // into its horizontal sway, again more for nearer planes.
-const BACK_SHIFT = 6;
-const CONE_SHIFT = 14;
-const FRONT_SHIFT = 30;
-const BACK_ZOOM = 0.04;
-const CONE_ZOOM = 0.07;
-const FRONT_ZOOM = 0.1;
-const BACK_TILT = 1.5;
-const CONE_TILT = 3;
-const FRONT_TILT = 5;
+const BACK_SHIFT = 4;
+const CONE_SHIFT = 10;
+const FRONT_SHIFT = 20;
+const BACK_ZOOM = 0.015;
+const CONE_ZOOM = 0.03;
+const FRONT_ZOOM = 0.045;
+const BACK_TILT = 1;
+const CONE_TILT = 2;
+const FRONT_TILT = 3.5;
 
 // Zoom rides on how close the pointer is to the cone's box: far away it
 // rests zoomed out, and it swells as you approach. REACH is the falloff
