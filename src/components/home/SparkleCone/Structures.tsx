@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./SparkleCone.module.scss";
+import { SCOOP_X, SCOOP_Y, SPREAD_X, SPREAD_Y, gauss } from "./scatter";
 
 // Hand-plotted skeletal rings, textbook style: a pyranose hexagon, a furanose
 // pentagon, and a two-ring disaccharide with a glycosidic-oxygen bridge. The
@@ -47,14 +48,16 @@ type Item = {
 // randomized in the state initializer — safe because this layer only mounts
 // client-side (motion-gated), and the parent keys it by density so changes
 // remount with a fresh spread.
-export function Structures({ density }: { density: number }) {
+export function Structures({ density, opacity }: { density: number; opacity: number }) {
   const [items] = useState<Item[]>(() =>
     Array.from({ length: Math.round(5 * density) }, (_, i) => ({
       kind: i % 3,
-      left: 2 + Math.random() * 72,
-      top: 2 + Math.random() * 76,
+      // Leaning toward the scoop, clamped to keep diagrams inside the box.
+      left: Math.min(74, Math.max(0, gauss(SCOOP_X * 100 - 8, SPREAD_X * 100))),
+      top: Math.min(70, Math.max(0, gauss(SCOOP_Y * 100, SPREAD_Y * 100))),
       scale: 0.9 + Math.random() * 0.9,
-      opacity: 0.14 + Math.random() * 0.14,
+      // Per-item jitter around the configured opacity level.
+      opacity: 0.7 + Math.random() * 0.6,
       dur: 14 + Math.random() * 14,
       delay: -Math.random() * 28,
     })),
@@ -70,7 +73,7 @@ export function Structures({ density }: { density: number }) {
             left: `${s.left}%`,
             top: `${s.top}%`,
             scale: String(s.scale),
-            opacity: s.opacity,
+            opacity: Math.min(1, s.opacity * opacity),
             animationDuration: `${s.dur}s`,
             animationDelay: `${s.delay}s`,
           }}

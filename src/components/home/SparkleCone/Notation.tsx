@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import styles from "./SparkleCone.module.scss";
+import { SCOOP_X, SCOOP_Y, SPREAD_X, SPREAD_Y, gauss } from "./scatter";
 
 // Ice-cream chemistry: sucrose/lactose, glucose, water, glycerol, milk
 // calcium, oleic acid.
@@ -21,17 +22,19 @@ type Note = {
 // because this layer only ever mounts client-side (gated on the reduced-motion
 // store, which is false in SSR). The parent keys this component by density, so
 // a density change remounts with a fresh layout.
-export function Notation({ density }: { density: number }) {
+export function Notation({ density, opacity }: { density: number; opacity: number }) {
   const [notes] = useState<Note[]>(() =>
     Array.from({ length: Math.round(9 * density) }, (_, i) => ({
       text: FORMULAS[i % FORMULAS.length],
-      left: 2 + Math.random() * 82,
-      top: 4 + Math.random() * 78,
+      // Leaning toward the scoop, clamped to keep labels inside the box.
+      left: Math.min(80, Math.max(0, gauss(SCOOP_X * 100 - 6, SPREAD_X * 100))),
+      top: Math.min(74, Math.max(0, gauss(SCOOP_Y * 100, SPREAD_Y * 100))),
       size: 11 + Math.random() * 6,
       dur: 9 + Math.random() * 7,
       // Negative delays desync the loops from the first paint.
       delay: -Math.random() * 16,
-      peak: 0.3 + Math.random() * 0.35,
+      // Per-note jitter around the configured opacity level.
+      peak: 0.7 + Math.random() * 0.6,
     })),
   );
 
@@ -48,7 +51,7 @@ export function Notation({ density }: { density: number }) {
               fontSize: n.size,
               animationDuration: `${n.dur}s`,
               animationDelay: `${n.delay}s`,
-              "--peak": n.peak,
+              "--peak": Math.min(1, n.peak * opacity),
             } as CSSProperties
           }
         >

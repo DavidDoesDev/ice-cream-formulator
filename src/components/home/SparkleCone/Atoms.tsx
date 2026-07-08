@@ -1,21 +1,50 @@
 import { useEffect, useRef } from "react";
 import styles from "./SparkleCone.module.scss";
+import { SCOOP_X, SCOOP_Y, SPREAD_X, SPREAD_Y, gauss } from "./scatter";
+
+type Satellite = { dist: number; ang: number; spd: number; r: number };
 
 type Atom = {
   x: number;
   y: number;
+  hx: number;
+  hy: number;
   r: number;
   vx: number;
   vy: number;
-  color: string;
   alpha: number;
-  bond?: { dist: number; ang: number; spd: number; r: number };
+  sats: Satellite[];
 };
 
-// Slow-drifting "atom" dots in theme colors; about a third carry a smaller
-// partner orbiting on a drawn bond, reading as loose molecules.
-export function Atoms({ density }: { density: number }) {
+// Weak spring pulling each atom back to its home point, so the drift orbits
+// the scoop instead of dispersing over the whole box.
+const SPRING = 0.00008;
+const DAMPING = 0.998;
+
+// Hub-and-spoke molecule mix: lone atoms, diatomic pairs, and water/ammonia-
+// style hubs with 2–3 satellites, weighted toward the simpler species.
+function makeSatellites(size: number): Satellite[] {
+  const roll = Math.random();
+  const n = roll < 0.45 ? 0 : roll < 0.7 ? 1 : roll < 0.88 ? 2 : 3;
+  return Array.from({ length: n }, () => ({
+    dist: (7 + Math.random() * 6) * size,
+    ang: Math.random() * Math.PI * 2,
+    spd: (Math.random() - 0.5) * 0.02,
+    r: (0.7 + Math.random() * 1) * size,
+  }));
+}
+
+// Slow-drifting "atom" dots in the callout ink, some clustered into small
+// molecules with drawn bonds. `size` scales every radius and bond length
+// linearly; `opacity` is the target level (each atom jitters ±30% around it)
+// and applies live at draw time without re-dealing the field.
+export function Atoms({ density, size, opacity }: { density: number; size: number; opacity: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const opacityRef = useRef(opacity);
+
+  useEffect(() => {
+    opacityRef.current = opacity;
+  }, [opacity]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -23,13 +52,10 @@ export function Atoms({ density }: { density: number }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Canvas can't reference CSS custom properties, so resolve them once.
-    const root = getComputedStyle(document.documentElement);
-    const palette = [
-      root.getPropertyValue("--ink").trim() || "#241a35",
-      root.getPropertyValue("--accent").trim() || "#4338ff",
-      root.getPropertyValue("--c-yellow").trim() || "#f5c518",
-    ];
+    // Canvas can't reference CSS custom properties, so resolve once. Same
+    // ink as the callouts, so the two effects read as one annotation system
+    // and follow the theme together.
+    const ink = getComputedStyle(canvas).getPropertyValue("--ink").trim() || "#241a35";
 
     let w = 0;
     let h = 0;
@@ -46,55 +72,50 @@ export function Atoms({ density }: { density: number }) {
     const ro = new ResizeObserver(fit);
     ro.observe(canvas);
 
-    const atoms: Atom[] = Array.from({ length: Math.round(22 * density) }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      r: 1.5 + Math.random() * 3.5,
-      // Slight upward bias, like bubbles out of solution.
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: (Math.random() - 0.5) * 0.25 - 0.05,
-      color: palette[Math.floor(Math.random() * palette.length)],
-      alpha: 0.35 + Math.random() * 0.45,
-      bond:
-        Math.random() < 0.35
-          ? {
-              dist: 9 + Math.random() * 9,
-              ang: Math.random() * Math.PI * 2,
-              spd: (Math.random() - 0.5) * 0.02,
-              r: 1.2 + Math.random() * 2,
-            }
-          : undefined,
-    }));
+    const atoms: Atom[] = Array.from({ length: Math.round(22 * density) }, () => {
+      const hx = gauss(SCOOP_X, SPREAD_X) * w;
+      const hy = gauss(SCOOP_Y, SPREAD_Y) * h;
+      return {
+        x: hx,
+        y: hy,
+        hx,
+        hy,
+        r: (1 + Math.random() * 1.6) * size,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        alpha: 0.7 + Math.random() * 0.6,
+        sats: makeSatellites(size),
+      };
+    });
 
     let raf = 0;
     const tick = () => {
       raf = requestAnimationFrame(tick);
       ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = ink;
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = 1;
+      const level = opacityRef.current;
       for (const a of atoms) {
+        a.vx = (a.vx + (a.hx - a.x) * SPRING) * DAMPING;
+        a.vy = (a.vy + (a.hy - a.y) * SPRING) * DAMPING;
         a.x += a.vx;
         a.y += a.vy;
-        if (a.x < -10) a.x = w + 10;
-        if (a.x > w + 10) a.x = -10;
-        if (a.y < -10) a.y = h + 10;
-        if (a.y > h + 10) a.y = -10;
-        ctx.globalAlpha = a.alpha;
-        ctx.fillStyle = a.color;
+        ctx.globalAlpha = Math.min(1, a.alpha * level);
         ctx.beginPath();
         ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
         ctx.fill();
-        if (a.bond) {
-          a.bond.ang += a.bond.spd;
-          const bx = a.x + Math.cos(a.bond.ang) * a.bond.dist;
-          const by = a.y + Math.sin(a.bond.ang) * a.bond.dist;
-          ctx.globalAlpha = a.alpha * 0.7;
-          ctx.strokeStyle = a.color;
-          ctx.lineWidth = 1;
+        for (const s of a.sats) {
+          s.ang += s.spd;
+          const sx = a.x + Math.cos(s.ang) * s.dist;
+          const sy = a.y + Math.sin(s.ang) * s.dist;
+          ctx.globalAlpha = Math.min(1, a.alpha * level * 0.7);
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
-          ctx.lineTo(bx, by);
+          ctx.lineTo(sx, sy);
           ctx.stroke();
           ctx.beginPath();
-          ctx.arc(bx, by, a.bond.r, 0, Math.PI * 2);
+          ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -106,7 +127,7 @@ export function Atoms({ density }: { density: number }) {
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [density]);
+  }, [density, size]);
 
   return <canvas ref={ref} className={styles.atoms} />;
 }

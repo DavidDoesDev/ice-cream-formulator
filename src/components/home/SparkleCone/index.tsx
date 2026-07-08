@@ -144,17 +144,23 @@ export function SparkleCone() {
     };
   }, []);
 
-  // The chemistry layers split across both planes, lighter behind the cone.
-  // They're keyed by density so a slider change deals a fresh random layout.
-  const backD = fx.density * 0.5;
-  const frontD = fx.density * 0.75;
+  // The chemistry layers split across both planes, lighter behind the cone
+  // (back 0.5× / front 0.75× of the configured density). Notation and
+  // structures are keyed by density so a slider change deals a fresh layout.
+  const { atoms, notation, structures } = fx;
 
   return (
     <div ref={sceneRef} className={styles.scene} aria-hidden>
       <div ref={backRef} className={styles.fxPlane}>
-        {motionOK && fx.atoms && <Atoms density={backD} />}
-        {motionOK && fx.notation && <Notation key={`nb${fx.density}`} density={backD} />}
-        {motionOK && fx.structures && <Structures key={`sb${fx.density}`} density={backD} />}
+        {motionOK && atoms.on && (
+          <Atoms density={atoms.density * 0.5} size={atoms.size} opacity={atoms.opacity} />
+        )}
+        {motionOK && notation.on && (
+          <Notation key={`nb${notation.density}`} density={notation.density * 0.5} opacity={notation.opacity} />
+        )}
+        {motionOK && structures.on && (
+          <Structures key={`sb${structures.density}`} density={structures.density * 0.5} opacity={structures.opacity} />
+        )}
       </div>
       {/* 9.5s loop with the seam crossfaded away at export time; muted +
           playsInline are required for autoplay to be allowed at all. */}
@@ -168,13 +174,19 @@ export function SparkleCone() {
         playsInline
       />
       <div ref={frontRef} className={styles.fxPlane}>
-        {fx.sparkles && <div ref={sparkRef} className={styles.sparkles} />}
-        {motionOK && fx.atoms && <Atoms density={frontD} />}
-        {motionOK && fx.notation && <Notation key={`nf${fx.density}`} density={frontD} />}
-        {motionOK && fx.structures && <Structures key={`sf${fx.density}`} density={frontD} />}
+        {fx.sparkles.on && <div ref={sparkRef} className={styles.sparkles} />}
+        {motionOK && atoms.on && (
+          <Atoms density={atoms.density * 0.75} size={atoms.size} opacity={atoms.opacity} />
+        )}
+        {motionOK && notation.on && (
+          <Notation key={`nf${notation.density}`} density={notation.density * 0.75} opacity={notation.opacity} />
+        )}
+        {motionOK && structures.on && (
+          <Structures key={`sf${structures.density}`} density={structures.density * 0.75} opacity={structures.opacity} />
+        )}
       </div>
       <div ref={annoRef} className={styles.annoPlane}>
-        {motionOK && fx.callouts && <Callouts />}
+        {motionOK && fx.callouts.on && <Callouts />}
       </div>
       {process.env.NODE_ENV === "development" && <FxPanel value={fx} onChange={setFx} />}
     </div>

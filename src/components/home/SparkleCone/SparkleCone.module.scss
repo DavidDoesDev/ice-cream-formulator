@@ -3,7 +3,11 @@
   // not reach the caution tape depending on viewport; if it does, the tape's
   // z-index: 2 paints over it, so z-index stays unset here.
   position: absolute;
-  right: 0;
+  // Overhangs the hero's right edge to swallow the footage's baked-in white
+  // margin (the cone ink sways 26-82px shy of the frame edge); without this
+  // the blend melts the margin into paper and a phantom gap opens up on the
+  // right. Body's overflow-x: clip trims the overhang.
+  right: calc(-0.055 * var(--w));
   // Width-driven, height follows the ratio. Sized as a statement piece: the
   // cone ink runs right up to the title's edge and the tip dives past the
   // caution tape (which paints over it, z-index: 2). The 100vw term shrinks
@@ -289,11 +293,49 @@
   text-transform: uppercase;
 }
 
+.panelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .panelRow {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.panelName {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
   cursor: pointer;
+}
+
+.panelCaret {
+  margin-left: auto;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.panelDrawer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0 4px 20px;
+}
+
+.panelVal {
+  margin-left: auto;
+  min-width: 28px;
+  text-align: right;
+  font-weight: 700;
+  opacity: 0.65;
 }
 
 .panelCheck {
@@ -301,7 +343,7 @@
 }
 
 .panelRange {
-  width: 90px;
+  width: 80px;
   accent-color: var(--accent);
 }
 
