@@ -81,7 +81,7 @@ export default function Home() {
         </h1>
         <p className={styles.lead}>
           Invent frozen formulas from the <b>macros up</b>. Steer fat, sugar and
-          milk solids in real time and watch the core sample fill.
+          milk solids in real time and design the scoop you can&apos;t buy anywhere.
         </p>
         <div className={styles.cta}>
           <a href="#batches" className={styles.ctaGhost}>
