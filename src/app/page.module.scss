@@ -49,7 +49,9 @@
 }
 
 .titleShift {
-  transform: translateX(clamp(20px, 7vw, 120px));
+  // Small nudge right — less than a character; em-based so it scales with the
+  // responsive title size.
+  transform: translateX(0.18em);
 }
 
 .titleHollow {
