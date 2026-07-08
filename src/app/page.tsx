@@ -84,14 +84,14 @@ export default function Home() {
           milk solids in real time and watch the core sample fill.
         </p>
         <div className={styles.cta}>
-          <Link href="/new" className={styles.ctaPrimary}>
-            <Icon name="plus" size={18} />
-            New formula
-          </Link>
           <a href="#batches" className={styles.ctaGhost}>
             See my batches
             <Icon name="arrow" size={16} />
           </a>
+          <Link href="/new" className={styles.ctaPrimary}>
+            <Icon name="plus" size={18} />
+            New formula
+          </Link>
           <button
             className={styles.dice}
             type="button"
