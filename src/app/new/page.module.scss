@@ -4,17 +4,6 @@
   padding: 0 0 calc(90px * var(--u));
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
 .title {
   font-family: var(--font-poster);
   text-transform: uppercase;

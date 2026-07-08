@@ -10,7 +10,10 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: calc(16px * var(--u)) calc(20px * var(--u));
+  // Match the page body's gutter: bodies are min(1240px, 92vw) centered, so
+  // their content edge sits this far in from the viewport. Aligns the hamburger
+  // and actions with the content below.
+  padding: calc(16px * var(--u)) calc((100vw - min(1240px, 92vw)) / 2);
   background: color-mix(in oklab, var(--paper) 86%, transparent);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);

@@ -12,7 +12,7 @@ import { Pill } from "@/components/shared/Pill";
 import { Header } from "@/components/shared/Header";
 import styles from "./page.module.scss";
 
-const MARQUEE_ITEMS = ["COLD", "HARD", "SCIENCE"];
+const MARQUEE_ITEMS = ["TEST BATCH", "IN PROGRESS"];
 
 // Sentence case for filter labels: "philadelphia" -> "Philadelphia".
 const sentenceCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();

@@ -7,7 +7,6 @@ import { ARCHETYPES } from "@/data/archetypes";
 import type { Archetype } from "@/data/types";
 import { ArchetypeTile } from "@/components/shared/ArchetypeTile";
 import { SearchModule } from "@/components/shared/SearchModule";
-import { Icon } from "@/components/shared/Icon";
 import { Header } from "@/components/shared/Header";
 import { matchTemplate, type MatchResult } from "@/lib/template-matcher";
 import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
@@ -41,12 +40,7 @@ function NewFormulaInner() {
 
   return (
     <main className={styles.main}>
-      <Header>
-        <div className={styles.eyebrow}>
-          <Icon name="flask" size={16} />
-          <span>Start a batch</span>
-        </div>
-      </Header>
+      <Header />
 
       <h1 className={styles.title}>New Formula</h1>
 
