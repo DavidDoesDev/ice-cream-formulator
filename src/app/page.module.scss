@@ -139,7 +139,7 @@
   // -2deg rotation doesn't reveal paper triangles at the edges; body's
   // overflow-x: clip trims the overhang. Vertical margins give the tilt room.
   width: 108vw;
-  margin: calc(44px * var(--u)) 0 calc(44px * var(--u)) calc(50% - 54vw);
+  margin: calc(16px * var(--u)) 0 calc(44px * var(--u)) calc(50% - 54vw);
   overflow: hidden;
   background: var(--c-yellow);
   transform: rotate(-2deg);
@@ -187,7 +187,7 @@
 
 /* ---- library ---- */
 .lib {
-  margin-top: calc(44px * var(--u));
+  margin-top: calc(76px * var(--u));
 }
 
 .libHead {
