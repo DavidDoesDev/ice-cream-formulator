@@ -139,7 +139,7 @@
   // -2deg rotation doesn't reveal paper triangles at the edges; body's
   // overflow-x: clip trims the overhang. Vertical margins give the tilt room.
   width: 108vw;
-  margin: calc(16px * var(--u)) 0 calc(44px * var(--u)) calc(50% - 54vw);
+  margin: calc(30px * var(--u)) 0 calc(44px * var(--u)) calc(50% - 54vw);
   overflow: hidden;
   background: var(--c-yellow);
   transform: rotate(-2deg);
@@ -152,7 +152,7 @@
 .marqueeTrack {
   display: flex;
   width: max-content;
-  animation: marqmove 64s linear infinite;
+  animation: marqmove 107s linear infinite;
 }
 
 .marqueeRun {
@@ -164,7 +164,7 @@
   align-items: center;
   gap: 22px;
   padding: 18px 26px;
-  color: #1a1024;
+  color: var(--accent);
 }
 
 .marqueeText {
@@ -176,7 +176,7 @@
 }
 
 .marqueeItem :global(svg) {
-  color: #1a1024;
+  color: var(--accent);
 }
 
 @keyframes marqmove {
