@@ -18,6 +18,8 @@
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-bottom: 2px solid var(--line);
+  // Match the body's theme cross-fade so the bar doesn't snap on light/dark.
+  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 .menuWrap {
@@ -34,6 +36,7 @@
   background: var(--paper-2);
   color: var(--ink);
   cursor: pointer;
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
 }
 
 .menu {
@@ -50,6 +53,7 @@
   border: 2.5px solid var(--ink);
   border-radius: var(--radius-md);
   box-shadow: var(--sh);
+  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 .menuItem {
@@ -81,6 +85,7 @@
   text-transform: uppercase;
   color: var(--ink);
   text-decoration: none;
+  transition: color 0.4s ease;
 }
 
 .actions {
@@ -88,4 +93,13 @@
   gap: 8px;
   align-items: center;
   margin-left: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topbar,
+  .iconBtn,
+  .menu,
+  .brand {
+    transition: none;
+  }
 }
