@@ -85,8 +85,8 @@ export default function Home() {
         </p>
         <div className={styles.cta}>
           <a href="#batches" className={styles.ctaGhost}>
+            <Icon name="pint" size={18} />
             See my batches
-            <Icon name="arrow" size={16} />
           </a>
           <Link href="/new" className={styles.ctaPrimary}>
             <Icon name="plus" size={18} />
