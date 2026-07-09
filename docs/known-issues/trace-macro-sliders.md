@@ -1,8 +1,8 @@
 # Known issue: stabilizer / emulsifier sliders feel unresponsive
 
-Status: **root-caused & fixed** — the Safari-specific lag was a main-thread
-saturation problem, reproduced and measured in WebKit (see "Root cause", below).
-Pending final user confirmation in real Safari.
+Status: **still open** — the main-thread saturation fix below measured well in
+WebKit, but the user reports slider issues persist in real Safari (tracked in
+issue #55). The remaining hypotheses are at the end of this doc.
 
 ## Symptom
 
