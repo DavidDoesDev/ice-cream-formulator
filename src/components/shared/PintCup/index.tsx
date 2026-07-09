@@ -178,24 +178,45 @@ function PintCupImpl({ ratios, size = "full", width }: PintCupProps) {
         </defs>
 
         <g clipPath={`url(#${clipId})`}>
-          {layers.map(({ key, color, points }) => (
-            <polygon
-              key={key}
-              points={points}
-              fill={color}
-              stroke="var(--ink)"
-              strokeWidth="0.6"
-              strokeOpacity="0.35"
-              className={styles.layer}
-            />
-          ))}
+          {layers.map(({ key, color, points }) =>
+            // With a wave, the water body (and its separator line) is drawn by
+            // the animated path below, so skip its static flat-topped polygon —
+            // otherwise its top stroke leaves a flat line the fill slides under.
+            key === "water" && hasWave ? null : (
+              <polygon
+                key={key}
+                points={points}
+                fill={color}
+                stroke="var(--ink)"
+                strokeWidth="0.6"
+                strokeOpacity="0.35"
+                className={styles.layer}
+              />
+            ),
+          )}
 
           {hasWave && (
             <>
-              {/* Extend the layer above the water down to the trough line so the
-                  waterline can dip without revealing a gap. */}
-              <rect x={-2} y={waterMeanY} width={VW + 4} height={WATER_MAX_AMP} fill={aboveColor} />
-              <path ref={waterRef} d={waterPath(waterMeanY, 0)} fill={waterColor} />
+              {/* Repaint the above-layer's band around the waterline so (a) the
+                  waterline can dip into it without revealing a gap and (b) its
+                  flat bottom stroke is covered — the animated path's stroke below
+                  is the separator now, so it must sway with the fill. */}
+              <rect
+                x={-2}
+                y={waterMeanY - 1}
+                width={VW + 4}
+                height={WATER_MAX_AMP + 1}
+                fill={aboveColor}
+              />
+              <path
+                ref={waterRef}
+                d={waterPath(waterMeanY, 0)}
+                fill={waterColor}
+                stroke="var(--ink)"
+                strokeWidth="0.6"
+                strokeOpacity="0.35"
+                strokeLinejoin="round"
+              />
             </>
           )}
         </g>
