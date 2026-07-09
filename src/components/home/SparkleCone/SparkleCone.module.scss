@@ -381,13 +381,15 @@
 // own phone rules centre the content column and lift it above this). Centred
 // via left/right/margin — never a transform, which would give .scene a
 // stacking context and isolate the multiply blend from the paper.
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .scene {
     --sparkle-cone-w: 62vw;
     // Right-aligned (left stays auto) with a deeper overhang than desktop, so
     // the cone pushes off the right edge behind the left-aligned title.
     right: calc(-0.14 * var(--w));
-    top: calc(60px * var(--u));
+    // --u is a constant, so a flat top sits equally low at every phone width;
+    // subtract a viewport term so the cone rides higher on the wider phones.
+    top: calc(60px * var(--u) - 3vw);
   }
 
   // Dissolve the lower cone into the paper: the scoop reads as a full cone
