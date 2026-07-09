@@ -117,6 +117,11 @@ a new user doesn't have a formula in mind, but they have a favorite pint.
 - Generalizes into clone-from-label: point the app at any pint's nutrition
   panel + ingredient list and it backs out the formulation targets.
 
+## Other units than grams
+
+Display and edit ingredient amounts in units besides grams — ounces, cups,
+tablespoons — for users who don't cook by weight.
+
 ## Affiliate sales
 
 Get paid when a user buys an ingredient or equipment the app pointed them to —
