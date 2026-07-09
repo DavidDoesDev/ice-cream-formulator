@@ -194,8 +194,9 @@ export function SparkleCone() {
           <Structures key={`sb${structures.density}`} density={structures.density * 0.5} opacity={structures.opacity} color={structuresColor} back />
         )}
       </div>
-      {/* 9.5s loop with the seam crossfaded away at export time; muted +
-          playsInline are required for autoplay to be allowed at all. */}
+      {/* 9s loop: the seam is a 1s crossfade dissolving the tail back into the
+          head, built so the loop point is the same source frame (no jump);
+          muted + playsInline are required for autoplay to be allowed at all. */}
       <video
         ref={coneRef}
         className={styles.cone}
