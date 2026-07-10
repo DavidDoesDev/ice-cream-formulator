@@ -52,7 +52,7 @@ const getServerMotionOK = () => false;
 
 // The cone's CSS entrance (delay + duration) in .scene — mirror it here so the
 // callouts hold off until the cone has landed. Keep in sync with the animation.
-const ENTRANCE_MS = 900 + 1800;
+const ENTRANCE_MS = 300 + 1800;
 
 // The dev tuning panel is opt-in via a ?dev query param (any environment), so
 // it never ships to real visitors but can be summoned on the deployed site.
@@ -98,6 +98,9 @@ export function SparkleCone() {
     const t = window.setTimeout(() => setEntered(true), ENTRANCE_MS);
     return () => clearTimeout(t);
   }, [motionOK]);
+
+  // A static cone stands in until the video (2.4 MB mp4) has its first frame.
+  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
     const cone = coneRef.current;
@@ -214,6 +217,12 @@ export function SparkleCone() {
       {/* 9s loop: the seam is a 1s crossfade dissolving the tail back into the
           head, built so the loop point is the same source frame (no jump);
           muted + playsInline are required for autoplay to be allowed at all. */}
+      {/* Placeholder for the video, part of the component: shown in the cone's
+          spot (same multiply blend) until the mp4's first frame is decoded. */}
+      {!videoReady && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className={styles.placeholder} src="/home/cone-placeholder.webp" alt="" aria-hidden />
+      )}
       <video
         ref={coneRef}
         className={styles.cone}
@@ -222,6 +231,7 @@ export function SparkleCone() {
         muted
         loop
         playsInline
+        onLoadedData={() => setVideoReady(true)}
       />
       <div ref={frontRef} className={styles.fxPlane}>
         {fx.sparkles.on && <div ref={sparkRef} className={styles.sparkles} />}
