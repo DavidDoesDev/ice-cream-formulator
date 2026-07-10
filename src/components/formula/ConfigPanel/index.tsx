@@ -48,6 +48,7 @@ interface ConfigPanelProps {
   onCustomPreset: (kind: SmartMixKind, preset: MixPreset) => void;
   onAddMilkIngredient: (ing: Ingredient) => void;
   onRemoveMilkIngredient: (presetId: string) => void;
+  onAddMix: (kind: SmartMixKind, presetId: string) => void;
   onOpenIngredientSelector: (context: string, onAdd: (ingredient: Ingredient) => void) => void;
 }
 
@@ -63,6 +64,7 @@ export function ConfigPanel({
   onCustomPreset,
   onAddMilkIngredient,
   onRemoveMilkIngredient,
+  onAddMix,
   onOpenIngredientSelector,
 }: ConfigPanelProps) {
   const [name, setName] = useState(formulaName);
@@ -195,9 +197,18 @@ export function ConfigPanel({
         <div className={styles.section}>
           <SectionHeader role="specific" label="Smart Ingredients" />
           {needsEggsNudge && (
-            <p className={styles.nudge}>
-              Custards are built on egg yolks — add an Egg mix below for that silky, coating body.
-            </p>
+            <div className={styles.nudge}>
+              <span className={styles.nudgeText}>
+                Custards are built on egg yolks — add them for that silky, coating body.
+              </span>
+              <button
+                className={styles.nudgeAdd}
+                type="button"
+                onClick={() => onAddMix("eggs", "eggs-yolks")}
+              >
+                Add egg yolks
+              </button>
+            </div>
           )}
           <div className={styles.mixRows}>
             {mixRows.map(({ kind, label, icon: Icon }) => {

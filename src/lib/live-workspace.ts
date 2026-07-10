@@ -126,6 +126,28 @@ export function addAdditionalIngredient(
   return { recipe, yieldGrams: totalGrams(recipe) };
 }
 
+// Add a smart mix of a kind not yet present (e.g. the custard egg-yolk nudge:
+// `eggs` → `eggs-yolks`), dosed at `grams`, then scale the batch back to its
+// prior yield so the size doesn't drift. No-op if a mix of that kind already
+// exists, so tapping is safe. Adding real ingredient mass shifts the macros (egg
+// yolk brings fat + emulsifier) — that's the point of turning a base into a
+// custard; the composition change is honest, and nothing happens until tapped.
+export function addSmartMix(
+  ws: LiveWorkspace,
+  kind: SmartMixKind,
+  presetId: string,
+  label: string,
+  grams: number,
+): LiveWorkspace {
+  if (ws.recipe.smartMixes.some((m) => m.kind === kind)) return ws;
+  const smartMixes = [...ws.recipe.smartMixes, { kind, label, presetId, grams: Math.max(0, grams) }];
+  const grown: LiveWorkspace = {
+    recipe: { ...ws.recipe, smartMixes },
+    yieldGrams: totalGrams({ ...ws.recipe, smartMixes }),
+  };
+  return setYield(grown, ws.yieldGrams);
+}
+
 // Remove an additional ingredient; the batch shrinks by its grams.
 export function removeAdditionalIngredient(
   ws: LiveWorkspace,
