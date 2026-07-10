@@ -49,6 +49,31 @@ describe("healthy band (per equipment)", () => {
   });
 });
 
+describe("equipment shift is visible on the slider", () => {
+  // Regression: the track used to rescale with the band, so the sugar green zone
+  // landed at the same track % for every machine and the shift was invisible.
+  it("keeps the slider track fixed across machines", () => {
+    const home = sliderGeometry("custard", "sugar", 0.2, "home-dasher");
+    const cold = sliderGeometry("custard", "sugar", 0.2, "commercial-batch");
+    expect(cold.min).toBe(home.min);
+    expect(cold.max).toBe(home.max);
+  });
+
+  it("slides the green window down within that fixed track for a colder machine", () => {
+    const home = sliderGeometry("custard", "sugar", 0.2, "home-dasher");
+    const cold = sliderGeometry("custard", "sugar", 0.2, "commercial-batch");
+    expect(cold.bandLoPct).toBeLessThan(home.bandLoPct);
+    expect(cold.bandHiPct).toBeLessThan(home.bandHiPct);
+  });
+
+  it("keeps a composition macro's window put (fat doesn't slide)", () => {
+    const home = sliderGeometry("custard", "fat", 0.15, "home-dasher");
+    const cold = sliderGeometry("custard", "fat", 0.15, "commercial-batch");
+    expect(cold.bandLoPct).toBe(home.bandLoPct);
+    expect(cold.bandHiPct).toBe(home.bandHiPct);
+  });
+});
+
 describe("in range", () => {
   it("marks values inside/outside the style window", () => {
     expect(isInRange("custard", "fat", 0.15)).toBe(true);

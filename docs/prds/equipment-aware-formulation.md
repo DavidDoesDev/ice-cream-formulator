@@ -66,7 +66,7 @@ adds the machine picker, the per-machine window shifts, and the recalibration ac
 
 ### Equipment profiles module
 - A small, deep module owns the machine catalog: for each `EquipmentProfile` (home-dasher,
-  creami, pacojet, commercial-batch) a single **PAC-target offset** relative to the home-dasher
+  spin-frozen, commercial-batch) a single **PAC-target offset** relative to the home-dasher
   baseline (home-dasher = 0; colder/harder-serving machines are negative → less sugar needed),
   plus display metadata (name, blurb). One number per machine — adding or tuning a machine is a
   one-line change, not a per-style window table.
@@ -133,9 +133,9 @@ recipe out — not internal call shapes. Prior art: `macro-bands.test`, `style-c
 
 - Design rationale is in `docs/formulation/decisions.md` D8 and the "Adapt for user's equipment"
   entry in `docs/feature-ideas.md`. This PRD builds on `docs/prds/data-backed-formulation.md`.
-- The profile list (home-dasher, creami, pacojet, commercial-batch) matches the existing
-  `EquipmentProfile` enum; creami and pacojet are the same spin-frozen-block family and may share
-  an offset.
+- The profile list (home-dasher, spin-frozen, commercial-batch) matches the `EquipmentProfile`
+  enum. `spin-frozen` is the frozen-block spinner family (Ninja Creami, Pacojet) — merged into
+  one profile since they share PAC behavior; the example machines live in the profile's blurb.
 - The initial PAC-target offsets are a small, tunable table — like the style bands, they can be
   calibrated against real machine behavior over time without touching the mechanism.
 - Next step: slice into executable issues via prd-to-issues.

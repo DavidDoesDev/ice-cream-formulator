@@ -21,14 +21,9 @@ const PROFILES: Record<EquipmentProfile, EquipmentInfo> = {
     blurb: "Canister or frozen-bowl machine — the warmest, softest serve. The baseline.",
     pacOffset: 0,
   },
-  creami: {
-    label: "Ninja Creami",
-    blurb: "Spin-frozen from a solid block — serves harder, so it needs less sugar.",
-    pacOffset: -0.02,
-  },
-  pacojet: {
-    label: "Pacojet",
-    blurb: "Spin-frozen from a solid block — serves harder, so it needs less sugar.",
+  "spin-frozen": {
+    label: "Spin freezer",
+    blurb: "Shaves a solid frozen block into micro-fine particles — e.g. Ninja Creami, Pacojet. Serves harder, so it needs less sugar.",
     pacOffset: -0.02,
   },
   "commercial-batch": {
@@ -41,8 +36,7 @@ const PROFILES: Record<EquipmentProfile, EquipmentInfo> = {
 // Picker order: warmest (baseline) first, coldest last.
 export const EQUIPMENT_ORDER: EquipmentProfile[] = [
   "home-dasher",
-  "creami",
-  "pacojet",
+  "spin-frozen",
   "commercial-batch",
 ];
 
@@ -52,4 +46,12 @@ export function equipmentInfo(equipment: EquipmentProfile): EquipmentInfo {
 
 export function pacOffset(equipment: EquipmentProfile): number {
   return PROFILES[equipment].pacOffset;
+}
+
+// The most-negative offset across all machines (the coldest). The slider track is
+// sized to cover every machine's window (macro-bands), so the green window visibly
+// slides within a fixed track as the machine changes — rather than the track
+// rescaling with it and hiding the shift.
+export function coldestPacOffset(): number {
+  return Math.min(...EQUIPMENT_ORDER.map((p) => PROFILES[p].pacOffset));
 }

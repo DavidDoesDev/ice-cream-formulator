@@ -47,9 +47,9 @@ export type FatTier = "lean" | "medium" | "rich" | "ultra-rich";
 export type SugarSystem = "sucrose" | "blended" | "invert" | "natural";
 
 // Second axis orthogonal to style (D8): the freezing/serving equipment sets the
-// scoopability windows (sugar/PAC, stabilizer). Placeholder — only home-dasher is
-// calibrated this migration; the picker + profile windows are a later feature.
-export type EquipmentProfile = "home-dasher" | "creami" | "pacojet" | "commercial-batch";
+// scoopability windows (sugar/PAC, stabilizer). spin-frozen covers the frozen-block
+// spinner family (Ninja Creami, Pacojet — same PAC behavior). See src/lib/equipment.ts.
+export type EquipmentProfile = "home-dasher" | "spin-frozen" | "commercial-batch";
 export const DEFAULT_EQUIPMENT: EquipmentProfile = "home-dasher";
 
 export type IngredientCategory =

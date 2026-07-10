@@ -27,9 +27,10 @@ baseline**, not commercial. The work is "derive the home window from the equipme
 window to fit the recipe."
 
 **Scope now vs. later.** Add the `equipment` field now as a placeholder — enum `home-dasher`
-(default) · `creami`/`pacojet` (spin-frozen-block family; tolerates harder/lower-PAC mixes →
-sugar window *lower*) · `commercial-batch` (Carpigiani-class; coldest/fastest → lowest sugar +
-stabilizer). Only **home-dasher windows are calibrated** in this migration; the others are stubs.
+(default) · `spin-frozen` (frozen-block spinner family — Ninja Creami, Pacojet; tolerates
+harder/lower-PAC mixes → sugar window *lower*) · `commercial-batch` (Carpigiani-class;
+coldest/fastest → lowest sugar + stabilizer). Only **home-dasher windows are calibrated** in
+this migration; the others are stubs.
 The picker UI, alternate-profile windows, and the **user-initiated recalibration nudge** are the
 deferred "Adapt for user's equipment" feature (`docs/feature-ideas.md`), built on the derivation
 module: equipment → target serving hardness (PAC) → scoopability windows. Per D4, changing
@@ -37,13 +38,21 @@ equipment never mutates the recipe; if macros fall out of the shifted windows, o
 
 **Shipped (2026-07-10, issues #66–#69).** The feature is now built on the derivation module:
 - `src/lib/equipment.ts` holds one **PAC-target offset** per profile (same units as PAC — a
-  sucrose-equivalent fraction of the batch): `home-dasher 0` (baseline) · `creami`/`pacojet`
-  **−0.02** (shared spin-frozen-block family) · `commercial-batch` **−0.04** (coldest). Tuning a
-  machine is this one number — reasonable initial estimates, calibratable like the style bands.
+  sucrose-equivalent fraction of the batch): `home-dasher 0` (baseline) · `spin-frozen`
+  **−0.02** (frozen-block spinners — Creami/Pacojet) · `commercial-batch` **−0.04** (coldest).
+  Tuning a machine is this one number — reasonable initial estimates, calibratable like the
+  style bands.
 - `macro-bands.ts` keys off **(style, equipment)**: the offset shifts the **sugar** window by the
   full amount and the **stabilizer** window by a small fraction (`STABILIZER_OFFSET_SCALE = 0.05`);
-  composition macros are untouched. `home-dasher` reproduces the baseline windows exactly. The
+  composition macros (incl. **fat**) are untouched — fat is a *style/composition* choice, and a
+  spinner only *tolerates* less fat (a texture floor), it doesn't *want* less, so folding it into
+  the PAC offset would misrepresent it. `home-dasher` reproduces the baseline windows exactly. The
   same offset shifts the PAC firm/soft judgement in `relationships.ts`.
+- **The slider track is equipment-independent** (sized to cover every machine's window). This is
+  deliberate: if the track rescaled with the shifted band, the green window landed at the same
+  track % for every machine and the shift was *invisible* — the bug that made a machine change
+  look like it only moved stabilizer. With a fixed track, the green window visibly *slides* down
+  for a colder machine while the value thumb stays put (so an over-sweet mix reads out-of-range).
 - The **equipment picker** lives in Config beside the style selector; changing it re-scopes the
   windows live and persists, never touching grams (D4). When the sugar then sits outside the
   machine's window, `recalibrate()` (a Rebalance-style, user-tapped nudge) re-solves the sugar
