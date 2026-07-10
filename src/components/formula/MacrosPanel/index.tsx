@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type MacroRatios } from "@/lib/formula-engine";
 import { sliderGeometry } from "@/lib/macro-bands";
 import { balanceReport } from "@/lib/balance";
+import { relationshipHints } from "@/lib/relationships";
+import type { DerivedIndices } from "@/lib/derive";
 import { formatPercent } from "@/lib/measure";
 import { PintCup } from "@/components/shared/PintCup";
 import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
@@ -32,6 +34,7 @@ function fillVar(key: MacroKey): string {
 
 interface MacrosPanelProps {
   ratios: MacroRatios;
+  derived: DerivedIndices;
   style: string;
   conflict: boolean;
   onMacroTarget: (macro: keyof MacroRatios, target: number) => void;
@@ -44,6 +47,7 @@ interface MacrosPanelProps {
 // the recipe at fixed yield (handled by the parent) continuously.
 export function MacrosPanel({
   ratios,
+  derived,
   style,
   conflict,
   onMacroTarget,
@@ -134,6 +138,7 @@ export function MacrosPanel({
 
   const report = balanceReport(ratios, style);
   const offChecks = report.checks.filter((c) => c.verdict !== "ok");
+  const hints = relationshipHints(ratios, derived, style);
   return (
     <section className={styles.panel}>
       <div className={styles.bar}>
@@ -211,11 +216,21 @@ export function MacrosPanel({
         </span>
       </div>
 
-      {offChecks.length > 0 && (
+      <div className={styles.readoutRow}>
+        <span className={styles.readout}>Scoopability <b>{Math.round(derived.pac * 100)}</b></span>
+        <span className={styles.readout}>Sweetness <b>{Math.round(derived.pod * 100)}</b></span>
+      </div>
+
+      {(offChecks.length > 0 || hints.length > 0) && (
         <div className={styles.advice}>
           {offChecks.map((c) => (
             <div key={c.key} className={styles.adviceRow}>
               <b>{c.label}</b> — {c.advice}
+            </div>
+          ))}
+          {hints.map((h) => (
+            <div key={h.key} className={styles.adviceRow}>
+              {h.message}
             </div>
           ))}
         </div>

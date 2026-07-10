@@ -13,6 +13,7 @@ import { Pill } from "@/components/shared/Pill";
 import { Toast } from "@/components/shared/Toast";
 import { seedRecipe } from "@/lib/recipe-seeder";
 import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
+import { derive } from "@/lib/derive";
 import {
   totalGrams,
   workspaceRatios,
@@ -77,6 +78,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [toast, setToast] = useState<string | null>(null);
 
   const ratios = workspaceRatios(ws, deps);
+  const derived = derive(ws.recipe);
   const conflict = workspaceConflict(ws, deps);
   const total = totalGrams(ws.recipe);
 
@@ -266,6 +268,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
                 grid uses `order` to restore recipe-left / macros-right. */}
             <MacrosPanel
               ratios={ratios}
+              derived={derived}
               style={meta.style}
               conflict={conflict}
               onMacroTarget={onMacroTarget}
