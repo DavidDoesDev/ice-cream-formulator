@@ -6,6 +6,7 @@ import {
   setMixGrams,
   addAdditionalIngredient,
   removeAdditionalIngredient,
+  addSmartMix,
   rebalanceWorkspace,
   recalibrate,
   needsRecalibration,
@@ -142,6 +143,36 @@ function sweetWorkspace(): LiveWorkspace {
   const ws = setMacroTarget(seededWorkspace(), "sugar", 0.23, deps);
   return ws;
 }
+
+describe("addSmartMix (one-tap add, e.g. the custard egg nudge)", () => {
+  it("adds a mix of the requested kind that wasn't present", () => {
+    const ws = addSmartMix(seededWorkspace(), "eggs", "eggs-yolks", "Egg Yolks", 90);
+    const egg = ws.recipe.smartMixes.find((m) => m.kind === "eggs");
+    expect(egg).toBeTruthy();
+    expect(egg!.presetId).toBe("eggs-yolks");
+    expect(egg!.grams).toBeGreaterThan(0); // actually dosed, not a 0-gram placeholder
+  });
+
+  it("conserves the batch yield (scales the batch back)", () => {
+    const ws0 = seededWorkspace();
+    const ws1 = addSmartMix(ws0, "eggs", "eggs-yolks", "Egg Yolks", 90);
+    expect(ws1.yieldGrams).toBe(ws0.yieldGrams);
+    expect(totalGrams(ws1.recipe)).toBeCloseTo(ws0.yieldGrams, 0);
+  });
+
+  it("shifts the composition toward a custard (egg yolk raises fat)", () => {
+    const ws0 = seededWorkspace();
+    const ws1 = addSmartMix(ws0, "eggs", "eggs-yolks", "Egg Yolks", 90);
+    expect(workspaceRatios(ws1, deps).fat).toBeGreaterThan(workspaceRatios(ws0, deps).fat);
+  });
+
+  it("is a no-op when a mix of that kind is already present", () => {
+    const ws1 = addSmartMix(seededWorkspace(), "eggs", "eggs-yolks", "Egg Yolks", 90);
+    const ws2 = addSmartMix(ws1, "eggs", "eggs-yolks", "Egg Yolks", 90);
+    expect(ws2.recipe.smartMixes.filter((m) => m.kind === "eggs")).toHaveLength(1);
+    expect(ws2).toBe(ws1); // unchanged reference
+  });
+});
 
 describe("recalibrate for equipment", () => {
   it("flags a mismatch only when the recipe is out of range for the machine", () => {

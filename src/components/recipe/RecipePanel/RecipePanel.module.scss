@@ -77,6 +77,50 @@
   margin-top: 18px;
 }
 
+.eggBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  // Tint + border track the theme-aware foreground (--ink is blue in light,
+  // cream in dark) — the page bg is the accent blue in dark mode, so an
+  // accent-based tint/icon would be invisible blue-on-blue.
+  background: color-mix(in oklab, var(--ink) 12%, transparent);
+  border: 1px solid var(--line);
+}
+
+.eggIcon {
+  flex-shrink: 0;
+  color: var(--ink);
+}
+
+.eggBannerText {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.eggDismiss {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast);
+}
+
+.eggDismiss:hover {
+  color: var(--ink);
+}
+
 .tryLabel {
   font-family: var(--font-mono);
   font-size: 12px;

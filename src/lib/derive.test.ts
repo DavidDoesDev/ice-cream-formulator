@@ -69,3 +69,42 @@ describe("on a real authored recipe", () => {
     expect(pac).toBeLessThan(0.32);
   });
 });
+
+describe("freezing curve (iterative FPD model)", () => {
+  const base = ARCHETYPES.find((a) => a.style === "custard")!.recipe!;
+  const sorbet = ARCHETYPES.find((a) => a.style === "sorbet")!.recipe!;
+
+  it("keeps the directional PAC on the return (backward-compatible seam)", () => {
+    expect(computeFreezing(base).pac).toBeCloseTo(derive(base).pac, 6);
+  });
+
+  it("reports a frozen-water fraction in (0,1] at serving temp", () => {
+    const f = computeFreezing(base, -12).frozenFraction;
+    expect(f).toBeGreaterThan(0);
+    expect(f).toBeLessThanOrEqual(1);
+  });
+
+  it("freezes more as it gets colder (monotonic in temperature)", () => {
+    const colder = computeFreezing(base, -20).frozenFraction;
+    const warmer = computeFreezing(base, -8).frozenFraction;
+    expect(colder).toBeGreaterThan(warmer);
+  });
+
+  it("a high-sugar sorbet is softer (less frozen) than a lean custard at the same temp", () => {
+    // The acceptance ordering: more freeze-point depression → less ice at a given temp.
+    expect(computeFreezing(sorbet, -12).frozenFraction).toBeLessThan(
+      computeFreezing(base, -12).frozenFraction,
+    );
+  });
+
+  it("has frozen nothing just below 0 °C, above the mix's initial freezing point", () => {
+    // A sugary mix's freezing point is a few °C below zero, so at −0.5 °C no ice yet.
+    expect(computeFreezing(sorbet, -0.5).frozenFraction).toBe(0);
+  });
+
+  it("puts the initial freezing point a few degrees below zero", () => {
+    const t0 = computeFreezing(base).initialFreezingC;
+    expect(t0).toBeLessThan(0);
+    expect(t0).toBeGreaterThan(-6);
+  });
+});

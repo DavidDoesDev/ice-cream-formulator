@@ -137,10 +137,6 @@ export function ConfigPanel({
     return getPresetsByKind(kind).length > 0;
   });
 
-  // Non-destructive nudge (D4): a custard is defined by egg yolks — if one isn't
-  // in the mix, point the user to add it, without changing anything for them.
-  const needsEggsNudge = style === "custard" && !present("eggs");
-
   return (
     <div className={styles.root}>
       <div className={styles.sections}>
@@ -194,11 +190,6 @@ export function ConfigPanel({
 
         <div className={styles.section}>
           <SectionHeader role="specific" label="Smart Ingredients" />
-          {needsEggsNudge && (
-            <p className={styles.nudge}>
-              Custards are built on egg yolks — add an Egg mix below for that silky, coating body.
-            </p>
-          )}
           <div className={styles.mixRows}>
             {mixRows.map(({ kind, label, icon: Icon }) => {
               const activePresetId = currentPresetId(kind);

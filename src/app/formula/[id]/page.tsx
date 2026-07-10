@@ -25,6 +25,7 @@ import {
   setYield,
   addAdditionalIngredient,
   removeAdditionalIngredient,
+  addSmartMix,
   rebalanceWorkspace,
   recalibrate,
   needsRecalibration,
@@ -228,6 +229,14 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
       return { ...w, recipe: { ...w.recipe, smartMixes: resolveSolve(mixes, w), customPresets } };
     });
   }, [resolveSolve]);
+  // One-tap "add a mix of kind X" (e.g. the custard egg-yolk nudge). Doses a
+  // sensible default (~9% of yield for yolks) and conserves the batch yield.
+  const handleAddMix = useCallback((kind: SmartMixKind, presetId: string) => {
+    setWs((w) => {
+      const label = getPresetById(presetId)?.name ?? presetId;
+      return addSmartMix(w, kind, presetId, label, w.yieldGrams * 0.09);
+    });
+  }, []);
   const handleRemoveMilkIngredient = useCallback((presetId: string) => {
     setWs((w) => {
       const mixes = w.recipe.smartMixes.filter((m) => !(m.kind === "milk" && m.presetId === presetId));
@@ -292,6 +301,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
             />
             <RecipePanel
               recipe={ws.recipe}
+              style={meta.style}
               yieldGrams={ws.yieldGrams}
               total={total}
               notes={notes}
@@ -301,6 +311,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               onAdditionalNote={onAdditionalNote}
               onRemoveAdditional={onRemoveAdditional}
               onAddIngredient={onAddIngredient}
+              onAddEggMix={() => handleAddMix("eggs", "eggs-yolks")}
               onQuickAdd={onQuickAdd}
               onYield={onYield}
               onNotes={setNotes}

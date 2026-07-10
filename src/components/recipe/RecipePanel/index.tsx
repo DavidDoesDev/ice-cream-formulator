@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import type { Recipe, SmartMix, SmartMixKind } from "@/data/types";
 import { getPresetById } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
@@ -29,6 +31,7 @@ const QUICK: { id: string; label: string }[] = [
 
 interface RecipePanelProps {
   recipe: Recipe;
+  style: string;
   yieldGrams: number;
   total: number;
   notes: string;
@@ -38,6 +41,7 @@ interface RecipePanelProps {
   onAdditionalNote: (ingredientId: string, note: string) => void;
   onRemoveAdditional: (ingredientId: string) => void;
   onAddIngredient: () => void;
+  onAddEggMix: () => void;
   onQuickAdd: (ingredientId: string) => void;
   onYield: (grams: number) => void;
   onNotes: (notes: string) => void;
@@ -46,6 +50,7 @@ interface RecipePanelProps {
 // Left workspace panel: the recipe in grams, every amount editable, always live.
 export function RecipePanel({
   recipe,
+  style,
   yieldGrams,
   total,
   notes,
@@ -55,6 +60,7 @@ export function RecipePanel({
   onAdditionalNote,
   onRemoveAdditional,
   onAddIngredient,
+  onAddEggMix,
   onQuickAdd,
   onYield,
   onNotes,
@@ -62,8 +68,23 @@ export function RecipePanel({
   const activeMixes = recipe.smartMixes.filter(
     (m) => (getPresetById(m.presetId)?.ingredients.length ?? 0) > 0,
   );
+  const [eggBannerDismissed, setEggBannerDismissed] = useState(false);
   const present = new Set(recipe.additionalIngredients.map((a) => a.ingredientId));
-  const quick = QUICK.filter((q) => !present.has(q.id)).slice(0, 3);
+
+  // A custard is defined by egg yolks — if the mix has none, surface it (a banner
+  // below, and a one-tap "Try" recommendation). Non-destructive until tapped (D4).
+  const needsEggs = style === "custard" && !recipe.smartMixes.some((m) => m.kind === "eggs");
+
+  // "Try" recommendations. For a custard missing eggs, the yolks recommendation
+  // adds the proper egg *system* (addSmartMix) rather than a raw-yolk inclusion.
+  const recommendations: { key: string; label: string; onClick: () => void }[] = [];
+  if (needsEggs) recommendations.push({ key: "eggs-system", label: "Egg yolks", onClick: onAddEggMix });
+  for (const q of QUICK) {
+    if (present.has(q.id)) continue;
+    if (q.id === "egg-yolk" && needsEggs) continue; // superseded by the egg-system pill
+    recommendations.push({ key: q.id, label: q.label, onClick: () => onQuickAdd(q.id) });
+  }
+  const shownRecs = recommendations.slice(0, 3);
 
   return (
     <section className={styles.panel}>
@@ -105,14 +126,31 @@ export function RecipePanel({
         );
       })}
 
+      {needsEggs && !eggBannerDismissed && (
+        <div className={styles.eggBanner}>
+          <Sparkles className={styles.eggIcon} size={16} strokeWidth={2} aria-hidden />
+          <span className={styles.eggBannerText}>
+            Custards are built on egg yolks — add them for a silky, coating body.
+          </span>
+          <button
+            className={styles.eggDismiss}
+            type="button"
+            aria-label="Dismiss"
+            onClick={() => setEggBannerDismissed(true)}
+          >
+            <Icon name="close" size={15} />
+          </button>
+        </div>
+      )}
+
       <div className={styles.addRow}>
         <Pill tone="accent" size="md" onClick={onAddIngredient}>
           <Icon name="plus" size={16} /> Add ingredient
         </Pill>
-        {quick.length > 0 && <span className={styles.tryLabel}>Try</span>}
-        {quick.map((q) => (
-          <Pill key={q.id} tone="ghost" size="md" onClick={() => onQuickAdd(q.id)}>
-            + {q.label}
+        {shownRecs.length > 0 && <span className={styles.tryLabel}>Try</span>}
+        {shownRecs.map((r) => (
+          <Pill key={r.key} tone="ghost" size="md" onClick={r.onClick}>
+            + {r.label}
           </Pill>
         ))}
       </div>
