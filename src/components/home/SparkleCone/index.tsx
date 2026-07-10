@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import styles from "./SparkleCone.module.scss";
 import { Atoms } from "./Atoms";
 import { Callouts } from "./Callouts";
@@ -50,6 +50,10 @@ function subscribeMotion(cb: () => void) {
 const getMotionOK = () => !window.matchMedia(MOTION_QUERY).matches;
 const getServerMotionOK = () => false;
 
+// The cone's CSS entrance (delay + duration) in .scene — mirror it here so the
+// callouts hold off until the cone has landed. Keep in sync with the animation.
+const ENTRANCE_MS = 450 + 1600;
+
 // The dev tuning panel is opt-in via a ?dev query param (any environment), so
 // it never ships to real visitors but can be summoned on the deployed site.
 // Read through an external store — false on the server, actual after hydration.
@@ -81,6 +85,19 @@ export function SparkleCone() {
   const fx = useSyncExternalStore(subscribeFx, getFx, getServerFx);
   const motionOK = useSyncExternalStore(subscribeMotion, getMotionOK, getServerMotionOK);
   const devPanel = useSyncExternalStore(subscribeDev, getDevPanel, getServerDevPanel);
+
+  // Hold the callouts until the cone has slid into place (they pin to it, so
+  // they'd point at empty space mid-slide). Reduced-motion has no slide → show
+  // immediately.
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    if (!motionOK) {
+      setEntered(true);
+      return;
+    }
+    const t = window.setTimeout(() => setEntered(true), ENTRANCE_MS);
+    return () => clearTimeout(t);
+  }, [motionOK]);
 
   useEffect(() => {
     const cone = coneRef.current;
@@ -219,7 +236,7 @@ export function SparkleCone() {
         )}
       </div>
       <div ref={annoRef} className={styles.annoPlane}>
-        {motionOK && fx.callouts.on && <Callouts color={calloutsColor} />}
+        {motionOK && entered && fx.callouts.on && <Callouts color={calloutsColor} />}
       </div>
       {devPanel && <FxPanel value={fx} onChange={setFx} />}
     </div>
