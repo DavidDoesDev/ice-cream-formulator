@@ -18,6 +18,31 @@
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-bottom: 2px solid var(--line);
+  // Match the body's theme cross-fade so the bar doesn't snap on light/dark.
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+// Reveal-on-scroll (homepage): fixed instead of sticky so it reserves no space
+// at the top, and animate the slide-in.
+.reveal {
+  position: fixed;
+  // Fixed makes the containing block the viewport, so the .topbar breakout
+  // margin (calc(50% - 50vw)) collapses to 0 and leaves a gutter on the left.
+  // Pin to the viewport edge instead.
+  left: 0;
+  margin-left: 0;
+  // A short transparent top border extends the blurred bar above the viewport
+  // (background-clip is border-box, so the fill paints under it); with `top`
+  // pulled up by the same amount the resting bar looks unchanged, but the
+  // easing's overshoot can no longer expose a gap at the very top edge.
+  top: -12px;
+  border-top: 12px solid transparent;
+  transition: transform 0.35s cubic-bezier(0.34, 1.15, 0.64, 1), background 0.4s ease,
+    border-color 0.4s ease;
+}
+
+.hidden {
+  transform: translateY(-100%);
 }
 
 .menuWrap {
@@ -34,6 +59,7 @@
   background: var(--paper-2);
   color: var(--ink);
   cursor: pointer;
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
 }
 
 .menu {
@@ -50,6 +76,7 @@
   border: 2.5px solid var(--ink);
   border-radius: var(--radius-md);
   box-shadow: var(--sh);
+  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 .menuItem {
@@ -81,6 +108,7 @@
   text-transform: uppercase;
   color: var(--ink);
   text-decoration: none;
+  transition: color 0.4s ease;
 }
 
 .actions {
@@ -88,4 +116,14 @@
   gap: 8px;
   align-items: center;
   margin-left: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topbar,
+  .reveal,
+  .iconBtn,
+  .menu,
+  .brand {
+    transition: none;
+  }
 }

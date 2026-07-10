@@ -1,4 +1,16 @@
-import type { Archetype } from "./types";
+import type { Archetype, Recipe, SmartMixKind } from "./types";
+
+// Explicit-recipe builder (design B). Every gram is visible at the call site — the
+// tuples are the authored recipe, `mk` is just less noise than object literals.
+// Bases per docs/formulation/archetype-recipes.md, batched to 1000 g.
+type MixTuple = [kind: SmartMixKind, label: string, presetId: string, grams: number];
+type AddTuple = [ingredientId: string, grams: number];
+function mk(mixes: MixTuple[], adds: AddTuple[] = []): Recipe {
+  return {
+    smartMixes: mixes.map(([kind, label, presetId, grams]) => ({ kind, label, presetId, grams })),
+    additionalIngredients: adds.map(([ingredientId, grams]) => ({ ingredientId, grams })),
+  };
+}
 
 export const ARCHETYPES: Archetype[] = [
   // ─── Philadelphia ────────────────────────────────────────────────────────────
@@ -7,6 +19,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Classic Vanilla",
     style: "philadelphia",
     description: "Cream-forward, no eggs, pure dairy sweetness. The cleanest canvas.",
+    recipe: mk([["milk","Whole Milk","milk-whole",377],["milk","Heavy Cream","cream-heavy",380],["sugar","Sugar","sugar-glucose-blend",200],["milk","Skim Milk Powder","milk-powder",20],["stabilizer","Stabilizer","stab-modernist",3]], [["vanilla-bean",20]]),
     ratios: { fat: 0.14, sugar: 0.16, nonfatSolids: 0.09, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.607 },
     attributes: {
       fatTier: "rich",
@@ -26,6 +39,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Dark Chocolate",
     style: "philadelphia",
     description: "Deep cocoa, no eggs. Intense and direct.",
+    recipe: mk([["milk","Whole Milk","milk-whole",397],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",170],["milk","Skim Milk Powder","milk-powder",20],["stabilizer","Stabilizer","stab-modernist",3]], [["dark-chocolate",80],["cocoa-powder",30]]),
     ratios: { fat: 0.13, sugar: 0.17, nonfatSolids: 0.10, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.597 },
     attributes: {
       fatTier: "rich",
@@ -45,6 +59,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Strawberry",
     style: "philadelphia",
     description: "Bright and fruity. Dairy-light to let the fruit come through.",
+    recipe: mk([["milk","Whole Milk","milk-whole",347],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",180],["milk","Skim Milk Powder","milk-powder",20],["stabilizer","Stabilizer","stab-modernist",3]], [["strawberry-puree",150]]),
     ratios: { fat: 0.11, sugar: 0.17, nonfatSolids: 0.08, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.637 },
     attributes: {
       fatTier: "medium",
@@ -64,6 +79,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Lemon Curd",
     style: "philadelphia",
     description: "Tangy, bright, and cold. Tastes like frozen lemon curd.",
+    recipe: mk([["milk","Whole Milk","milk-whole",327],["milk","Heavy Cream","cream-heavy",350],["sugar","Sugar","sugar-glucose-blend",200],["milk","Skim Milk Powder","milk-powder",20],["stabilizer","Stabilizer","stab-modernist",3]], [["lemon-juice",100]]),
     ratios: { fat: 0.12, sugar: 0.18, nonfatSolids: 0.08, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.617 },
     attributes: {
       fatTier: "medium",
@@ -83,6 +99,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "High Protein",
     style: "philadelphia",
     description: "Lean and high in milk solids. More like a frozen yogurt in structure.",
+    recipe: mk([["milk","Whole Milk","milk-whole",617],["milk","Light Cream","cream-light",120],["sugar","Sugar","sugar-glucose-blend",150],["milk","Skim Milk Powder","milk-powder",90],["stabilizer","Stabilizer","stab-modernist",3]], [["vanilla-bean",20]]),
     ratios: { fat: 0.08, sugar: 0.14, nonfatSolids: 0.13, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.647 },
     attributes: {
       fatTier: "lean",
@@ -104,6 +121,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Vanilla Custard",
     style: "custard",
     description: "Egg yolk–enriched, coating, silky. The French way.",
+    recipe: mk([["milk","Whole Milk","milk-whole",378],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",200],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["vanilla-bean",20]]),
     ratios: { fat: 0.16, sugar: 0.16, nonfatSolids: 0.09, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.568 },
     attributes: {
       fatTier: "rich",
@@ -123,6 +141,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Chocolate Custard",
     style: "custard",
     description: "Dense, dark, custardy. The richest chocolate expression.",
+    recipe: mk([["milk","Whole Milk","milk-whole",338],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",150],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["dark-chocolate",80],["cocoa-powder",30]]),
     ratios: { fat: 0.15, sugar: 0.17, nonfatSolids: 0.10, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.558 },
     attributes: {
       fatTier: "rich",
@@ -142,6 +161,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Brown Butter Caramel",
     style: "custard",
     description: "Nutty, warm, deeply caramelized. Fat-forward.",
+    recipe: mk([["milk","Whole Milk","milk-whole",318],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",200],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["brown-butter",80]]),
     ratios: { fat: 0.17, sugar: 0.18, nonfatSolids: 0.08, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.548 },
     attributes: {
       fatTier: "ultra-rich",
@@ -161,6 +181,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Salted Honey",
     style: "custard",
     description: "Floral, sweet, and savory all at once.",
+    recipe: mk([["milk","Whole Milk","milk-whole",378],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",140],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["honey",80]]),
     ratios: { fat: 0.15, sugar: 0.19, nonfatSolids: 0.09, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.548 },
     attributes: {
       fatTier: "rich",
@@ -180,6 +201,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Peanut Butter",
     style: "custard",
     description: "Dense, nutty, and rich. Almost savory.",
+    recipe: mk([["milk","Whole Milk","milk-whole",348],["milk","Heavy Cream","cream-heavy",250],["sugar","Sugar","sugar-glucose-blend",200],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["peanut-butter",100]]),
     ratios: { fat: 0.16, sugar: 0.16, nonfatSolids: 0.08, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.578 },
     attributes: {
       fatTier: "rich",
@@ -199,6 +221,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Rum Raisin",
     style: "custard",
     description: "Old-school, boozy, warming. Alcohol keeps it soft.",
+    recipe: mk([["milk","Whole Milk","milk-whole",293],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",170],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2],["alcohol","Dark Rum","alcohol-dark-rum",75]], [["raisins",60]]),
     ratios: { fat: 0.15, sugar: 0.16, nonfatSolids: 0.09, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0.03, water: 0.548 },
     attributes: {
       fatTier: "rich",
@@ -221,6 +244,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Fior di Latte",
     style: "gelato",
     description: "Pure milk flavor, nothing else. Minimalist by design.",
+    recipe: mk([["milk","Whole Milk","milk-whole",666],["milk","Heavy Cream","cream-heavy",80],["milk","Skim Milk Powder","milk-powder",40],["sugar","Sugar","sugar-glucose-blend",210],["stabilizer","Stabilizer","stab-modernist",4]], []),
     ratios: { fat: 0.08, sugar: 0.17, nonfatSolids: 0.11, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.637 },
     attributes: {
       fatTier: "medium",
@@ -240,6 +264,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Pistachio",
     style: "gelato",
     description: "Delicate, slightly savory, unmistakably green.",
+    recipe: mk([["milk","Whole Milk","milk-whole",586],["milk","Heavy Cream","cream-heavy",80],["milk","Skim Milk Powder","milk-powder",40],["sugar","Sugar","sugar-glucose-blend",210],["stabilizer","Stabilizer","stab-modernist",4]], [["pistachio-paste",80]]),
     ratios: { fat: 0.10, sugar: 0.17, nonfatSolids: 0.10, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.627 },
     attributes: {
       fatTier: "medium",
@@ -259,6 +284,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Hazelnut",
     style: "gelato",
     description: "Roasted, nutty, and intense. Not Nutella — drier and more concentrated.",
+    recipe: mk([["milk","Whole Milk","milk-whole",566],["milk","Heavy Cream","cream-heavy",80],["milk","Skim Milk Powder","milk-powder",40],["sugar","Sugar","sugar-glucose-blend",210],["stabilizer","Stabilizer","stab-modernist",4]], [["hazelnut-paste",100]]),
     ratios: { fat: 0.11, sugar: 0.17, nonfatSolids: 0.10, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.617 },
     attributes: {
       fatTier: "medium",
@@ -278,6 +304,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Chocolate Gelato",
     style: "gelato",
     description: "Dark and dense. More bitter than an American chocolate.",
+    recipe: mk([["milk","Whole Milk","milk-whole",586],["milk","Heavy Cream","cream-heavy",80],["milk","Skim Milk Powder","milk-powder",40],["sugar","Sugar","sugar-glucose-blend",180],["stabilizer","Stabilizer","stab-modernist",4]], [["dark-chocolate",80],["cocoa-powder",30]]),
     ratios: { fat: 0.09, sugar: 0.18, nonfatSolids: 0.11, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.617 },
     attributes: {
       fatTier: "medium",
@@ -297,6 +324,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Stracciatella",
     style: "gelato",
     description: "Fior di latte base with dark chocolate drizzled in as it churns.",
+    recipe: mk([["milk","Whole Milk","milk-whole",666],["milk","Heavy Cream","cream-heavy",80],["milk","Skim Milk Powder","milk-powder",40],["sugar","Sugar","sugar-glucose-blend",210],["stabilizer","Stabilizer","stab-modernist",4]], []),
     ratios: { fat: 0.08, sugar: 0.17, nonfatSolids: 0.11, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.637 },
     attributes: {
       fatTier: "medium",
@@ -318,6 +346,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Lemon Sorbet",
     style: "sorbet",
     description: "Sharp, clean, and intensely cold. No dairy, nothing to hide behind.",
+    recipe: mk([["liquid","Water","liquid-water",430],["sugar","Sugar","sugar-glucose-blend",315],["stabilizer","Stabilizer","stab-modernist",5]], [["lemon-juice",250]]),
     ratios: { fat: 0, sugar: 0.26, nonfatSolids: 0, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.737 },
     attributes: {
       fatTier: "lean",
@@ -337,6 +366,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Raspberry Sorbet",
     style: "sorbet",
     description: "Tangy, fragrant, and vivid. Seeds strained out.",
+    recipe: mk([["liquid","Water","liquid-water",180],["sugar","Sugar","sugar-glucose-blend",300],["stabilizer","Stabilizer","stab-modernist",5]], [["raspberry-puree",500],["lemon-juice",15]]),
     ratios: { fat: 0, sugar: 0.24, nonfatSolids: 0, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.757 },
     attributes: {
       fatTier: "lean",
@@ -356,6 +386,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Mango Sorbet",
     style: "sorbet",
     description: "Tropical, sweet, and intensely aromatic.",
+    recipe: mk([["liquid","Water","liquid-water",180],["sugar","Sugar","sugar-glucose-blend",300],["stabilizer","Stabilizer","stab-modernist",5]], [["mango-puree",500],["lemon-juice",15]]),
     ratios: { fat: 0, sugar: 0.25, nonfatSolids: 0, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.747 },
     attributes: {
       fatTier: "lean",
@@ -375,6 +406,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Passion Fruit Sorbet",
     style: "sorbet",
     description: "Intensely tropical and complex. A little goes a long way.",
+    recipe: mk([["liquid","Water","liquid-water",380],["sugar","Sugar","sugar-glucose-blend",305],["stabilizer","Stabilizer","stab-modernist",5]], [["passion-fruit-puree",300],["lemon-juice",10]]),
     ratios: { fat: 0, sugar: 0.23, nonfatSolids: 0.01, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.757 },
     attributes: {
       fatTier: "lean",
@@ -396,6 +428,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Lemon Sherbet",
     style: "sherbet",
     description: "The bridge between sorbet and ice cream. Fruit-forward with a creamy finish.",
+    recipe: mk([["milk","Whole Milk","milk-whole",426],["milk","Heavy Cream","cream-heavy",100],["sugar","Sugar","sugar-glucose-blend",250],["stabilizer","Stabilizer","stab-modernist",4]], [["buttermilk",100],["lemon-juice",120]]),
     ratios: { fat: 0.03, sugar: 0.22, nonfatSolids: 0.04, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.707 },
     attributes: {
       fatTier: "lean",
@@ -415,6 +448,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Raspberry Sherbet",
     style: "sherbet",
     description: "Bright raspberry with a rounded, slightly creamy finish.",
+    recipe: mk([["milk","Whole Milk","milk-whole",296],["milk","Heavy Cream","cream-heavy",100],["sugar","Sugar","sugar-glucose-blend",250],["stabilizer","Stabilizer","stab-modernist",4]], [["buttermilk",100],["raspberry-puree",250]]),
     ratios: { fat: 0.03, sugar: 0.21, nonfatSolids: 0.04, stabilizer: 0.003, emulsifier: 0, alcohol: 0, water: 0.717 },
     attributes: {
       fatTier: "lean",
@@ -436,6 +470,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Coconut",
     style: "vegan",
     description: "Rich, tropical, and fully plant-based. Coconut cream does all the work.",
+    recipe: mk([["milk","Coconut Cream","milk-coconut-cream",465],["milk","Oat Milk","milk-oat",330],["sugar","Sugar","sugar-glucose-blend",200],["stabilizer","Stabilizer","stab-modernist",5]], []),
     ratios: { fat: 0.12, sugar: 0.16, nonfatSolids: 0, stabilizer: 0.004, emulsifier: 0, alcohol: 0, water: 0.716 },
     attributes: {
       fatTier: "medium",
@@ -455,6 +490,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Oat Milk Vanilla",
     style: "vegan",
     description: "Light, mild, and clean. The most approachable vegan base.",
+    recipe: mk([["milk","Oat Milk","milk-oat",500],["milk","Coconut Cream","milk-coconut-cream",280],["sugar","Sugar","sugar-glucose-blend",195],["stabilizer","Stabilizer","stab-modernist",5]], [["vanilla-bean",20]]),
     ratios: { fat: 0.05, sugar: 0.16, nonfatSolids: 0.02, stabilizer: 0.004, emulsifier: 0, alcohol: 0, water: 0.766 },
     attributes: {
       fatTier: "lean",
@@ -474,6 +510,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Chocolate Vegan",
     style: "vegan",
     description: "Dark chocolate without any dairy. Coconut base, pure cocoa.",
+    recipe: mk([["milk","Coconut Cream","milk-coconut-cream",420],["milk","Oat Milk","milk-oat",285],["sugar","Sugar","sugar-glucose-blend",180],["stabilizer","Stabilizer","stab-modernist",5]], [["dark-chocolate",80],["cocoa-powder",30]]),
     ratios: { fat: 0.10, sugar: 0.18, nonfatSolids: 0.01, stabilizer: 0.004, emulsifier: 0, alcohol: 0, water: 0.706 },
     attributes: {
       fatTier: "medium",

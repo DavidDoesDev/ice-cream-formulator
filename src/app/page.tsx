@@ -65,8 +65,13 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <Header />
+      <Header revealOnScroll />
       <section className={styles.hero}>
+        <div className={styles.brandLockup}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Ice Cream Lab logo" className={styles.brandMark} />
+          <span className={styles.brandWord}>Ice Cream Lab</span>
+        </div>
         <h1 className={styles.title}>
           <span className={styles.titleRow}>Cold</span>
           <span className={`${styles.titleRow} ${styles.titleShift}`}>Hard</span>
@@ -76,17 +81,17 @@ export default function Home() {
         </h1>
         <p className={styles.lead}>
           Invent frozen formulas from the <b>macros up</b>. Steer fat, sugar and
-          milk solids in real time and watch the core sample fill.
+          milk solids in real time and design the scoop you can&apos;t buy anywhere.
         </p>
         <div className={styles.cta}>
+          <a href="#batches" className={styles.ctaGhost}>
+            <Icon name="pint" size={18} />
+            See my batches
+          </a>
           <Link href="/new" className={styles.ctaPrimary}>
             <Icon name="plus" size={18} />
             New formula
           </Link>
-          <a href="#batches" className={styles.ctaGhost}>
-            See my batches
-            <Icon name="arrow" size={16} />
-          </a>
           <button
             className={styles.dice}
             type="button"

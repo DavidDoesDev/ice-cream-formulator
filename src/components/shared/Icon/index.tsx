@@ -12,6 +12,7 @@ export type IconName =
   | "arrow"
   | "spoon"
   | "dice"
+  | "pint"
   | "close";
 
 interface IconProps {
@@ -93,6 +94,16 @@ export function Icon({ name, size = 24, style, className }: IconProps) {
           <circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none" />
           <circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none" />
           <circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case "pint":
+      // Ice-cream pint tub: overhanging flat lid, tapered body, one label
+      // band — matching the PintCup silhouette.
+      return (
+        <svg {...p}>
+          <path d="M3.6 6.2h16.8" />
+          <path d="M5.5 6.2 7 21h10l1.5-14.8" />
+          <path d="M7.3 12.6h9.4" />
         </svg>
       );
     case "close":

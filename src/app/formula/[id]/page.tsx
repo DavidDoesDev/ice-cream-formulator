@@ -13,6 +13,7 @@ import { Pill } from "@/components/shared/Pill";
 import { Toast } from "@/components/shared/Toast";
 import { seedRecipe } from "@/lib/recipe-seeder";
 import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
+import { derive } from "@/lib/derive";
 import {
   totalGrams,
   workspaceRatios,
@@ -28,7 +29,7 @@ import {
   type LiveWorkspace,
   type WorkspaceDeps,
 } from "@/lib/live-workspace";
-import { computeRatios, type MacroRatios, type Ingredient } from "@/lib/formula-engine";
+import { type MacroRatios, type Ingredient } from "@/lib/formula-engine";
 import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById, registerCustomPreset, buildCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
@@ -58,20 +59,15 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     [],
   );
 
-  const baseRatios = useMemo(() => computeRatios(saved.state), [saved.state]);
-
   const initialWs = useMemo<LiveWorkspace>(() => {
     const recipe = saved.recipe ?? seedRecipe(saved.style as StyleCategory);
     (recipe.customPresets ?? []).forEach(registerCustomPreset);
     const yieldGrams = saved.state?.yieldGrams || totalGrams(recipe) || 1000;
-    // The whole-recipe solver can't nail trace targets (the yield pressure
-    // dominates), so bootstrapped recipes load with stabilizer/emulsifier out
-    // of range. Dose them directly to the style target once on load.
-    let ws: LiveWorkspace = { recipe, yieldGrams };
-    ws = setTraceMacro(ws, "stabilizer", baseRatios.stabilizer, deps);
-    ws = setTraceMacro(ws, "emulsifier", baseRatios.emulsifier, deps);
-    return ws;
-  }, [saved, baseRatios, deps]);
+    // Design B (D2): archetypes carry explicit recipes, so the recipe loads as
+    // authored — no on-load trace-dosing. (The old setTraceMacro(...) pass here is
+    // what drove custard defaults to a 1000 g-egg-yolk mix; see #52.)
+    return { recipe, yieldGrams };
+  }, [saved, deps]);
 
   const [ws, setWs] = useState<LiveWorkspace>(initialWs);
   const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
@@ -82,6 +78,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [toast, setToast] = useState<string | null>(null);
 
   const ratios = workspaceRatios(ws, deps);
+  const derived = derive(ws.recipe);
   const conflict = workspaceConflict(ws, deps);
   const total = totalGrams(ws.recipe);
 
@@ -271,7 +268,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
                 grid uses `order` to restore recipe-left / macros-right. */}
             <MacrosPanel
               ratios={ratios}
-              baseRatios={baseRatios}
+              derived={derived}
               style={meta.style}
               conflict={conflict}
               onMacroTarget={onMacroTarget}

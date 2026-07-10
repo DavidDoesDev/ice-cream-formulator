@@ -3,13 +3,18 @@
   // not reach the caution tape depending on viewport; if it does, the tape's
   // z-index: 2 paints over it, so z-index stays unset here.
   position: absolute;
-  right: 0;
+  // Overhangs the hero's right edge to swallow the footage's baked-in white
+  // margin (the cone ink sways 26-82px shy of the frame edge); without this
+  // the blend melts the margin into paper and a phantom gap opens up on the
+  // right. Body's overflow-x: clip trims the overhang.
+  right: calc(-0.055 * var(--w));
   // Width-driven, height follows the ratio. Sized as a statement piece: the
   // cone ink runs right up to the title's edge and the tip dives past the
-  // caution tape (which paints over it, z-index: 2). The 100vw term shrinks
-  // the cone 1:1 with the viewport, holding a fixed ~640px column on the left
-  // so the ink never swallows the lead paragraph on narrower desktops.
-  --w: var(--sparkle-cone-w, min(760px, calc(100vw - 640px)));
+  // caution tape (which paints over it, z-index: 2). On wide screens (>~1067px)
+  // the 100vw term wins, holding a fixed ~640px left column so the ink never
+  // swallows the lead paragraph. Below that the 40vw floor takes over so the
+  // cone stays beside the hero on phones/tablets instead of collapsing.
+  --w: var(--sparkle-cone-w, min(760px, max(40vw, calc(100vw - 640px))));
   width: var(--w);
   aspect-ratio: 720 / 1280;
   // Top-aligns the scoop ink — not the video box — with the title: the footage
@@ -80,7 +85,9 @@
   position: absolute;
   font-family: var(--font-mono);
   font-weight: 700;
-  color: var(--ink);
+  // Tint cascades from the layer container (inline color set by the parent);
+  // defaults to the theme ink when the layer's colour picker is off.
+  color: currentColor;
   opacity: 0;
   animation: notefloat linear infinite;
 }
@@ -113,7 +120,7 @@
 
 .struct {
   position: absolute;
-  color: var(--ink);
+  color: currentColor;
   animation: structdrift ease-in-out infinite alternate;
 }
 
@@ -166,7 +173,7 @@
 
 .calloutLine {
   fill: none;
-  stroke: var(--ink);
+  stroke: currentColor;
   stroke-width: 1.5px;
   stroke-dasharray: 1;
   animation: calloutline 4.8s linear both;
@@ -197,7 +204,7 @@
   position: absolute;
   width: 10px;
   height: 10px;
-  border: 2px solid var(--ink);
+  border: 2px solid currentColor;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   animation: calloutdot 4.8s ease both;
@@ -229,14 +236,14 @@
   position: absolute;
   transform: translateY(-100%);
   padding: 0 4px 3px 2px;
-  border-bottom: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid currentColor;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--ink);
+  color: currentColor;
   animation: calloutlabel 4.8s ease both;
 }
 
@@ -289,11 +296,49 @@
   text-transform: uppercase;
 }
 
+.panelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .panelRow {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.panelName {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
   cursor: pointer;
+}
+
+.panelCaret {
+  margin-left: auto;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.panelDrawer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0 4px 20px;
+}
+
+.panelVal {
+  margin-left: auto;
+  min-width: 28px;
+  text-align: right;
+  font-weight: 700;
+  opacity: 0.65;
 }
 
 .panelCheck {
@@ -301,12 +346,63 @@
 }
 
 .panelRange {
-  width: 90px;
+  width: 80px;
   accent-color: var(--accent);
 }
 
-@media (max-width: 1020px) {
+.panelColor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.panelSwatches {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.panelSwatch {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.panelSwatchOn {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+// Phone: the cone becomes a centred backdrop behind the hero title (the hero's
+// own phone rules centre the content column and lift it above this). Centred
+// via left/right/margin — never a transform, which would give .scene a
+// stacking context and isolate the multiply blend from the paper.
+@media (max-width: 900px) {
   .scene {
+    --sparkle-cone-w: 62vw;
+    // Right-aligned (left stays auto) with a deeper overhang than desktop, so
+    // the cone pushes off the right edge behind the left-aligned title.
+    right: calc(-0.14 * var(--w));
+    // --u is a constant, so a flat top sits equally low at every phone width;
+    // subtract a viewport term so the cone rides higher on the wider phones.
+    top: calc(60px * var(--u) - 3vw);
+  }
+
+  // Dissolve the lower cone into the paper: the scoop reads as a full cone
+  // behind the title, then melts away so the body text below sits on clean
+  // ground. -webkit- prefix for iOS Safari. Masking the already-blended video
+  // keeps the visible pixels multiplying against the paper.
+  .cone {
+    -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 72%);
+    mask-image: linear-gradient(to bottom, #000 40%, transparent 72%);
+  }
+
+  // Callout labels trail left into a paper margin that doesn't exist here.
+  .annoPlane {
     display: none;
   }
 }

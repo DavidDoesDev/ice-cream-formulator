@@ -11,6 +11,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "The backbone of most ice cream. Adds water, a little fat, and milk solids.",
     category: "dairy",
     macros: { fat: 0.036, sugar: 0.048, nonfatSolids: 0.039, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.877 },
+    lactose: 0.048,
   },
   {
     id: "skim-milk",
@@ -18,6 +19,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "All the milk solids, almost none of the fat. Good for boosting MSNF without adding fat.",
     category: "dairy",
     macros: { fat: 0.001, sugar: 0.048, nonfatSolids: 0.044, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.907 },
+    lactose: 0.05,
   },
   {
     id: "cream-18",
@@ -25,6 +27,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Lower-fat cream. Adds richness without the full weight of heavy cream.",
     category: "dairy",
     macros: { fat: 0.18, sugar: 0.027, nonfatSolids: 0.028, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.765 },
+    lactose: 0.03,
   },
   {
     id: "cream-35",
@@ -32,6 +35,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "High-fat cream. The primary fat source in American-style ice cream.",
     category: "dairy",
     macros: { fat: 0.35, sugar: 0.020, nonfatSolids: 0.020, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.610 },
+    lactose: 0.028,
   },
   {
     id: "butter",
@@ -39,6 +43,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Almost pure fat. Used in small amounts in brown butter or ultra-rich formulas.",
     category: "dairy",
     macros: { fat: 0.82, sugar: 0, nonfatSolids: 0.02, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.16 },
+    lactose: 0.006,
   },
   {
     id: "brown-butter",
@@ -46,6 +51,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Butter cooked until the water evaporates and the milk solids caramelize. Nutty and intensely flavored.",
     category: "dairy",
     macros: { fat: 0.80, sugar: 0, nonfatSolids: 0.18, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.02 },
+    lactose: 0.006,
   },
   {
     id: "skim-milk-powder",
@@ -53,6 +59,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Concentrated milk solids with no fat. The standard way to boost MSNF in a formula.",
     category: "dairy",
     macros: { fat: 0.005, sugar: 0.50, nonfatSolids: 0.455, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.04 },
+    lactose: 0.52,
   },
   {
     id: "sweetened-condensed-milk",
@@ -60,6 +67,64 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Milk concentrated with added sugar. Adds sweetness and solids in one ingredient.",
     category: "dairy",
     macros: { fat: 0.08, sugar: 0.45, nonfatSolids: 0.19, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.28 },
+    lactose: 0.12,
+  },
+
+  {
+    id: "mascarpone",
+    name: "Mascarpone",
+    description: "Italian cream cheese — high fat, low tang. Adds richness and a dense, custardy body.",
+    category: "dairy",
+    macros: { fat: 0.44, sugar: 0.03, nonfatSolids: 0.05, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.48 },
+    lactose: 0.03,
+  },
+  {
+    id: "cream-cheese",
+    name: "Cream Cheese",
+    description: "Tangy and firm. The signature note in cheesecake ice cream; adds fat and body.",
+    category: "dairy",
+    macros: { fat: 0.344, sugar: 0.038, nonfatSolids: 0.074, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.53 },
+    lactose: 0.03,
+  },
+  {
+    id: "creme-fraiche",
+    name: "Crème Fraîche",
+    description: "Cultured heavy cream. High fat with a gentle sour tang that offsets sweetness.",
+    category: "dairy",
+    macros: { fat: 0.30, sugar: 0.03, nonfatSolids: 0.03, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.64 },
+    lactose: 0.03,
+  },
+  {
+    id: "buttermilk",
+    name: "Buttermilk",
+    description: "Cultured low-fat milk. Bright, tangy, and thin — boosts MSNF with almost no fat.",
+    category: "dairy",
+    macros: { fat: 0.01, sugar: 0.047, nonfatSolids: 0.038, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.905 },
+    lactose: 0.047,
+  },
+  {
+    id: "whole-milk-powder",
+    name: "Whole Milk Powder",
+    description: "Dried whole milk. Boosts MSNF and adds a cooked-milk richness that skim powder can't.",
+    category: "dairy",
+    macros: { fat: 0.267, sugar: 0.384, nonfatSolids: 0.324, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.025 },
+    lactose: 0.38,
+  },
+  {
+    id: "evaporated-milk",
+    name: "Evaporated Milk",
+    description: "Milk reduced by half, unsweetened. Concentrated solids without the sugar of condensed milk.",
+    category: "dairy",
+    macros: { fat: 0.075, sugar: 0.10, nonfatSolids: 0.08, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.745 },
+    lactose: 0.1,
+  },
+  {
+    id: "greek-yogurt",
+    name: "Greek Yogurt (Whole)",
+    description: "Strained whole-milk yogurt. High protein and a clean tartness for frozen-yogurt styles.",
+    category: "dairy",
+    macros: { fat: 0.044, sugar: 0.045, nonfatSolids: 0.095, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.813 },
+    lactose: 0.04,
   },
 
   // --- Sweeteners ---
@@ -69,6 +134,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Plain table sugar. The standard sweetener and the baseline for all sugar comparisons.",
     category: "sweetener",
     macros: { fat: 0, sugar: 1.0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 },
+    fpd: 100, pod: 100,
   },
   {
     id: "dextrose",
@@ -76,6 +142,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Glucose in powder form. Less sweet than sugar, lowers the freezing point more, makes for a softer scoop.",
     category: "sweetener",
     macros: { fat: 0, sugar: 1.0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 },
+    fpd: 190, pod: 70,
   },
   {
     id: "invert-sugar",
@@ -83,6 +150,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Equal mix of glucose and fructose. Stays liquid, resists crystallization, and keeps texture smooth over time.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.75, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.25 },
+    fpd: 190, pod: 125,
   },
   {
     id: "trehalose",
@@ -90,6 +158,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "A mild, clean-tasting sugar that protects texture during freeze-thaw cycles.",
     category: "sweetener",
     macros: { fat: 0, sugar: 1.0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 },
+    fpd: 100, pod: 45,
   },
   {
     id: "honey",
@@ -97,6 +166,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Natural sweetener with floral notes. High fructose content softens the scoop.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.82, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.17 },
+    fpd: 190, pod: 130,
   },
   {
     id: "maple-syrup",
@@ -104,6 +174,32 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Adds distinctive caramel-woody sweetness. Grade B has the strongest flavor.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.67, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.33 },
+    fpd: 100, pod: 100,
+  },
+
+  {
+    id: "glucose-syrup",
+    name: "Glucose Syrup",
+    description: "Thick corn-derived syrup. Adds solids and chew, blocks crystallization, keeps the scoop smooth.",
+    category: "sweetener",
+    macros: { fat: 0, sugar: 0.80, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.20 },
+    fpd: 70, pod: 50,
+  },
+  {
+    id: "brown-sugar",
+    name: "Brown Sugar",
+    description: "Sucrose with molasses clinging to it. Adds a warm caramel-toffee note along with sweetness.",
+    category: "sweetener",
+    macros: { fat: 0, sugar: 0.97, nonfatSolids: 0.005, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.025 },
+    fpd: 100, pod: 100,
+  },
+  {
+    id: "molasses",
+    name: "Molasses",
+    description: "Dark, bitter-sweet syrup left from refining sugar. Intense flavor; use in small amounts.",
+    category: "sweetener",
+    macros: { fat: 0, sugar: 0.747, nonfatSolids: 0.03, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.223 },
+    fpd: 100, pod: 70,
   },
 
   // --- Stabilizers ---
@@ -143,6 +239,35 @@ export const INGREDIENTS: CatalogIngredient[] = [
     macros: { fat: 0, sugar: 0, nonfatSolids: 0.90, stabilizer: 0.10, emulsifier: 0, alcohol: 0, water: 0 },
   },
 
+  {
+    id: "xanthan-gum",
+    name: "Xanthan Gum",
+    description: "Powerful water-binder from fermented sugar. A tiny dose thickens the mix and slows melt.",
+    category: "stabilizer",
+    macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 1.0, emulsifier: 0, alcohol: 0, water: 0 },
+  },
+  {
+    id: "cmc",
+    name: "Cellulose Gum (CMC)",
+    description: "Plant-fiber-derived gum. Cheap, effective, and neutral — controls ice crystals and body.",
+    category: "stabilizer",
+    macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 1.0, emulsifier: 0, alcohol: 0, water: 0 },
+  },
+  {
+    id: "pectin",
+    name: "Pectin",
+    description: "Fruit-derived gelling fiber. Especially at home in sorbets, where it lends a soft, clean set.",
+    category: "stabilizer",
+    macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 1.0, emulsifier: 0, alcohol: 0, water: 0 },
+  },
+  {
+    id: "stabilizer-blend",
+    name: "Stabilizer Blend",
+    description: "All-in-one blend of gums and emulsifier (guar, locust bean, carrageenan, mono-diglycerides). One-shot dose for body and smoothness.",
+    category: "stabilizer",
+    macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0.75, emulsifier: 0.25, alcohol: 0, water: 0 },
+  },
+
   // --- Emulsifiers ---
   {
     id: "egg-yolk",
@@ -165,6 +290,21 @@ export const INGREDIENTS: CatalogIngredient[] = [
     category: "emulsifier",
     // Modeled as a pure emulsifier so the emulsifier slider is a clean, independent
     // lever (real lecithin is mostly fat, but that coupling isn't useful here).
+    macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 1, alcohol: 0, water: 0 },
+  },
+
+  {
+    id: "mono-diglycerides",
+    name: "Mono- & Diglycerides",
+    description: "The workhorse commercial emulsifier. Sharpens the fat network for a dry, stiff, slow-melting scoop.",
+    category: "emulsifier",
+    macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 1, alcohol: 0, water: 0 },
+  },
+  {
+    id: "sunflower-lecithin",
+    name: "Sunflower Lecithin",
+    description: "Soy-free plant emulsifier. Improves body and smooths texture without adding richness.",
+    category: "emulsifier",
     macros: { fat: 0, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 1, alcohol: 0, water: 0 },
   },
 
@@ -220,6 +360,91 @@ export const INGREDIENTS: CatalogIngredient[] = [
     macros: { fat: 0.004, sugar: 0.62, nonfatSolids: 0.04, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.15 },
   },
 
+  {
+    id: "milk-chocolate",
+    name: "Milk Chocolate",
+    description: "Melted-in milk chocolate. Sweeter and milder than dark, adding fat, sugar, and milk solids.",
+    category: "inclusion",
+    macros: { fat: 0.30, sugar: 0.51, nonfatSolids: 0.13, stabilizer: 0, emulsifier: 0.01, alcohol: 0, water: 0.015 },
+  },
+  {
+    id: "white-chocolate",
+    name: "White Chocolate",
+    description: "Cocoa butter, sugar, and milk solids — no cocoa. Sweet and rich with a soft dairy flavor.",
+    category: "inclusion",
+    macros: { fat: 0.32, sugar: 0.59, nonfatSolids: 0.07, stabilizer: 0, emulsifier: 0.01, alcohol: 0, water: 0.01 },
+  },
+  {
+    id: "almond-butter",
+    name: "Almond Butter",
+    description: "Roasted almonds ground to a paste. Adds fat, protein, and a mellow marzipan-nut flavor.",
+    category: "inclusion",
+    macros: { fat: 0.555, sugar: 0.063, nonfatSolids: 0.24, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.016 },
+  },
+  {
+    id: "tahini",
+    name: "Tahini",
+    description: "Ground sesame paste. Savory, faintly bitter, and rich — pairs with honey and halva flavors.",
+    category: "inclusion",
+    macros: { fat: 0.53, sugar: 0.005, nonfatSolids: 0.225, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.03 },
+  },
+  {
+    id: "dulce-de-leche",
+    name: "Dulce de Leche",
+    description: "Slowly caramelized sweetened milk. Deep toffee flavor plus sugar and milk solids.",
+    category: "inclusion",
+    macros: { fat: 0.073, sugar: 0.52, nonfatSolids: 0.12, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.287 },
+  },
+  {
+    id: "salted-caramel",
+    name: "Salted Caramel",
+    description: "Cooked-sugar caramel with cream and salt. Swirled or blended for buttery caramel flavor.",
+    category: "inclusion",
+    macros: { fat: 0.14, sugar: 0.55, nonfatSolids: 0.03, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.28 },
+  },
+  {
+    id: "espresso-powder",
+    name: "Espresso Powder",
+    description: "Instant espresso. Concentrated coffee flavor with no dilution — a little darkens and deepens the base.",
+    category: "inclusion",
+    macros: { fat: 0.002, sugar: 0.02, nonfatSolids: 0.80, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.03 },
+  },
+  {
+    id: "matcha-powder",
+    name: "Matcha Powder",
+    description: "Stone-ground green tea. Grassy, slightly bitter, and vivid green; use in small amounts.",
+    category: "inclusion",
+    macros: { fat: 0.05, sugar: 0, nonfatSolids: 0.60, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.05 },
+  },
+  {
+    id: "malted-milk-powder",
+    name: "Malted Milk Powder",
+    description: "Malted barley and milk solids. The toasty, nostalgic malt note in a classic malted scoop.",
+    category: "inclusion",
+    macros: { fat: 0.08, sugar: 0.55, nonfatSolids: 0.20, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.03 },
+  },
+  {
+    id: "marshmallow",
+    name: "Marshmallow Fluff",
+    description: "Whipped sugar syrup and egg white. Adds a sticky sweetness and gooey ribbon when swirled.",
+    category: "inclusion",
+    macros: { fat: 0, sugar: 0.70, nonfatSolids: 0.015, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.20 },
+  },
+  {
+    id: "cookie-crumbs",
+    name: "Cookie Crumbs",
+    description: "Crushed sandwich cookies. A crunchy mix-in that softens to a fudgy chew in the frozen base.",
+    category: "inclusion",
+    macros: { fat: 0.18, sugar: 0.35, nonfatSolids: 0.42, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.03 },
+  },
+  {
+    id: "brownie-pieces",
+    name: "Brownie Pieces",
+    description: "Chunks of fudgy brownie folded in. Adds pockets of dense chocolate cake to the scoop.",
+    category: "inclusion",
+    macros: { fat: 0.25, sugar: 0.45, nonfatSolids: 0.25, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.05 },
+  },
+
   // --- Alcohol ---
   {
     id: "vodka",
@@ -234,6 +459,42 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Adds a molasses-caramel note alongside the freeze-point-lowering effect of alcohol.",
     category: "alcohol",
     macros: { fat: 0, sugar: 0.02, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0.40, water: 0.58 },
+  },
+
+  {
+    id: "bourbon",
+    name: "Bourbon",
+    description: "Barrel-aged corn whiskey. Vanilla-oak warmth plus the freeze-point drop of any spirit.",
+    category: "alcohol",
+    macros: { fat: 0, sugar: 0.005, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0.40, water: 0.595 },
+  },
+  {
+    id: "coffee-liqueur",
+    name: "Coffee Liqueur",
+    description: "Sweet, low-proof coffee spirit (Kahlúa-style). Adds coffee flavor, sugar, and a soft scoop.",
+    category: "alcohol",
+    macros: { fat: 0, sugar: 0.33, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0.20, water: 0.47 },
+  },
+  {
+    id: "amaretto",
+    name: "Amaretto",
+    description: "Sweet almond-flavored liqueur. Marzipan aroma with a moderate freeze-point drop.",
+    category: "alcohol",
+    macros: { fat: 0, sugar: 0.25, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0.24, water: 0.51 },
+  },
+  {
+    id: "orange-liqueur",
+    name: "Orange Liqueur",
+    description: "Cognac-based orange spirit (Grand Marnier-style). Bright citrus with full spirit strength.",
+    category: "alcohol",
+    macros: { fat: 0, sugar: 0.10, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0.40, water: 0.50 },
+  },
+  {
+    id: "irish-cream",
+    name: "Irish Cream",
+    description: "Cream, whiskey, and sugar in one (Baileys-style). Brings fat and milk solids along with the alcohol.",
+    category: "alcohol",
+    macros: { fat: 0.13, sugar: 0.19, nonfatSolids: 0.03, stabilizer: 0, emulsifier: 0, alcohol: 0.17, water: 0.48 },
   },
 
   // --- Fruit ---
@@ -273,6 +534,63 @@ export const INGREDIENTS: CatalogIngredient[] = [
     macros: { fat: 0, sugar: 0.11, nonfatSolids: 0.01, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.88 },
   },
 
+  {
+    id: "banana-puree",
+    name: "Banana Purée",
+    description: "Mashed ripe banana. Naturally sweet and starchy — adds body as well as flavor.",
+    category: "fruit",
+    macros: { fat: 0.003, sugar: 0.15, nonfatSolids: 0.02, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.827 },
+  },
+  {
+    id: "blueberry-puree",
+    name: "Blueberry Purée",
+    description: "Deep, jammy, and mildly sweet. Turns the base a striking violet-blue.",
+    category: "fruit",
+    macros: { fat: 0.003, sugar: 0.10, nonfatSolids: 0.01, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.887 },
+  },
+  {
+    id: "cherry-puree",
+    name: "Cherry Purée",
+    description: "Sweet-tart dark cherry. Classic paired with chocolate chunks in a chunky-cherry scoop.",
+    category: "fruit",
+    macros: { fat: 0.002, sugar: 0.13, nonfatSolids: 0.015, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.853 },
+  },
+  {
+    id: "peach-puree",
+    name: "Peach Purée",
+    description: "Soft, floral, and gently sweet. High water content — account for dilution.",
+    category: "fruit",
+    macros: { fat: 0.003, sugar: 0.085, nonfatSolids: 0.013, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.899 },
+  },
+  {
+    id: "blackberry-puree",
+    name: "Blackberry Purée",
+    description: "Winey and tart with deep color. Lower in sugar than most berries; seeds usually strained.",
+    category: "fruit",
+    macros: { fat: 0.005, sugar: 0.05, nonfatSolids: 0.018, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.927 },
+  },
+  {
+    id: "pineapple-puree",
+    name: "Pineapple Purée",
+    description: "Bright, tropical, and acidic. Raw pineapple's enzymes stop gelatin from setting — cook it first or use another stabilizer.",
+    category: "fruit",
+    macros: { fat: 0.002, sugar: 0.10, nonfatSolids: 0.007, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.891 },
+  },
+  {
+    id: "apricot-puree",
+    name: "Apricot Purée",
+    description: "Honeyed and slightly tart. Concentrated flavor that survives the cold well.",
+    category: "fruit",
+    macros: { fat: 0.004, sugar: 0.092, nonfatSolids: 0.021, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.883 },
+  },
+  {
+    id: "pumpkin-puree",
+    name: "Pumpkin Purée",
+    description: "Earthy, mild, and starchy. Low sugar but adds solids and body; the base for spiced autumn flavors.",
+    category: "fruit",
+    macros: { fat: 0.003, sugar: 0.033, nonfatSolids: 0.05, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.914 },
+  },
+
   // --- Vegan Dairy ---
   {
     id: "coconut-cream",
@@ -294,6 +612,42 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Blended soaked cashews. Neutral flavor, creamy body, naturally emulsified.",
     category: "vegan-dairy",
     macros: { fat: 0.12, sugar: 0.05, nonfatSolids: 0.07, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.76 },
+  },
+
+  {
+    id: "almond-milk",
+    name: "Almond Milk",
+    description: "Light and faintly nutty. Very low fat and solids — leans hard on stabilizers for body.",
+    category: "vegan-dairy",
+    macros: { fat: 0.016, sugar: 0.003, nonfatSolids: 0.012, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.969 },
+  },
+  {
+    id: "soy-milk",
+    name: "Soy Milk",
+    description: "The highest-protein plant milk. Its protein mimics dairy MSNF for a fuller body.",
+    category: "vegan-dairy",
+    macros: { fat: 0.017, sugar: 0.005, nonfatSolids: 0.035, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.943 },
+  },
+  {
+    id: "coconut-milk",
+    name: "Coconut Milk",
+    description: "Lighter than coconut cream. A balanced plant fat source with mild coconut flavor.",
+    category: "vegan-dairy",
+    macros: { fat: 0.15, sugar: 0.03, nonfatSolids: 0.015, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.805 },
+  },
+  {
+    id: "cocoa-butter",
+    name: "Cocoa Butter",
+    description: "Pure vegan fat from the cocoa bean. Firms up structure and carries a faint chocolate aroma.",
+    category: "vegan-dairy",
+    macros: { fat: 1.0, sugar: 0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 },
+  },
+  {
+    id: "vegan-butter",
+    name: "Vegan Butter",
+    description: "Plant-oil butter substitute. Near-pure fat for enriching dairy-free formulas.",
+    category: "vegan-dairy",
+    macros: { fat: 0.80, sugar: 0, nonfatSolids: 0.01, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.16 },
   },
 
   // --- Misc ---

@@ -138,6 +138,10 @@
   outline: none;
 }
 
+.notes::placeholder {
+  color: var(--muted);
+}
+
 .notes:focus {
   border-color: var(--ink);
 }

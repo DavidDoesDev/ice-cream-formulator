@@ -59,24 +59,24 @@ function cupGeomAtY(y: number) {
 }
 
 // --- Living waterline ---
-// A single, smooth S: one sine wave whose wavelength ≈ the cup width, so the
-// surface shows just one gentle crest and one trough. Rather than drifting at a
-// constant rate, its phase *sways* (a sine of time) so the wave glides fastest
-// mid-swing and eases to a near-stop at each turn — like liquid settling.
+// A simple cartoon wave: one gentle S (wavelength ≈ cup width, so a single
+// crest and trough) that *travels* steadily in one direction. The earlier
+// version swayed its phase back and forth (a sine of time), which read as a
+// rigid shape sliding left-right rather than water moving; a steady roll
+// (phase = k·x − ω·t) looks like the surface is actually flowing. A slow bob
+// adds a whole-surface rise/fall. AMP + bob stay within WATER_MAX_AMP so the
+// waterline can't clip the rim/floor or escape the band the rect fills.
 const WATER_MAX_AMP = 4;    // total vertical reach; drives the headroom band
-const WAVELENGTH = 115;     // slightly wider than the cup → under one full wave, so
-                            // exactly one crest + one trough show (a clean single S)
-const AMP = 3;              // crest/trough height — defined but still shallow
-const DRIFT_AMP = 1.8;      // how far the wave sways, in radians (eased)
-const DRIFT_SPEED = 1.0;    // sway rate, rad/s
-const BOB_AMP = 0.6;        // slow whole-surface rise/fall
-const BOB_SPEED = 1.2;      // rad/s
+const WAVELENGTH = 115;     // ≈ cup width → one clean crest + trough (a single S)
+const AMP = 3;              // crest/trough height
+const WAVE_SPEED = 1.3;     // steady roll rate, rad/s (one direction — flows, not sways)
+const BOB_AMP = 0.5;        // slow whole-surface rise/fall
+const BOB_SPEED = 0.8;      // rad/s
 const K = (2 * Math.PI) / WAVELENGTH;
 
 function waterlineY(x: number, meanY: number, t: number): number {
-  const phase = DRIFT_AMP * Math.sin(DRIFT_SPEED * t);
   const bob = BOB_AMP * Math.sin(BOB_SPEED * t);
-  return meanY + bob + AMP * Math.sin(K * x + phase);
+  return meanY + bob + AMP * Math.sin(K * x - WAVE_SPEED * t);
 }
 
 // Closed region between the waterline (top) and the cup floor — the water body.
@@ -178,24 +178,45 @@ function PintCupImpl({ ratios, size = "full", width }: PintCupProps) {
         </defs>
 
         <g clipPath={`url(#${clipId})`}>
-          {layers.map(({ key, color, points }) => (
-            <polygon
-              key={key}
-              points={points}
-              fill={color}
-              stroke="var(--ink)"
-              strokeWidth="0.6"
-              strokeOpacity="0.35"
-              className={styles.layer}
-            />
-          ))}
+          {layers.map(({ key, color, points }) =>
+            // With a wave, the water body (and its separator line) is drawn by
+            // the animated path below, so skip its static flat-topped polygon —
+            // otherwise its top stroke leaves a flat line the fill slides under.
+            key === "water" && hasWave ? null : (
+              <polygon
+                key={key}
+                points={points}
+                fill={color}
+                stroke="var(--ink)"
+                strokeWidth="0.6"
+                strokeOpacity="0.35"
+                className={styles.layer}
+              />
+            ),
+          )}
 
           {hasWave && (
             <>
-              {/* Extend the layer above the water down to the trough line so the
-                  waterline can dip without revealing a gap. */}
-              <rect x={-2} y={waterMeanY} width={VW + 4} height={WATER_MAX_AMP} fill={aboveColor} />
-              <path ref={waterRef} d={waterPath(waterMeanY, 0)} fill={waterColor} />
+              {/* Repaint the above-layer's band around the waterline so (a) the
+                  waterline can dip into it without revealing a gap and (b) its
+                  flat bottom stroke is covered — the animated path's stroke below
+                  is the separator now, so it must sway with the fill. */}
+              <rect
+                x={-2}
+                y={waterMeanY - 1}
+                width={VW + 4}
+                height={WATER_MAX_AMP + 1}
+                fill={aboveColor}
+              />
+              <path
+                ref={waterRef}
+                d={waterPath(waterMeanY, 0)}
+                fill={waterColor}
+                stroke="var(--ink)"
+                strokeWidth="0.6"
+                strokeOpacity="0.35"
+                strokeLinejoin="round"
+              />
             </>
           )}
         </g>

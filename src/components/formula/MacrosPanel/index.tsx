@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type MacroRatios } from "@/lib/formula-engine";
 import { sliderGeometry } from "@/lib/macro-bands";
 import { balanceReport } from "@/lib/balance";
+import { relationshipHints } from "@/lib/relationships";
+import type { DerivedIndices } from "@/lib/derive";
 import { formatPercent } from "@/lib/measure";
 import { PintCup } from "@/components/shared/PintCup";
 import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
@@ -17,7 +19,7 @@ const SLIDER_SCALE = 1000;
 const SLIDERS: { key: MacroKey; label: string }[] = [
   { key: "fat", label: "Fat" },
   { key: "sugar", label: "Sugar" },
-  { key: "nonfatSolids", label: "Milk solids" },
+  { key: "nonfatSolids", label: "Non-fat solids" },
   { key: "stabilizer", label: "Stabilizer" },
   { key: "emulsifier", label: "Emulsifier" },
   { key: "alcohol", label: "Alcohol" },
@@ -32,7 +34,7 @@ function fillVar(key: MacroKey): string {
 
 interface MacrosPanelProps {
   ratios: MacroRatios;
-  baseRatios: MacroRatios;
+  derived: DerivedIndices;
   style: string;
   conflict: boolean;
   onMacroTarget: (macro: keyof MacroRatios, target: number) => void;
@@ -45,7 +47,7 @@ interface MacrosPanelProps {
 // the recipe at fixed yield (handled by the parent) continuously.
 export function MacrosPanel({
   ratios,
-  baseRatios,
+  derived,
   style,
   conflict,
   onMacroTarget,
@@ -134,8 +136,9 @@ export function MacrosPanel({
     [],
   );
 
-  const report = balanceReport(ratios, baseRatios);
+  const report = balanceReport(ratios, style);
   const offChecks = report.checks.filter((c) => c.verdict !== "ok");
+  const hints = relationshipHints(ratios, derived, style);
   return (
     <section className={styles.panel}>
       <div className={styles.bar}>
@@ -154,7 +157,7 @@ export function MacrosPanel({
         const dragging = drag?.key === key;
         // The dragged slider shows the pointer's target; others show solved ratios.
         const shown = dragging ? drag!.value : ratios[key];
-        const g = sliderGeometry(key, shown, baseRatios[key]);
+        const g = sliderGeometry(style, key, shown);
         // Run the native input on a 0–1000 scale and map to the macro's range —
         // the browser mishandles very small float ranges (e.g. stabilizer 0–0.008),
         // silently dropping input events. This keeps every slider responsive.
@@ -213,11 +216,21 @@ export function MacrosPanel({
         </span>
       </div>
 
-      {offChecks.length > 0 && (
+      <div className={styles.readoutRow}>
+        <span className={styles.readout}>Scoopability <b>{Math.round(derived.pac * 100)}</b></span>
+        <span className={styles.readout}>Sweetness <b>{Math.round(derived.pod * 100)}</b></span>
+      </div>
+
+      {(offChecks.length > 0 || hints.length > 0) && (
         <div className={styles.advice}>
           {offChecks.map((c) => (
             <div key={c.key} className={styles.adviceRow}>
               <b>{c.label}</b> — {c.advice}
+            </div>
+          ))}
+          {hints.map((h) => (
+            <div key={h.key} className={styles.adviceRow}>
+              {h.message}
             </div>
           ))}
         </div>
