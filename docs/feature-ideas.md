@@ -46,7 +46,20 @@ Link from the app back to my personal site.
 
 ## Save logic
 
-Revisit how and when formulas get saved.
+Revisit how and when formulas get saved — explicit save button vs. autosave on
+every change vs. save-on-blur. This underlies two related features:
+
+- **History panel** — a durable, per-formula timeline of versions you can browse
+  and restore. Basically "save logic" made visible: if every meaningful edit
+  produces a version, the panel is just the UI over that log.
+- **Undo** — reversible steps on the current working state.
+
+The pivotal design choice is what a "version" is. If undo and history share one
+durable event/version log, they converge — undo is "jump back one," the panel is
+the list, and other ideas (unique batch numbers, audit) fall out of it too. That
+log wants **coalescing** so rapid slider drags group into one entry instead of
+flooding the timeline. The alternative is explicit saves + a separate in-memory
+undo for unsaved state — two systems instead of one.
 
 ## Individual measurements for ingredient mixes
 
@@ -97,6 +110,22 @@ the explanation surface for the fix.
 Machine-aware formulation: a Ninja Creami recipe and a compressor-machine
 recipe need different targets. Let the user set their machine and adapt
 formulas to it — "guaranteed to work on your machine."
+
+Model (worked out; see docs/formulation/decisions.md D8): **equipment is a
+second axis orthogonal to dessert style, set per-recipe.** Together they define
+the macro target windows — style drives composition (fat/MSNF/emulsifier),
+equipment shifts the scoopability windows (sugar/PAC, stabilizer), because it
+sets how cold/fast the mix freezes and how hard it serves. Mechanism: equipment
+→ target serving hardness (PAC target) → scoopability windows, layered on the
+freezing/derivation module (readouts-first, so this is a thin add). Profiles:
+home-dasher (default, warmest → most sugar) · Creami/Pacojet (spin a frozen
+block → tolerate harder, lower-PAC mixes) · commercial batch e.g. Carpigiani
+(coldest → least sugar/stabilizer). Changing a recipe's equipment never mutates
+its grams (per D4); if macros fall out of the newly-shifted windows, offer a
+user-initiated **recalibration nudge** toward the new PAC target.
+
+**Shipped** (PR #70, issues #66–#69) — the picker, per-machine window shifts, and
+the recalibration nudge are all in. See decisions.md D8 for the as-built notes.
 
 ## Nutrition info
 
