@@ -69,7 +69,13 @@ export function RecipePanel({
     (m) => (getPresetById(m.presetId)?.ingredients.length ?? 0) > 0,
   );
   const [eggBannerDismissed, setEggBannerDismissed] = useState(false);
-  const present = new Set(recipe.additionalIngredients.map((a) => a.ingredientId));
+
+  // Every ingredient the recipe actually contains — additionals plus every smart
+  // mix's sub-ingredients — so we never recommend one that's already in (#74).
+  const present = new Set<string>(recipe.additionalIngredients.map((a) => a.ingredientId));
+  for (const m of recipe.smartMixes) {
+    getPresetById(m.presetId)?.ingredients.forEach((ing) => present.add(ing.ingredientId));
+  }
 
   // A custard is defined by egg yolks — if the mix has none, surface it (a banner
   // below, and a one-tap "Try" recommendation). Non-destructive until tapped (D4).
@@ -95,33 +101,56 @@ export function RecipePanel({
 
       <SectionHeader role="ingredients" label="Ingredients" />
 
-      {activeMixes.map((mix) => (
-        <div key={mix.presetId} className={styles.row}>
-          <div className={styles.main}>
-            <span className={styles.name}>{mixLabel(mix)}</span>
-            <IngredientNote value={mix.note ?? ""} onChange={(n) => onMixNote(mix.presetId, n)} />
+      {activeMixes.map((mix) => {
+        // Read-only sub-ingredient breakdown for multi-ingredient systems (#76):
+        // grams scaled by the mix total × each sub-ingredient's proportion. The
+        // mix's own gram field stays editable; editing the profile lives in Config.
+        const subs = getPresetById(mix.presetId)?.ingredients ?? [];
+        const breakdown = subs.length > 1 ? subs : [];
+        return (
+          <div key={mix.presetId} className={styles.mixEntry}>
+            <div className={styles.row}>
+              <div className={styles.main}>
+                <span className={styles.name}>{mixLabel(mix)}</span>
+                <IngredientNote value={mix.note ?? ""} onChange={(n) => onMixNote(mix.presetId, n)} />
+              </div>
+              <GramScrubField grams={mix.grams} onChange={(g) => onMixGrams(mix.presetId, g)} />
+            </div>
+            {breakdown.length > 0 && (
+              <div className={styles.subList}>
+                {breakdown.map((s) => (
+                  <div key={s.ingredientId} className={styles.subRow}>
+                    <span className={styles.subName}>
+                      {getIngredientById(s.ingredientId)?.name ?? s.ingredientId}
+                    </span>
+                    <span className={styles.subGrams}>{formatGrams(mix.grams * s.proportion)} g</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <GramScrubField grams={mix.grams} onChange={(g) => onMixGrams(mix.presetId, g)} />
-        </div>
-      ))}
+        );
+      })}
 
       {recipe.additionalIngredients.map((ai) => {
         const label = getIngredientById(ai.ingredientId)?.name ?? ai.ingredientId;
         return (
-          <div key={ai.ingredientId} className={styles.row}>
-            <div className={styles.main}>
-              <span className={styles.name}>{label}</span>
-              <IngredientNote value={ai.note ?? ""} onChange={(n) => onAdditionalNote(ai.ingredientId, n)} />
+          <div key={ai.ingredientId} className={styles.mixEntry}>
+            <div className={styles.row}>
+              <div className={styles.main}>
+                <span className={styles.name}>{label}</span>
+                <IngredientNote value={ai.note ?? ""} onChange={(n) => onAdditionalNote(ai.ingredientId, n)} />
+              </div>
+              <GramScrubField grams={ai.grams} onChange={(g) => onAdditionalGrams(ai.ingredientId, g)} />
+              <button
+                className={styles.remove}
+                type="button"
+                aria-label={`Remove ${label}`}
+                onClick={() => onRemoveAdditional(ai.ingredientId)}
+              >
+                <Icon name="close" size={16} />
+              </button>
             </div>
-            <GramScrubField grams={ai.grams} onChange={(g) => onAdditionalGrams(ai.ingredientId, g)} />
-            <button
-              className={styles.remove}
-              type="button"
-              aria-label={`Remove ${label}`}
-              onClick={() => onRemoveAdditional(ai.ingredientId)}
-            >
-              <Icon name="close" size={16} />
-            </button>
           </div>
         );
       })}
