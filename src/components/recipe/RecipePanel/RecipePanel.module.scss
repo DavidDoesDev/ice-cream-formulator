@@ -77,20 +77,18 @@
   margin-top: 18px;
 }
 
-.eggNudge {
+.eggBanner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 18px;
-  padding: 8px 12px;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 9px 12px;
   border: 1.5px dashed var(--line);
   border-radius: var(--radius-md);
+  color: var(--accent);
 }
 
-.eggNudgeText {
-  flex: 1;
-  min-width: 160px;
+.eggBannerText {
   font-size: 13px;
   line-height: 1.4;
   color: var(--muted);

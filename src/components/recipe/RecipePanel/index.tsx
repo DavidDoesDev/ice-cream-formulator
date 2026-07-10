@@ -67,11 +67,21 @@ export function RecipePanel({
     (m) => (getPresetById(m.presetId)?.ingredients.length ?? 0) > 0,
   );
   const present = new Set(recipe.additionalIngredients.map((a) => a.ingredientId));
-  const quick = QUICK.filter((q) => !present.has(q.id)).slice(0, 3);
 
-  // A custard is defined by egg yolks — if the mix has none, nudge a one-tap add
-  // right where you build the recipe (non-destructive until tapped; D4).
+  // A custard is defined by egg yolks — if the mix has none, surface it (a banner
+  // below, and a one-tap "Try" recommendation). Non-destructive until tapped (D4).
   const needsEggs = style === "custard" && !recipe.smartMixes.some((m) => m.kind === "eggs");
+
+  // "Try" recommendations. For a custard missing eggs, the yolks recommendation
+  // adds the proper egg *system* (addSmartMix) rather than a raw-yolk inclusion.
+  const recommendations: { key: string; label: string; onClick: () => void }[] = [];
+  if (needsEggs) recommendations.push({ key: "eggs-system", label: "Egg yolks", onClick: onAddEggMix });
+  for (const q of QUICK) {
+    if (present.has(q.id)) continue;
+    if (q.id === "egg-yolk" && needsEggs) continue; // superseded by the egg-system pill
+    recommendations.push({ key: q.id, label: q.label, onClick: () => onQuickAdd(q.id) });
+  }
+  const shownRecs = recommendations.slice(0, 3);
 
   return (
     <section className={styles.panel}>
@@ -113,28 +123,26 @@ export function RecipePanel({
         );
       })}
 
-      {needsEggs && (
-        <div className={styles.eggNudge}>
-          <span className={styles.eggNudgeText}>
-            Custards are built on egg yolks — add them for a silky, coating body.
-          </span>
-          <Pill tone="accent" size="sm" onClick={onAddEggMix}>
-            <Icon name="plus" size={14} /> Egg yolks
-          </Pill>
-        </div>
-      )}
-
       <div className={styles.addRow}>
         <Pill tone="accent" size="md" onClick={onAddIngredient}>
           <Icon name="plus" size={16} /> Add ingredient
         </Pill>
-        {quick.length > 0 && <span className={styles.tryLabel}>Try</span>}
-        {quick.map((q) => (
-          <Pill key={q.id} tone="ghost" size="md" onClick={() => onQuickAdd(q.id)}>
-            + {q.label}
+        {shownRecs.length > 0 && <span className={styles.tryLabel}>Try</span>}
+        {shownRecs.map((r) => (
+          <Pill key={r.key} tone="ghost" size="md" onClick={r.onClick}>
+            + {r.label}
           </Pill>
         ))}
       </div>
+
+      {needsEggs && (
+        <div className={styles.eggBanner}>
+          <Icon name="egg" size={17} />
+          <span className={styles.eggBannerText}>
+            Custards are built on egg yolks — add them for a silky, coating body.
+          </span>
+        </div>
+      )}
 
       <SectionHeader role="yield" label="Batch yield" />
       <div className={styles.yieldRow}>

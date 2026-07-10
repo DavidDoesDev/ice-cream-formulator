@@ -13,6 +13,7 @@ export type IconName =
   | "spoon"
   | "dice"
   | "pint"
+  | "egg"
   | "close";
 
 interface IconProps {
@@ -104,6 +105,13 @@ export function Icon({ name, size = 24, style, className }: IconProps) {
           <path d="M3.6 6.2h16.8" />
           <path d="M5.5 6.2 7 21h10l1.5-14.8" />
           <path d="M7.3 12.6h9.4" />
+        </svg>
+      );
+    case "egg":
+      // Ovoid — pointier top, rounder bottom.
+      return (
+        <svg {...p}>
+          <path d="M12 3c-3.3 0-5.6 4.7-5.6 8.8a5.6 6.2 0 0 0 11.2 0C17.6 7.7 15.3 3 12 3z" />
         </svg>
       );
     case "close":
