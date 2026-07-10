@@ -211,6 +211,10 @@ export function MacrosPanel({
       })}
 
       <SectionHeader role="balance" label="Balance check" />
+      <p className={styles.scoreNote}>
+        Each macro checked against its window for a {style.toLowerCase()} on a{" "}
+        {equipmentInfo(equipment).label.toLowerCase()}
+      </p>
       <div className={styles.scoreRow}>
         <span className={`${styles.score} ${report.balanced ? styles.scoreOk : ""}`}>
           {report.balanced ? (
@@ -220,10 +224,6 @@ export function MacrosPanel({
           ) : (
             `${report.inRange} / ${report.total} in range`
           )}
-        </span>
-        <span className={styles.scoreNote}>
-          each macro checked against its window for a {style.toLowerCase()} on a{" "}
-          {equipmentInfo(equipment).label.toLowerCase()}
         </span>
       </div>
 
