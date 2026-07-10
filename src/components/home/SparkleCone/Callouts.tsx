@@ -10,6 +10,15 @@ const GAP_S = 0.6;
 // meets the ring's edge with a little air instead of piercing it.
 const RING_GAP = 10;
 
+// The label hangs above its elbow (translateY(-100%)), so an elbow high in the
+// scene can push the label right off the top of the page — worst on narrow
+// widths, where a small elbow % is only a few px down. Keep the elbow at least
+// this far down so the label always clears the top with a margin; the whole
+// figure (leader line + underlined label) shifts down together. Sized to cover
+// the label's own height (~20px) plus air, with headroom for the annotation
+// plane's parallax lifting it up to ~5px more.
+const MIN_ELBOW_PX = 52;
+
 // Textbook figure labels. Coordinates are % of the scene box: `dot` marks the
 // feature on the footage, `elbow` is where the leader line turns into the
 // horizontal rule the label sits on. All labels trail left, into the paper
@@ -58,11 +67,15 @@ export function Callouts({ color }: { color: string }) {
   const [ex, ey] = elbow;
 
   let points = "";
+  // Falls back to the raw % until the box is measured; once measured we drive
+  // the label off the clamped pixel elbow so it can't ride off the top.
+  let labelTop = `${ey}%`;
   if (box) {
     const dpx = (dx / 100) * box.w;
     const dpy = (dy / 100) * box.h;
     const epx = (ex / 100) * box.w;
-    const epy = (ey / 100) * box.h;
+    const epy = Math.max((ey / 100) * box.h, MIN_ELBOW_PX);
+    labelTop = `${epy.toFixed(1)}px`;
     const len = Math.hypot(epx - dpx, epy - dpy) || 1;
     // Start on the marker's edge and run to the elbow; the underline the
     // label carries (border-bottom, so it always spans exactly the text)
@@ -81,7 +94,7 @@ export function Callouts({ color }: { color: string }) {
           </svg>
         )}
         <span className={styles.calloutDot} style={{ left: `${dx}%`, top: `${dy}%` }} />
-        <span className={styles.calloutLabel} style={{ right: `${100 - ex}%`, top: `${ey}%` }}>
+        <span className={styles.calloutLabel} style={{ right: `${100 - ex}%`, top: labelTop }}>
           {text}
         </span>
       </div>
