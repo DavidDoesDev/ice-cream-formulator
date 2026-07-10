@@ -123,6 +123,15 @@
   position: relative;
 }
 
+// The elastic/rubber-band overscroll area paints the root (html) background.
+// body carries `overflow-x: clip` below, which makes it a clip container and
+// stops its background from propagating to the canvas — so overscroll showed
+// the browser-default white above the hero (#54). Set it on html explicitly.
+html {
+  background: var(--paper);
+  transition: background 0.4s ease;
+}
+
 body {
   font-family: var(--font-body);
   background: var(--paper);
