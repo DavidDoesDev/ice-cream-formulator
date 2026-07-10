@@ -24,6 +24,29 @@
   // page and bringing the white box back.
   top: calc(var(--sparkle-cone-top, calc(48px * var(--u))) - 0.0847 * var(--w));
   pointer-events: none;
+  // Entrance: slide in from fully off the right edge, after a beat. Animate
+  // `right` (not transform / opacity) — either would create a stacking context
+  // on .scene and break the cone's multiply blend, bringing back the white box.
+  // Duration + delay are mirrored by ENTRANCE_MS in index.tsx (gates the callouts
+  // until the cone lands).
+  animation: coneEnter 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.3s backwards;
+}
+
+// Starts fully off the right edge (left edge ~5vw past the viewport), settles to
+// the resting right (= base value, so the end is seamless with .scene's `right`).
+@keyframes coneEnter {
+  from {
+    right: calc(-1 * var(--w) - 5vw);
+  }
+  to {
+    right: calc(-0.055 * var(--w));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene {
+    animation: none;
+  }
 }
 
 .cone {
@@ -35,6 +58,18 @@
   // for now: on the dark theme the whole video takes the paper tint.
   mix-blend-mode: multiply;
   will-change: transform;
+}
+
+// Static stand-in occupying the cone's box (same fill + multiply) until the
+// video's first frame is ready, then unmounted. No opacity/transform of its own
+// — it inherits .scene's slide, and a stacking context here would break blend.
+.placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
 // Parallax planes: JS writes translate3d here, not on the layers themselves.
