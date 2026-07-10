@@ -4,8 +4,10 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { listFormulas, deleteFormula, type SavedFormula } from "@/lib/persistence";
+import { listFormulas, deleteFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
 import { computeRatios } from "@/lib/formula-engine";
+import { ARCHETYPES } from "@/data/archetypes";
+import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
 import { PintCup } from "@/components/shared/PintCup";
 import { Icon } from "@/components/shared/Icon";
 import { Pill } from "@/components/shared/Pill";
@@ -31,11 +33,21 @@ export default function Home() {
     setFormulas(listFormulas());
   }, []);
 
+  // Surprise me: generate a fresh formula from a random archetype and drop into
+  // it. Always available — no saved batches required (same bootstrap path as /new).
   const surpriseMe = useCallback(() => {
-    if (!formulas || formulas.length === 0) return;
-    const pick = formulas[Math.floor(Math.random() * formulas.length)];
-    router.push(`/formula/${pick.id}`);
-  }, [formulas, router]);
+    const archetype = ARCHETYPES[Math.floor(Math.random() * ARCHETYPES.length)];
+    const id = generateFormulaId();
+    const { state, recipe } = bootstrapFromArchetype(archetype);
+    const now = Date.now();
+    saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state, recipe });
+    router.push(`/formula/${id}`);
+  }, [router]);
+
+  const scrollToBatches = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    document.getElementById("batches")?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   const handleDelete = useCallback((id: string, name: string) => {
     if (!confirm(`Delete "${name}"?`)) return;
@@ -84,7 +96,7 @@ export default function Home() {
           milk solids in real time and design the scoop you can&apos;t buy anywhere.
         </p>
         <div className={styles.cta}>
-          <a href="#batches" className={styles.ctaGhost}>
+          <a href="#batches" className={styles.ctaGhost} onClick={scrollToBatches}>
             <Icon name="pint" size={18} />
             See my batches
           </a>
@@ -96,9 +108,8 @@ export default function Home() {
             className={styles.dice}
             type="button"
             onClick={surpriseMe}
-            disabled={!hasFormulas}
-            title="Surprise me"
-            aria-label="Open a random formula"
+            title="Surprise me — random archetype"
+            aria-label="Generate a formula from a random archetype"
           >
             <Icon name="dice" size={22} />
           </button>
