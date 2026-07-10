@@ -157,3 +157,18 @@ Get paid when a user buys an ingredient or equipment the app pointed them to —
 Cremodan and other stabilizers, dry milk powder, machines, label stock.
 Natural placements: the ingredient picker, a formula's shopping list, the
 equipment profile.
+
+**Cookbooks** are a strong affiliate category too — the same ice-cream texts the
+formulation model already cites (Goff & Hartel, Migoya, Dana Cree, Clarke,
+Arbuckle — see `docs/formulation/sources.md`). Surface "the book this technique
+comes from" next to relevant guidance/decisions and link it. High-intent, on-brand,
+and the citations are already gathered.
+
+## Branded merch
+
+Sell our *own* branded goods (separate from affiliate — this is first-party
+product, print-on-demand or small-run): t-shirts, ice-cream pint cozies, aprons,
+enamel pins, sticker packs. The press/lab identity ("COLD · HARD · SCIENCE", the
+pint cup, the caution-tape marquee) is already a strong visual system to put on
+merch. Natural placement: a small "Shop" link off the home poster; hero moments
+(a saved formula, a finished batch) as upsell surfaces.
