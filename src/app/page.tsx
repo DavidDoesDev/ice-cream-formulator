@@ -44,6 +44,11 @@ export default function Home() {
     router.push(`/formula/${id}`);
   }, [router]);
 
+  const scrollToBatches = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    document.getElementById("batches")?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
   const handleDelete = useCallback((id: string, name: string) => {
     if (!confirm(`Delete "${name}"?`)) return;
     deleteFormula(id);
@@ -91,7 +96,7 @@ export default function Home() {
           milk solids in real time and design the scoop you can&apos;t buy anywhere.
         </p>
         <div className={styles.cta}>
-          <a href="#batches" className={styles.ctaGhost}>
+          <a href="#batches" className={styles.ctaGhost} onClick={scrollToBatches}>
             <Icon name="pint" size={18} />
             See my batches
           </a>
