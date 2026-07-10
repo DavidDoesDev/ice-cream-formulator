@@ -12,7 +12,7 @@ const ratios = (o: Partial<MacroRatios> = {}): MacroRatios => ({
   emulsifier: 0.002, alcohol: 0, water: 0.585, ...o,
 });
 const derived = (o: Partial<DerivedIndices> = {}): DerivedIndices => ({
-  totalGrams: 1000, pac: 0.22, pod: 0.2, dairyMsnf: 0.05, lactose: 0.027, totalSolids: 0.4, ...o,
+  totalGrams: 1000, pac: 0.22, pod: 0.2, dairyMsnf: 0.05, lactose: 0.027, totalSolids: 0.4, water: 0.6, ...o,
 });
 const keys = (hs: { key: string }[]) => hs.map((h) => h.key);
 
