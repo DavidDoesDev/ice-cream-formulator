@@ -35,7 +35,8 @@ import { type MacroRatios, type Ingredient } from "@/lib/formula-engine";
 import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById, registerCustomPreset, buildCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
-import { DEFAULT_EQUIPMENT, type StyleCategory, type SmartMixKind, type MixPreset, type EquipmentProfile } from "@/data/types";
+import { type StyleCategory, type SmartMixKind, type MixPreset, type EquipmentProfile } from "@/data/types";
+import { normalizeEquipment } from "@/lib/equipment";
 import styles from "./page.module.scss";
 
 // Empty-by-default mixes that activate a real ingredient the first time their
@@ -75,7 +76,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [meta, setMeta] = useState<{ name: string; style: string; equipment: EquipmentProfile }>({
     name: saved.name,
     style: saved.style,
-    equipment: saved.equipment ?? DEFAULT_EQUIPMENT,
+    equipment: normalizeEquipment(saved.equipment),
   });
   const [notes, setNotes] = useState("");
   const [showConfig, setShowConfig] = useState(false);
@@ -237,7 +238,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   // --- Reset / save ---
   const onReset = useCallback(() => {
     setWs(initialWs);
-    setMeta({ name: saved.name, style: saved.style, equipment: saved.equipment ?? DEFAULT_EQUIPMENT });
+    setMeta({ name: saved.name, style: saved.style, equipment: normalizeEquipment(saved.equipment) });
   }, [initialWs, saved]);
   const onSave = useCallback(() => {
     persist(ws, meta.name, meta.style, meta.equipment);

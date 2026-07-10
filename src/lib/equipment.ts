@@ -1,4 +1,4 @@
-import type { EquipmentProfile } from "@/data/types";
+import { DEFAULT_EQUIPMENT, type EquipmentProfile } from "@/data/types";
 
 // The equipment axis (D8). Each freezing/serving machine carries ONE number: a
 // PAC-target offset relative to the home-dasher baseline, in the same units as
@@ -40,12 +40,19 @@ export const EQUIPMENT_ORDER: EquipmentProfile[] = [
   "commercial-batch",
 ];
 
+// Normalize any stored value to a known profile. A formula persisted under an
+// earlier enum (e.g. the pre-merge "creami"/"pacojet") or a missing value falls
+// back to the default rather than crashing the lookups.
+export function normalizeEquipment(equipment: EquipmentProfile | string | undefined): EquipmentProfile {
+  return equipment && equipment in PROFILES ? (equipment as EquipmentProfile) : DEFAULT_EQUIPMENT;
+}
+
 export function equipmentInfo(equipment: EquipmentProfile): EquipmentInfo {
-  return PROFILES[equipment];
+  return PROFILES[normalizeEquipment(equipment)];
 }
 
 export function pacOffset(equipment: EquipmentProfile): number {
-  return PROFILES[equipment].pacOffset;
+  return PROFILES[normalizeEquipment(equipment)].pacOffset;
 }
 
 // The most-negative offset across all machines (the coldest). The slider track is

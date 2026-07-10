@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { pacOffset, equipmentInfo, coldestPacOffset, EQUIPMENT_ORDER } from "./equipment";
+import { pacOffset, equipmentInfo, coldestPacOffset, normalizeEquipment, EQUIPMENT_ORDER } from "./equipment";
 import { DEFAULT_EQUIPMENT, type EquipmentProfile } from "@/data/types";
 
 describe("equipment PAC offsets", () => {
@@ -46,5 +46,24 @@ describe("equipment display metadata", () => {
 
   it("lists every profile once in the picker order, warmest first", () => {
     expect(EQUIPMENT_ORDER).toEqual(["home-dasher", "spin-frozen", "commercial-batch"]);
+  });
+});
+
+describe("legacy / unknown equipment values", () => {
+  it("falls back to the default for a value no longer in the enum", () => {
+    // A formula persisted under the pre-merge enum must not crash the lookups.
+    expect(normalizeEquipment("creami")).toBe(DEFAULT_EQUIPMENT);
+    expect(normalizeEquipment("pacojet")).toBe(DEFAULT_EQUIPMENT);
+    expect(normalizeEquipment(undefined)).toBe(DEFAULT_EQUIPMENT);
+  });
+
+  it("keeps a valid value unchanged", () => {
+    expect(normalizeEquipment("spin-frozen")).toBe("spin-frozen");
+  });
+
+  it("resolves lookups for a legacy value instead of throwing", () => {
+    expect(() => pacOffset("creami" as EquipmentProfile)).not.toThrow();
+    expect(pacOffset("creami" as EquipmentProfile)).toBe(pacOffset(DEFAULT_EQUIPMENT));
+    expect(equipmentInfo("pacojet" as EquipmentProfile).label).toBe(equipmentInfo(DEFAULT_EQUIPMENT).label);
   });
 });
