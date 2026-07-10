@@ -79,6 +79,13 @@ const SUGAR_NATURAL = preset("sugar-natural", "sugar", "Natural Sweeteners", [
   { ingredientId: "maple-syrup", proportion: 0.25 },
 ]);
 
+// Dana Cree's dairy bases pair sucrose with glucose syrup (150 g + 50 g → 75/25);
+// glucose adds solids + anti-crystallization softness without full sweetness.
+const SUGAR_GLUCOSE_BLEND = preset("sugar-glucose-blend", "sugar", "Sucrose + Glucose", [
+  { ingredientId: "sucrose", proportion: 0.75 },
+  { ingredientId: "glucose-syrup", proportion: 0.25 },
+]);
+
 // ---------------------------------------------------------------------------
 // Stabilizer Mix presets
 // ---------------------------------------------------------------------------
@@ -244,6 +251,7 @@ export const MIX_PRESETS: MixPreset[] = [
   SUGAR_DEXTROSE_BLEND,
   SUGAR_INVERT,
   SUGAR_NATURAL,
+  SUGAR_GLUCOSE_BLEND,
   STAB_MODERNIST,
   STAB_CORNSTARCH,
   STAB_CREMODAN,

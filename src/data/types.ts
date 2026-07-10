@@ -85,4 +85,10 @@ export interface CatalogIngredient {
   description: string;
   category: IngredientCategory;
   macros: IngredientMacros;
+  // Two-layer schema (D6/D7): optional ingredient coefficients the 7-macro model
+  // can't hold, consumed by the derivation module (never persisted). fpd/pod are
+  // relative to sucrose = 100, PER GRAM OF THE INGREDIENT'S SUGAR MASS.
+  fpd?: number; // freezing-point depression (scoopability). sucrose 100; absent → treated as 100
+  pod?: number; // sweetening power. sucrose 100
+  lactose?: number; // lactose mass fraction 0..1 (dairy only) → true dairy MSNF + sandiness
 }

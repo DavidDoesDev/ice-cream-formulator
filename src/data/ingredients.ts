@@ -11,6 +11,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "The backbone of most ice cream. Adds water, a little fat, and milk solids.",
     category: "dairy",
     macros: { fat: 0.036, sugar: 0.048, nonfatSolids: 0.039, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.877 },
+    lactose: 0.048,
   },
   {
     id: "skim-milk",
@@ -18,6 +19,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "All the milk solids, almost none of the fat. Good for boosting MSNF without adding fat.",
     category: "dairy",
     macros: { fat: 0.001, sugar: 0.048, nonfatSolids: 0.044, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.907 },
+    lactose: 0.05,
   },
   {
     id: "cream-18",
@@ -25,6 +27,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Lower-fat cream. Adds richness without the full weight of heavy cream.",
     category: "dairy",
     macros: { fat: 0.18, sugar: 0.027, nonfatSolids: 0.028, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.765 },
+    lactose: 0.03,
   },
   {
     id: "cream-35",
@@ -32,6 +35,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "High-fat cream. The primary fat source in American-style ice cream.",
     category: "dairy",
     macros: { fat: 0.35, sugar: 0.020, nonfatSolids: 0.020, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.610 },
+    lactose: 0.028,
   },
   {
     id: "butter",
@@ -39,6 +43,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Almost pure fat. Used in small amounts in brown butter or ultra-rich formulas.",
     category: "dairy",
     macros: { fat: 0.82, sugar: 0, nonfatSolids: 0.02, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.16 },
+    lactose: 0.006,
   },
   {
     id: "brown-butter",
@@ -46,6 +51,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Butter cooked until the water evaporates and the milk solids caramelize. Nutty and intensely flavored.",
     category: "dairy",
     macros: { fat: 0.80, sugar: 0, nonfatSolids: 0.18, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.02 },
+    lactose: 0.006,
   },
   {
     id: "skim-milk-powder",
@@ -53,6 +59,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Concentrated milk solids with no fat. The standard way to boost MSNF in a formula.",
     category: "dairy",
     macros: { fat: 0.005, sugar: 0.50, nonfatSolids: 0.455, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.04 },
+    lactose: 0.52,
   },
   {
     id: "sweetened-condensed-milk",
@@ -60,6 +67,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Milk concentrated with added sugar. Adds sweetness and solids in one ingredient.",
     category: "dairy",
     macros: { fat: 0.08, sugar: 0.45, nonfatSolids: 0.19, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.28 },
+    lactose: 0.12,
   },
 
   {
@@ -68,6 +76,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Italian cream cheese — high fat, low tang. Adds richness and a dense, custardy body.",
     category: "dairy",
     macros: { fat: 0.44, sugar: 0.03, nonfatSolids: 0.05, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.48 },
+    lactose: 0.03,
   },
   {
     id: "cream-cheese",
@@ -75,6 +84,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Tangy and firm. The signature note in cheesecake ice cream; adds fat and body.",
     category: "dairy",
     macros: { fat: 0.344, sugar: 0.038, nonfatSolids: 0.074, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.53 },
+    lactose: 0.03,
   },
   {
     id: "creme-fraiche",
@@ -82,6 +92,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Cultured heavy cream. High fat with a gentle sour tang that offsets sweetness.",
     category: "dairy",
     macros: { fat: 0.30, sugar: 0.03, nonfatSolids: 0.03, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.64 },
+    lactose: 0.03,
   },
   {
     id: "buttermilk",
@@ -89,6 +100,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Cultured low-fat milk. Bright, tangy, and thin — boosts MSNF with almost no fat.",
     category: "dairy",
     macros: { fat: 0.01, sugar: 0.047, nonfatSolids: 0.038, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.905 },
+    lactose: 0.047,
   },
   {
     id: "whole-milk-powder",
@@ -96,6 +108,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Dried whole milk. Boosts MSNF and adds a cooked-milk richness that skim powder can't.",
     category: "dairy",
     macros: { fat: 0.267, sugar: 0.384, nonfatSolids: 0.324, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.025 },
+    lactose: 0.38,
   },
   {
     id: "evaporated-milk",
@@ -103,6 +116,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Milk reduced by half, unsweetened. Concentrated solids without the sugar of condensed milk.",
     category: "dairy",
     macros: { fat: 0.075, sugar: 0.10, nonfatSolids: 0.08, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.745 },
+    lactose: 0.1,
   },
   {
     id: "greek-yogurt",
@@ -110,6 +124,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Strained whole-milk yogurt. High protein and a clean tartness for frozen-yogurt styles.",
     category: "dairy",
     macros: { fat: 0.044, sugar: 0.045, nonfatSolids: 0.095, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.813 },
+    lactose: 0.04,
   },
 
   // --- Sweeteners ---
@@ -119,6 +134,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Plain table sugar. The standard sweetener and the baseline for all sugar comparisons.",
     category: "sweetener",
     macros: { fat: 0, sugar: 1.0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 },
+    fpd: 100, pod: 100,
   },
   {
     id: "dextrose",
@@ -126,6 +142,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Glucose in powder form. Less sweet than sugar, lowers the freezing point more, makes for a softer scoop.",
     category: "sweetener",
     macros: { fat: 0, sugar: 1.0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 },
+    fpd: 190, pod: 70,
   },
   {
     id: "invert-sugar",
@@ -133,6 +150,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Equal mix of glucose and fructose. Stays liquid, resists crystallization, and keeps texture smooth over time.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.75, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.25 },
+    fpd: 190, pod: 125,
   },
   {
     id: "trehalose",
@@ -140,6 +158,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "A mild, clean-tasting sugar that protects texture during freeze-thaw cycles.",
     category: "sweetener",
     macros: { fat: 0, sugar: 1.0, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0 },
+    fpd: 100, pod: 45,
   },
   {
     id: "honey",
@@ -147,6 +166,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Natural sweetener with floral notes. High fructose content softens the scoop.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.82, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.17 },
+    fpd: 190, pod: 130,
   },
   {
     id: "maple-syrup",
@@ -154,6 +174,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Adds distinctive caramel-woody sweetness. Grade B has the strongest flavor.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.67, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.33 },
+    fpd: 100, pod: 100,
   },
 
   {
@@ -162,6 +183,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Thick corn-derived syrup. Adds solids and chew, blocks crystallization, keeps the scoop smooth.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.80, nonfatSolids: 0, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.20 },
+    fpd: 70, pod: 50,
   },
   {
     id: "brown-sugar",
@@ -169,6 +191,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Sucrose with molasses clinging to it. Adds a warm caramel-toffee note along with sweetness.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.97, nonfatSolids: 0.005, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.025 },
+    fpd: 100, pod: 100,
   },
   {
     id: "molasses",
@@ -176,6 +199,7 @@ export const INGREDIENTS: CatalogIngredient[] = [
     description: "Dark, bitter-sweet syrup left from refining sugar. Intense flavor; use in small amounts.",
     category: "sweetener",
     macros: { fat: 0, sugar: 0.747, nonfatSolids: 0.03, stabilizer: 0, emulsifier: 0, alcohol: 0, water: 0.223 },
+    fpd: 100, pod: 70,
   },
 
   // --- Stabilizers ---
