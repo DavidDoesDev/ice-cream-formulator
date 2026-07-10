@@ -46,6 +46,12 @@ export type StyleCategory =
 export type FatTier = "lean" | "medium" | "rich" | "ultra-rich";
 export type SugarSystem = "sucrose" | "blended" | "invert" | "natural";
 
+// Second axis orthogonal to style (D8): the freezing/serving equipment sets the
+// scoopability windows (sugar/PAC, stabilizer). Placeholder — only home-dasher is
+// calibrated this migration; the picker + profile windows are a later feature.
+export type EquipmentProfile = "home-dasher" | "creami" | "pacojet" | "commercial-batch";
+export const DEFAULT_EQUIPMENT: EquipmentProfile = "home-dasher";
+
 export type IngredientCategory =
   | "dairy"
   | "sweetener"
@@ -67,6 +73,11 @@ export interface Archetype {
   name: string;
   style: StyleCategory;
   description: string;
+  // Design B (D2): the authored, explicit gram recipe. When present, bootstrap loads
+  // it verbatim and derives ratios from it. Optional during the migration — archetypes
+  // without one fall back to the legacy ratio-solve seed until authored (#60).
+  recipe?: Recipe;
+  equipment?: EquipmentProfile; // defaults to DEFAULT_EQUIPMENT
   ratios: MacroRatios;
   attributes: {
     fatTier: FatTier;

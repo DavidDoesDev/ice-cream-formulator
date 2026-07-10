@@ -1,7 +1,7 @@
 import type { Archetype, Recipe, AdditionalIngredient } from "@/data/types";
 import type { FormulaState, Ingredient, IngredientMacros, MacroRatios } from "@/lib/formula-engine";
 import { seedRecipe } from "./recipe-seeder";
-import { solveRecipe } from "./recipe-solver";
+import { solveRecipe, computeRatiosFromRecipe } from "./recipe-solver";
 import { getPresetById } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 
@@ -48,7 +48,20 @@ export function bootstrapFromArchetype(
   archetype: Archetype,
   yieldGrams = DEFAULT_YIELD,
 ): BootstrapResult {
-  // --- Mix layer (FormulaState) ---
+  // Design B (D2): when the archetype carries an explicit recipe, load it verbatim
+  // and derive the macro state from it — no solving, no trace-dosing. This is what
+  // fixes #52 (the legacy solve+dose path drove custards to a pure-egg-yolk mix).
+  if (archetype.recipe) {
+    const recipe = archetype.recipe;
+    const ratios = computeRatiosFromRecipe(
+      recipe,
+      getPresetById,
+      (id) => getIngredientById(id)?.macros,
+    );
+    return { state: stateFromRatios(ratios, yieldGrams), recipe };
+  }
+
+  // --- Legacy ratio-solve path (archetypes not yet authored — #60) ---
   const ingredients: Ingredient[] = [];
 
   for (const block of MACRO_BLOCKS) {

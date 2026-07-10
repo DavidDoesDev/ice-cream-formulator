@@ -1,4 +1,16 @@
-import type { Archetype } from "./types";
+import type { Archetype, Recipe, SmartMixKind } from "./types";
+
+// Explicit-recipe builder (design B). Every gram is visible at the call site — the
+// tuples are the authored recipe, `mk` is just less noise than object literals.
+// Bases per docs/formulation/archetype-recipes.md, batched to 1000 g.
+type MixTuple = [kind: SmartMixKind, label: string, presetId: string, grams: number];
+type AddTuple = [ingredientId: string, grams: number];
+function mk(mixes: MixTuple[], adds: AddTuple[] = []): Recipe {
+  return {
+    smartMixes: mixes.map(([kind, label, presetId, grams]) => ({ kind, label, presetId, grams })),
+    additionalIngredients: adds.map(([ingredientId, grams]) => ({ ingredientId, grams })),
+  };
+}
 
 export const ARCHETYPES: Archetype[] = [
   // ─── Philadelphia ────────────────────────────────────────────────────────────
@@ -104,6 +116,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Vanilla Custard",
     style: "custard",
     description: "Egg yolk–enriched, coating, silky. The French way.",
+    recipe: mk([["milk","Whole Milk","milk-whole",378],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",200],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["vanilla-bean",20]]),
     ratios: { fat: 0.16, sugar: 0.16, nonfatSolids: 0.09, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.568 },
     attributes: {
       fatTier: "rich",
@@ -123,6 +136,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Chocolate Custard",
     style: "custard",
     description: "Dense, dark, custardy. The richest chocolate expression.",
+    recipe: mk([["milk","Whole Milk","milk-whole",338],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",150],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["dark-chocolate",80],["cocoa-powder",30]]),
     ratios: { fat: 0.15, sugar: 0.17, nonfatSolids: 0.10, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.558 },
     attributes: {
       fatTier: "rich",
@@ -142,6 +156,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Brown Butter Caramel",
     style: "custard",
     description: "Nutty, warm, deeply caramelized. Fat-forward.",
+    recipe: mk([["milk","Whole Milk","milk-whole",318],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",200],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["brown-butter",80]]),
     ratios: { fat: 0.17, sugar: 0.18, nonfatSolids: 0.08, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.548 },
     attributes: {
       fatTier: "ultra-rich",
@@ -161,6 +176,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Salted Honey",
     style: "custard",
     description: "Floral, sweet, and savory all at once.",
+    recipe: mk([["milk","Whole Milk","milk-whole",378],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",140],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["honey",80]]),
     ratios: { fat: 0.15, sugar: 0.19, nonfatSolids: 0.09, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.548 },
     attributes: {
       fatTier: "rich",
@@ -180,6 +196,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Peanut Butter",
     style: "custard",
     description: "Dense, nutty, and rich. Almost savory.",
+    recipe: mk([["milk","Whole Milk","milk-whole",348],["milk","Heavy Cream","cream-heavy",250],["sugar","Sugar","sugar-glucose-blend",200],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2]], [["peanut-butter",100]]),
     ratios: { fat: 0.16, sugar: 0.16, nonfatSolids: 0.08, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0, water: 0.578 },
     attributes: {
       fatTier: "rich",
@@ -199,6 +216,7 @@ export const ARCHETYPES: Archetype[] = [
     name: "Rum Raisin",
     style: "custard",
     description: "Old-school, boozy, warming. Alcohol keeps it soft.",
+    recipe: mk([["milk","Whole Milk","milk-whole",293],["milk","Heavy Cream","cream-heavy",300],["sugar","Sugar","sugar-glucose-blend",170],["eggs","Egg Yolks","eggs-yolks",100],["stabilizer","Stabilizer","stab-modernist",2],["alcohol","Dark Rum","alcohol-dark-rum",75]], [["raisins",60]]),
     ratios: { fat: 0.15, sugar: 0.16, nonfatSolids: 0.09, stabilizer: 0.002, emulsifier: 0.02, alcohol: 0.03, water: 0.548 },
     attributes: {
       fatTier: "rich",

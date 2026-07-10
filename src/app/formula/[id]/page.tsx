@@ -64,14 +64,11 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     const recipe = saved.recipe ?? seedRecipe(saved.style as StyleCategory);
     (recipe.customPresets ?? []).forEach(registerCustomPreset);
     const yieldGrams = saved.state?.yieldGrams || totalGrams(recipe) || 1000;
-    // The whole-recipe solver can't nail trace targets (the yield pressure
-    // dominates), so bootstrapped recipes load with stabilizer/emulsifier out
-    // of range. Dose them directly to the style target once on load.
-    let ws: LiveWorkspace = { recipe, yieldGrams };
-    ws = setTraceMacro(ws, "stabilizer", baseRatios.stabilizer, deps);
-    ws = setTraceMacro(ws, "emulsifier", baseRatios.emulsifier, deps);
-    return ws;
-  }, [saved, baseRatios, deps]);
+    // Design B (D2): archetypes carry explicit recipes, so the recipe loads as
+    // authored — no on-load trace-dosing. (The old setTraceMacro(...) pass here is
+    // what drove custard defaults to a 1000 g-egg-yolk mix; see #52.)
+    return { recipe, yieldGrams };
+  }, [saved, deps]);
 
   const [ws, setWs] = useState<LiveWorkspace>(initialWs);
   const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
