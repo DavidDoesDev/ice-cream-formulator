@@ -165,7 +165,10 @@
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
+  // --ink, not --accent: on the dark theme the card bg (--paper-2) is the accent
+  // blue, so accent text was blue-on-blue (unreadable). --ink resolves to --accent
+  // in light (identical look) and to cream in dark (readable). #85
+  color: var(--ink);
   margin: var(--space-1) 0 0;
 }
 
