@@ -194,12 +194,7 @@
   width: 38px;
   height: 38px;
   border-radius: var(--radius-pill);
-  // Theme-invariant (like light mode): cream chip + accent-blue outline/plus. In
-  // dark mode the old --paper/--ink pairing made a blue chip with a cream plus,
-  // whose cream outline vanished against the mint hover. This blue-on-cream reads
-  // on the default card and the mint hover, in both themes. (#f7efdd is fixed on
-  // purpose — theme tokens flip, and this must not.) #85
-  border: 2px solid var(--accent);
-  background: #f7efdd;
-  color: var(--accent);
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
 }
