@@ -1,5 +1,14 @@
 # Per-style target ranges
 
+> **Doc ↔ code reconciliation.** This table is in **Goff sourcing convention** (sweetener
+> figures exclude milk lactose), and is the *sourced starting point*. The **live bands in code**
+> (`src/lib/macro-bands.ts` `STYLE_TARGETS`) are the source of truth for the app and use **app
+> convention** — the catalog models dairy lactose inside the `sugar` macro and protein+minerals
+> in `nonfatSolids`, so the code reads ~**+3% sugar** and ~**−5% MSNF** vs. the numbers here, and
+> is calibrated to what the authored recipes actually compute (the calibration test enforces it).
+> When the two disagree, the code bands are correct for the app; these are the human-readable
+> derivation. Don't hand-sync them — treat this as the *why*, `macro-bands.ts` as the *what*.
+
 Slider target windows are defined by **(style × equipment)** (not per-archetype) — see D8.
 Style drives the composition macros (fat, MSNF, emulsifier); **equipment** shifts the
 scoopability macros (sugar/PAC, stabilizer). The table below is the **home-dasher baseline**

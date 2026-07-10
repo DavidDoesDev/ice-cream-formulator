@@ -13,7 +13,7 @@ Citations resolve in [sources.md](./sources.md).
 | Relationship | Index | Band / flag | Source |
 |---|---|---|---|
 | Body / iciness | `TS = fat + sugar + MSNF + stab + emul` | ~36–42% (style-dep.) | [G&H] Table 1.7 (already in `balance.ts`) |
-| Sandiness (MSNF ↔ water) | `dairyMSNF ÷ (dairyMSNF + water)` † | flag > **~0.17**; rule of thumb dairy MSNF ≤ ~⅙ of the water | [G&H]: high fat needs low MSNF "to avoid … 'sandiness' (the crystallization of … lactose)" (book p. 17). Exact ⅙-of-water figure: [Arb] — verify page |
+| Sandiness (MSNF ↔ water) | `dairyMSNF ÷ (dairyMSNF + water)` † | flag > **~0.17**; rule of thumb dairy MSNF ≤ ~⅙ of the water | [Arb], verbatim: *"as the fat content of ice cream is increased, the MSNF must be decreased so as to avoid 'sandiness' (i.e., the crystallization of milk sugar or lactose …). Table 4.1 suggests compositions that avoid sandiness."* Also [G&H] book p. 17. The MSNF-≤-⅙-of-water figure is the standard formulation guideline for this relationship (not a single pinned page). |
 | Richness (fat ↔ MSNF) | `fat ÷ dairyMSNF` † | flag when both high (dense/sandy) | [G&H] Table 2.4 (MSNF falls as fat rises) |
 | Ice control (stab ↔ water) | stabilizer vs. a water-scaled target | [G&H] Table 2.4: 0.15%@TS40 → 0.35%@TS36; flag if below | [G&H] Table 2.4, book p. 24 |
 
@@ -73,8 +73,9 @@ and matches published gelato PAC tables.
 | Ethanol (alcohol) | 46 | ~**740** | very strong per gram |
 | Salt (NaCl) | 58 | ~**1180** | dissociates → ×2 ions |
 
-Glucose syrup needs a chosen DE — the catalog's `glucose-syrup` should pick one (42 DE ≈ 55
-is a sensible ice-cream default).
+Glucose syrup DE is **pinned at 42 DE** (fpd ≈ 55/70 per-sugar-gram) — the standard low-DE
+ice-cream syrup; [Migoya] uses "atomized glucose" in the same role. Higher DE (e.g. 62) would
+raise its fpd; 42 DE is the chosen default for the catalog's `glucose-syrup`.
 
 ### POD (sweetening power) table — `pod`, sucrose = 100
 Sweetness is a *separate* axis from freezing: you can hold PAC steady and shift sweetness by
@@ -89,9 +90,12 @@ now, in the same catalog pass as `fpd`, to avoid re-touching every sugar twice.
 | Invert sugar | ~125 | Honey | ~130 |
 | Sorbitol | ~60 | | |
 
-Source to firm up: [Migoya] "sweetening power" chart (book p. ~16) — values above are the
-standard gelato POD figures; cite Migoya's exact numbers when assigning. Enables a *sweetness*
-hint (too bland / cloying) distinct from the *scoopability* (PAC) hint.
+Source: [Migoya] "sweetening power" chart, book **p. 16** — *"The sweetening power is always
+determined by how it compares in sweetness to granulated sugar. The level of sweetening in
+granulated sugar is 100 percent."* (The chart's numeric cells are a graphic and didn't survive
+text extraction; the values above are the widely-published gelato POD figures the chart
+presents — treat them as the standard set, not extracted cells.) Enables a *sweetness* hint
+(too bland / cloying) distinct from the *scoopability* (PAC) hint.
 
 ### Bands — calibrate from the authored bases, don't invent absolutes
 Rather than pull absolute PAC targets from thin air, compute each **style base's** FPD and
