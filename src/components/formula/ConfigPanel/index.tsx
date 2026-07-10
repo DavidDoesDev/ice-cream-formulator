@@ -3,8 +3,10 @@
 import { useState, useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Milk, GlassWater, Wine, MapPin, Waypoints, Droplets, X } from "lucide-react";
-import type { StyleCategory, SmartMixKind, Recipe, MixPreset } from "@/data/types";
+import type { StyleCategory, SmartMixKind, Recipe, MixPreset, EquipmentProfile } from "@/data/types";
+import { DEFAULT_EQUIPMENT } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
+import { equipmentInfo, EQUIPMENT_ORDER } from "@/lib/equipment";
 import { getPresetsByKind, getPresetById, buildCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 import { formatPercent } from "@/lib/measure";
@@ -37,9 +39,11 @@ const MIX_CONFIG_KINDS: {
 interface ConfigPanelProps {
   formulaName: string;
   formulaStyle: string;
+  formulaEquipment: EquipmentProfile;
   recipe: Recipe;
   onNameChange: (name: string) => void;
   onStyleChange: (style: string) => void;
+  onEquipmentChange: (equipment: EquipmentProfile) => void;
   onPresetChange: (kind: SmartMixKind, presetId: string) => void;
   onCustomPreset: (kind: SmartMixKind, preset: MixPreset) => void;
   onAddMilkIngredient: (ing: Ingredient) => void;
@@ -50,9 +54,11 @@ interface ConfigPanelProps {
 export function ConfigPanel({
   formulaName,
   formulaStyle,
+  formulaEquipment,
   recipe,
   onNameChange,
   onStyleChange,
+  onEquipmentChange,
   onPresetChange,
   onCustomPreset,
   onAddMilkIngredient,
@@ -61,6 +67,7 @@ export function ConfigPanel({
 }: ConfigPanelProps) {
   const [name, setName] = useState(formulaName);
   const [style, setStyle] = useState(formulaStyle);
+  const [equipment, setEquipment] = useState<EquipmentProfile>(formulaEquipment ?? DEFAULT_EQUIPMENT);
   const [building, setBuilding] = useState<SmartMixKind | null>(null);
   const [customItems, setCustomItems] = useState<{ ingredientId: string; weight: number }[]>([]);
 
@@ -96,6 +103,14 @@ export function ConfigPanel({
       onStyleChange(val);
     },
     [onStyleChange],
+  );
+
+  const handleEquipmentChange = useCallback(
+    (val: EquipmentProfile) => {
+      setEquipment(val);
+      onEquipmentChange(val);
+    },
+    [onEquipmentChange],
   );
 
   const currentPresetId = (kind: SmartMixKind): string => {
@@ -154,6 +169,26 @@ export function ConfigPanel({
                 {opt.label}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className={styles.section}>
+          <p className={styles.fieldLabel}>Equipment</p>
+          <div className={styles.equipGrid}>
+            {EQUIPMENT_ORDER.map((profile) => {
+              const info = equipmentInfo(profile);
+              return (
+                <button
+                  key={profile}
+                  className={`${styles.equipBtn} ${equipment === profile ? styles.equipBtnActive : ""}`}
+                  type="button"
+                  onClick={() => handleEquipmentChange(profile)}
+                >
+                  <span className={styles.equipName}>{info.label}</span>
+                  <span className={styles.equipBlurb}>{info.blurb}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 

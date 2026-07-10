@@ -317,9 +317,11 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               <ConfigPanel
                 formulaName={meta.name}
                 formulaStyle={meta.style}
+                formulaEquipment={meta.equipment}
                 recipe={ws.recipe}
                 onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
                 onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
+                onEquipmentChange={(equipment) => setMeta((m) => ({ ...m, equipment }))}
                 onPresetChange={handlePresetChange}
                 onCustomPreset={handleCustomPreset}
                 onAddMilkIngredient={handleAddMilkIngredient}
