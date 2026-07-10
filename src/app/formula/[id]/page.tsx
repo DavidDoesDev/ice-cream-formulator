@@ -28,7 +28,7 @@ import {
   type LiveWorkspace,
   type WorkspaceDeps,
 } from "@/lib/live-workspace";
-import { computeRatios, type MacroRatios, type Ingredient } from "@/lib/formula-engine";
+import { type MacroRatios, type Ingredient } from "@/lib/formula-engine";
 import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById, registerCustomPreset, buildCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
@@ -57,8 +57,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     () => ({ getPreset: getPresetById, resolveIngredient: (id) => getIngredientById(id)?.macros }),
     [],
   );
-
-  const baseRatios = useMemo(() => computeRatios(saved.state), [saved.state]);
 
   const initialWs = useMemo<LiveWorkspace>(() => {
     const recipe = saved.recipe ?? seedRecipe(saved.style as StyleCategory);
@@ -268,7 +266,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
                 grid uses `order` to restore recipe-left / macros-right. */}
             <MacrosPanel
               ratios={ratios}
-              baseRatios={baseRatios}
               style={meta.style}
               conflict={conflict}
               onMacroTarget={onMacroTarget}

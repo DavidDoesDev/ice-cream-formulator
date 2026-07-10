@@ -32,7 +32,6 @@ function fillVar(key: MacroKey): string {
 
 interface MacrosPanelProps {
   ratios: MacroRatios;
-  baseRatios: MacroRatios;
   style: string;
   conflict: boolean;
   onMacroTarget: (macro: keyof MacroRatios, target: number) => void;
@@ -45,7 +44,6 @@ interface MacrosPanelProps {
 // the recipe at fixed yield (handled by the parent) continuously.
 export function MacrosPanel({
   ratios,
-  baseRatios,
   style,
   conflict,
   onMacroTarget,
@@ -134,7 +132,7 @@ export function MacrosPanel({
     [],
   );
 
-  const report = balanceReport(ratios, baseRatios);
+  const report = balanceReport(ratios, style);
   const offChecks = report.checks.filter((c) => c.verdict !== "ok");
   return (
     <section className={styles.panel}>
@@ -154,7 +152,7 @@ export function MacrosPanel({
         const dragging = drag?.key === key;
         // The dragged slider shows the pointer's target; others show solved ratios.
         const shown = dragging ? drag!.value : ratios[key];
-        const g = sliderGeometry(key, shown, baseRatios[key]);
+        const g = sliderGeometry(style, key, shown);
         // Run the native input on a 0–1000 scale and map to the macro's range —
         // the browser mishandles very small float ranges (e.g. stabilizer 0–0.008),
         // silently dropping input events. This keeps every slider responsive.

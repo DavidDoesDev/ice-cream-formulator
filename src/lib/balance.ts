@@ -50,12 +50,16 @@ function check(key: string, value: number, band: [number, number]): MacroCheck {
 
 // Soft, stylistic balance: does each tracked macro land inside its healthy
 // window for this style? Advisory (distinct from the hard conflict → Rebalance).
-export function balanceReport(ratios: MacroRatios, targets: MacroRatios): BalanceReport {
+export function balanceReport(ratios: MacroRatios, style: string): BalanceReport {
   const checks: MacroCheck[] = (["fat", "sugar", "nonfatSolids"] as (keyof MacroRatios)[]).map((key) =>
-    check(key, ratios[key], healthyBand(key, targets[key])),
+    check(key, ratios[key], healthyBand(style, key)),
   );
 
-  const tsTarget = totalSolids(targets);
+  // Total-solids target = sum of the style's solid-macro band midpoints.
+  const tsTarget = SOLID_KEYS.reduce((s, k) => {
+    const [lo, hi] = healthyBand(style, k);
+    return s + (lo + hi) / 2;
+  }, 0);
   checks.push(check("totalSolids", totalSolids(ratios), [tsTarget - TS_TOLERANCE, tsTarget + TS_TOLERANCE]));
 
   const inRange = checks.filter((c) => c.verdict === "ok").length;
