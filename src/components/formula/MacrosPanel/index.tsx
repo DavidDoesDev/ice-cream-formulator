@@ -6,6 +6,7 @@ import { sliderGeometry } from "@/lib/macro-bands";
 import { balanceReport } from "@/lib/balance";
 import { relationshipHints } from "@/lib/relationships";
 import type { DerivedIndices } from "@/lib/derive";
+import { DEFAULT_EQUIPMENT, type EquipmentProfile } from "@/data/types";
 import { formatPercent } from "@/lib/measure";
 import { PintCup } from "@/components/shared/PintCup";
 import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
@@ -36,6 +37,7 @@ interface MacrosPanelProps {
   ratios: MacroRatios;
   derived: DerivedIndices;
   style: string;
+  equipment?: EquipmentProfile;
   conflict: boolean;
   onMacroTarget: (macro: keyof MacroRatios, target: number) => void;
   onRebalance: () => void;
@@ -49,6 +51,7 @@ export function MacrosPanel({
   ratios,
   derived,
   style,
+  equipment = DEFAULT_EQUIPMENT,
   conflict,
   onMacroTarget,
   onRebalance,
@@ -136,9 +139,9 @@ export function MacrosPanel({
     [],
   );
 
-  const report = balanceReport(ratios, style);
+  const report = balanceReport(ratios, style, equipment);
   const offChecks = report.checks.filter((c) => c.verdict !== "ok");
-  const hints = relationshipHints(ratios, derived, style);
+  const hints = relationshipHints(ratios, derived, style, equipment);
   return (
     <section className={styles.panel}>
       <div className={styles.bar}>
@@ -157,7 +160,7 @@ export function MacrosPanel({
         const dragging = drag?.key === key;
         // The dragged slider shows the pointer's target; others show solved ratios.
         const shown = dragging ? drag!.value : ratios[key];
-        const g = sliderGeometry(style, key, shown);
+        const g = sliderGeometry(style, key, shown, equipment);
         // Run the native input on a 0–1000 scale and map to the macro's range —
         // the browser mishandles very small float ranges (e.g. stabilizer 0–0.008),
         // silently dropping input events. This keeps every slider responsive.

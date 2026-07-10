@@ -33,7 +33,7 @@ import { type MacroRatios, type Ingredient } from "@/lib/formula-engine";
 import { stateFromRatios } from "@/lib/bootstrap";
 import { getPresetById, registerCustomPreset, buildCustomPreset } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
-import type { StyleCategory, SmartMixKind, MixPreset } from "@/data/types";
+import { DEFAULT_EQUIPMENT, type StyleCategory, type SmartMixKind, type MixPreset, type EquipmentProfile } from "@/data/types";
 import styles from "./page.module.scss";
 
 // Empty-by-default mixes that activate a real ingredient the first time their
@@ -70,7 +70,11 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   }, [saved, deps]);
 
   const [ws, setWs] = useState<LiveWorkspace>(initialWs);
-  const [meta, setMeta] = useState({ name: saved.name, style: saved.style });
+  const [meta, setMeta] = useState<{ name: string; style: string; equipment: EquipmentProfile }>({
+    name: saved.name,
+    style: saved.style,
+    equipment: saved.equipment ?? DEFAULT_EQUIPMENT,
+  });
   const [notes, setNotes] = useState("");
   const [showConfig, setShowConfig] = useState(false);
   const [editName, setEditName] = useState(false);
@@ -84,11 +88,12 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
 
   // Single source of truth for writing the workspace to storage.
   const persist = useCallback(
-    (w: LiveWorkspace, name: string, style: string) => {
+    (w: LiveWorkspace, name: string, style: string, equipment: EquipmentProfile) => {
       saveFormula({
         ...saved,
         name,
         style,
+        equipment,
         updatedAt: Date.now(),
         state: stateFromRatios(workspaceRatios(w, deps), w.yieldGrams),
         recipe: w.recipe,
@@ -109,7 +114,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   // persists ~400ms after the last change. The cleanup cancels the pending write
   // on each new change, so only the final frame is written.
   useEffect(() => {
-    const handle = setTimeout(() => persist(ws, meta.name, meta.style), 400);
+    const handle = setTimeout(() => persist(ws, meta.name, meta.style, meta.equipment), 400);
     return () => clearTimeout(handle);
   }, [ws, meta, persist]);
 
@@ -118,7 +123,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   useEffect(() => {
     return () => {
       const { ws, meta } = latest.current;
-      persist(ws, meta.name, meta.style);
+      persist(ws, meta.name, meta.style, meta.equipment);
     };
   }, [persist]);
 
@@ -225,10 +230,10 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   // --- Reset / save ---
   const onReset = useCallback(() => {
     setWs(initialWs);
-    setMeta({ name: saved.name, style: saved.style });
+    setMeta({ name: saved.name, style: saved.style, equipment: saved.equipment ?? DEFAULT_EQUIPMENT });
   }, [initialWs, saved]);
   const onSave = useCallback(() => {
-    persist(ws, meta.name, meta.style);
+    persist(ws, meta.name, meta.style, meta.equipment);
     setToast("Saved to your batches");
   }, [persist, ws, meta]);
 
@@ -270,6 +275,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               ratios={ratios}
               derived={derived}
               style={meta.style}
+              equipment={meta.equipment}
               conflict={conflict}
               onMacroTarget={onMacroTarget}
               onRebalance={onRebalance}

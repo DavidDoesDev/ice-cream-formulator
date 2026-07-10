@@ -1,5 +1,6 @@
 import { healthyBand } from "./macro-bands";
 import type { MacroRatios } from "./formula-engine";
+import { DEFAULT_EQUIPMENT, type EquipmentProfile } from "@/data/types";
 
 export type Verdict = "low" | "ok" | "high";
 
@@ -50,14 +51,18 @@ function check(key: string, value: number, band: [number, number]): MacroCheck {
 
 // Soft, stylistic balance: does each tracked macro land inside its healthy
 // window for this style? Advisory (distinct from the hard conflict → Rebalance).
-export function balanceReport(ratios: MacroRatios, style: string): BalanceReport {
+export function balanceReport(
+  ratios: MacroRatios,
+  style: string,
+  equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
+): BalanceReport {
   const checks: MacroCheck[] = (["fat", "sugar", "nonfatSolids"] as (keyof MacroRatios)[]).map((key) =>
-    check(key, ratios[key], healthyBand(style, key)),
+    check(key, ratios[key], healthyBand(style, key, equipment)),
   );
 
   // Total-solids target = sum of the style's solid-macro band midpoints.
   const tsTarget = SOLID_KEYS.reduce((s, k) => {
-    const [lo, hi] = healthyBand(style, k);
+    const [lo, hi] = healthyBand(style, k, equipment);
     return s + (lo + hi) / 2;
   }, 0);
   checks.push(check("totalSolids", totalSolids(ratios), [tsTarget - TS_TOLERANCE, tsTarget + TS_TOLERANCE]));
