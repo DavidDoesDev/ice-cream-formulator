@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lightbulb } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import type { Recipe, SmartMix, SmartMixKind } from "@/data/types";
 import { getPresetById } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
@@ -140,7 +140,7 @@ export function RecipePanel({
 
       {needsEggs && !eggBannerDismissed && (
         <div className={styles.eggBanner}>
-          <Lightbulb className={styles.eggIcon} size={16} strokeWidth={2} aria-hidden />
+          <Sparkles className={styles.eggIcon} size={16} strokeWidth={2} aria-hidden />
           <span className={styles.eggBannerText}>
             Custards are built on egg yolks — add them for a silky, coating body.
           </span>

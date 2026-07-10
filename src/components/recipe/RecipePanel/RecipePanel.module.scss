@@ -84,12 +84,16 @@
   margin-top: 12px;
   padding: 9px 12px;
   border-radius: var(--radius-md);
-  background: color-mix(in oklab, var(--accent) 8%, transparent);
+  // Tint + border track the theme-aware foreground (--ink is blue in light,
+  // cream in dark) — the page bg is the accent blue in dark mode, so an
+  // accent-based tint/icon would be invisible blue-on-blue.
+  background: color-mix(in oklab, var(--ink) 12%, transparent);
+  border: 1px solid var(--line);
 }
 
 .eggIcon {
   flex-shrink: 0;
-  color: var(--accent);
+  color: var(--ink);
 }
 
 .eggBannerText {
@@ -114,7 +118,7 @@
 }
 
 .eggDismiss:hover {
-  color: var(--accent);
+  color: var(--ink);
 }
 
 .tryLabel {
