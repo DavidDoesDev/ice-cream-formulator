@@ -30,6 +30,11 @@
   color: var(--muted);
 }
 
+.eyebrowIcon {
+  vertical-align: middle;
+  margin-top: -2px;
+}
+
 .cupStage {
   display: grid;
   place-items: center;
@@ -37,14 +42,6 @@
   padding: calc(28px * var(--u)) 0 18px;
 }
 
-.cupTag {
-  font-family: var(--font-poster);
-  text-transform: uppercase;
-  font-size: clamp(20px, 2.4vw, 30px);
-  letter-spacing: 0.01em;
-  color: var(--ink);
-  line-height: 0.9;
-}
 
 .sliderRow {
   display: grid;

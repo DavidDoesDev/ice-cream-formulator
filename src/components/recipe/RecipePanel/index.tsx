@@ -96,7 +96,6 @@ export function RecipePanel({
     <section className={styles.panel}>
       <div className={styles.bar}>
         <span className={styles.kind}>Recipe</span>
-        <span className={styles.eyebrow}>grams · drag or type</span>
       </div>
 
       <SectionHeader role="ingredients" label="Ingredients" />
