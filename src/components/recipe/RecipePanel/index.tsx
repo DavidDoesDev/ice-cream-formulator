@@ -126,18 +126,6 @@ export function RecipePanel({
         );
       })}
 
-      <div className={styles.addRow}>
-        <Pill tone="accent" size="md" onClick={onAddIngredient}>
-          <Icon name="plus" size={16} /> Add ingredient
-        </Pill>
-        {shownRecs.length > 0 && <span className={styles.tryLabel}>Try</span>}
-        {shownRecs.map((r) => (
-          <Pill key={r.key} tone="ghost" size="md" onClick={r.onClick}>
-            + {r.label}
-          </Pill>
-        ))}
-      </div>
-
       {needsEggs && !eggBannerDismissed && (
         <div className={styles.eggBanner}>
           <Sparkles className={styles.eggIcon} size={16} strokeWidth={2} aria-hidden />
@@ -154,6 +142,18 @@ export function RecipePanel({
           </button>
         </div>
       )}
+
+      <div className={styles.addRow}>
+        <Pill tone="accent" size="md" onClick={onAddIngredient}>
+          <Icon name="plus" size={16} /> Add ingredient
+        </Pill>
+        {shownRecs.length > 0 && <span className={styles.tryLabel}>Try</span>}
+        {shownRecs.map((r) => (
+          <Pill key={r.key} tone="ghost" size="md" onClick={r.onClick}>
+            + {r.label}
+          </Pill>
+        ))}
+      </div>
 
       <SectionHeader role="yield" label="Batch yield" />
       <div className={styles.yieldRow}>
