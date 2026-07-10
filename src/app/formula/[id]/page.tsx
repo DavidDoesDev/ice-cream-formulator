@@ -301,6 +301,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
             />
             <RecipePanel
               recipe={ws.recipe}
+              style={meta.style}
               yieldGrams={ws.yieldGrams}
               total={total}
               notes={notes}
@@ -310,6 +311,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               onAdditionalNote={onAdditionalNote}
               onRemoveAdditional={onRemoveAdditional}
               onAddIngredient={onAddIngredient}
+              onAddEggMix={() => handleAddMix("eggs", "eggs-yolks")}
               onQuickAdd={onQuickAdd}
               onYield={onYield}
               onNotes={setNotes}
@@ -345,7 +347,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
                 onCustomPreset={handleCustomPreset}
                 onAddMilkIngredient={handleAddMilkIngredient}
                 onRemoveMilkIngredient={handleRemoveMilkIngredient}
-                onAddMix={handleAddMix}
                 onOpenIngredientSelector={openSelector}
               />
             </div>

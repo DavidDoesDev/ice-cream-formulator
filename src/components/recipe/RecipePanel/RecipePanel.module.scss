@@ -77,6 +77,25 @@
   margin-top: 18px;
 }
 
+.eggNudge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 8px 12px;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--radius-md);
+}
+
+.eggNudgeText {
+  flex: 1;
+  min-width: 160px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 .tryLabel {
   font-family: var(--font-mono);
   font-size: 12px;

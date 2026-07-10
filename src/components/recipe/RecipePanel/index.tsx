@@ -29,6 +29,7 @@ const QUICK: { id: string; label: string }[] = [
 
 interface RecipePanelProps {
   recipe: Recipe;
+  style: string;
   yieldGrams: number;
   total: number;
   notes: string;
@@ -38,6 +39,7 @@ interface RecipePanelProps {
   onAdditionalNote: (ingredientId: string, note: string) => void;
   onRemoveAdditional: (ingredientId: string) => void;
   onAddIngredient: () => void;
+  onAddEggMix: () => void;
   onQuickAdd: (ingredientId: string) => void;
   onYield: (grams: number) => void;
   onNotes: (notes: string) => void;
@@ -46,6 +48,7 @@ interface RecipePanelProps {
 // Left workspace panel: the recipe in grams, every amount editable, always live.
 export function RecipePanel({
   recipe,
+  style,
   yieldGrams,
   total,
   notes,
@@ -55,6 +58,7 @@ export function RecipePanel({
   onAdditionalNote,
   onRemoveAdditional,
   onAddIngredient,
+  onAddEggMix,
   onQuickAdd,
   onYield,
   onNotes,
@@ -64,6 +68,10 @@ export function RecipePanel({
   );
   const present = new Set(recipe.additionalIngredients.map((a) => a.ingredientId));
   const quick = QUICK.filter((q) => !present.has(q.id)).slice(0, 3);
+
+  // A custard is defined by egg yolks — if the mix has none, nudge a one-tap add
+  // right where you build the recipe (non-destructive until tapped; D4).
+  const needsEggs = style === "custard" && !recipe.smartMixes.some((m) => m.kind === "eggs");
 
   return (
     <section className={styles.panel}>
@@ -104,6 +112,17 @@ export function RecipePanel({
           </div>
         );
       })}
+
+      {needsEggs && (
+        <div className={styles.eggNudge}>
+          <span className={styles.eggNudgeText}>
+            Custards are built on egg yolks — add them for a silky, coating body.
+          </span>
+          <Pill tone="accent" size="sm" onClick={onAddEggMix}>
+            <Icon name="plus" size={14} /> Egg yolks
+          </Pill>
+        </div>
+      )}
 
       <div className={styles.addRow}>
         <Pill tone="accent" size="md" onClick={onAddIngredient}>
