@@ -35,6 +35,21 @@ deferred "Adapt for user's equipment" feature (`docs/feature-ideas.md`), built o
 module: equipment → target serving hardness (PAC) → scoopability windows. Per D4, changing
 equipment never mutates the recipe; if macros fall out of the shifted windows, offer recalibration.
 
+**Shipped (2026-07-10, issues #66–#69).** The feature is now built on the derivation module:
+- `src/lib/equipment.ts` holds one **PAC-target offset** per profile (same units as PAC — a
+  sucrose-equivalent fraction of the batch): `home-dasher 0` (baseline) · `creami`/`pacojet`
+  **−0.02** (shared spin-frozen-block family) · `commercial-batch` **−0.04** (coldest). Tuning a
+  machine is this one number — reasonable initial estimates, calibratable like the style bands.
+- `macro-bands.ts` keys off **(style, equipment)**: the offset shifts the **sugar** window by the
+  full amount and the **stabilizer** window by a small fraction (`STABILIZER_OFFSET_SCALE = 0.05`);
+  composition macros are untouched. `home-dasher` reproduces the baseline windows exactly. The
+  same offset shifts the PAC firm/soft judgement in `relationships.ts`.
+- The **equipment picker** lives in Config beside the style selector; changing it re-scopes the
+  windows live and persists, never touching grams (D4). When the sugar then sits outside the
+  machine's window, `recalibrate()` (a Rebalance-style, user-tapped nudge) re-solves the sugar
+  lever toward the shifted window at fixed yield — v1 uses the directional PAC estimate behind
+  `computeFreezing()`; the full curve can drop in later with no caller changes.
+
 ---
 
 ## D7 — Two-layer schema: 7 macros + ingredient coefficients (fpd, pod, lactose)
