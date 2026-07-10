@@ -133,18 +133,25 @@
   padding: var(--space-4) var(--space-4);
   color: inherit;
   cursor: pointer;
-  transition: transform var(--duration-fast), background var(--duration-fast), color var(--duration-fast);
+  // Press-tile hover (matches the home CTAs / formula specimens): lift + grow the
+  // hard offset shadow, no colour change — so the card never flips to a hard-to-
+  // read state on hover.
+  box-shadow: var(--sh);
+  transition: transform var(--duration-fast) var(--ease-jelly), box-shadow var(--duration-fast);
 }
 
 .card:hover {
-  transform: translateX(4px);
-  background: var(--c-mint);
-  color: #0d3324;
+  transform: translate(-2px, -2px);
+  box-shadow: var(--sh-h);
 }
 
-.card:hover .ingDesc,
-.card:hover .ingCat {
-  color: #0d3324;
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .card:hover {
+    transform: none;
+  }
 }
 
 .cardBody {
