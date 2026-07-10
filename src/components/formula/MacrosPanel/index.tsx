@@ -151,12 +151,14 @@ export function MacrosPanel({
     <section className={styles.panel}>
       <div className={styles.bar}>
         <span className={styles.kind}>Macros</span>
-        <span className={styles.eyebrow}>live · drag to tune</span>
+        {/* The (style × equipment) that define every target window (D8). */}
+        <span className={styles.eyebrow}>
+          {style} · <Icon name="snow" size={11} className={styles.eyebrowIcon} /> {equipmentInfo(equipment).label}
+        </span>
       </div>
 
       <div className={styles.cupStage}>
         <PintCup ratios={ratios} size="full" width={210} />
-        <span className={styles.cupTag}>{style}</span>
       </div>
 
       <SectionHeader role="composition" label="Composition" />
@@ -220,7 +222,8 @@ export function MacrosPanel({
           )}
         </span>
         <span className={styles.scoreNote}>
-          each macro checked against its window for a {style.toLowerCase()}
+          each macro checked against its window for a {style.toLowerCase()} on a{" "}
+          {equipmentInfo(equipment).label.toLowerCase()}
         </span>
       </div>
 
