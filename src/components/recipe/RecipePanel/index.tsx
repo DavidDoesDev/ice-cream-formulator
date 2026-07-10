@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Egg } from "lucide-react";
 import type { Recipe, SmartMix, SmartMixKind } from "@/data/types";
 import { getPresetById } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
@@ -66,6 +68,7 @@ export function RecipePanel({
   const activeMixes = recipe.smartMixes.filter(
     (m) => (getPresetById(m.presetId)?.ingredients.length ?? 0) > 0,
   );
+  const [eggBannerDismissed, setEggBannerDismissed] = useState(false);
   const present = new Set(recipe.additionalIngredients.map((a) => a.ingredientId));
 
   // A custard is defined by egg yolks — if the mix has none, surface it (a banner
@@ -135,12 +138,20 @@ export function RecipePanel({
         ))}
       </div>
 
-      {needsEggs && (
+      {needsEggs && !eggBannerDismissed && (
         <div className={styles.eggBanner}>
-          <Icon name="egg" size={17} />
+          <Egg className={styles.eggIcon} size={17} strokeWidth={2} aria-hidden />
           <span className={styles.eggBannerText}>
             Custards are built on egg yolks — add them for a silky, coating body.
           </span>
+          <button
+            className={styles.eggDismiss}
+            type="button"
+            aria-label="Dismiss"
+            onClick={() => setEggBannerDismissed(true)}
+          >
+            <Icon name="close" size={15} />
+          </button>
         </div>
       )}
 

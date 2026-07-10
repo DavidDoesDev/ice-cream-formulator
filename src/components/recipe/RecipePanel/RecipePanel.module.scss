@@ -83,15 +83,38 @@
   gap: 10px;
   margin-top: 12px;
   padding: 9px 12px;
-  border: 1.5px dashed var(--line);
   border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+}
+
+.eggIcon {
+  flex-shrink: 0;
   color: var(--accent);
 }
 
 .eggBannerText {
+  flex: 1;
   font-size: 13px;
   line-height: 1.4;
   color: var(--muted);
+}
+
+.eggDismiss {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast);
+}
+
+.eggDismiss:hover {
+  color: var(--accent);
 }
 
 .tryLabel {
