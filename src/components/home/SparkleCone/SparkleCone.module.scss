@@ -24,19 +24,19 @@
   // page and bringing the white box back.
   top: calc(var(--sparkle-cone-top, calc(48px * var(--u))) - 0.0847 * var(--w));
   pointer-events: none;
-  // Entrance: slide in from the right on load, after a short beat. Animate
+  // Entrance: slide in from fully off the right edge, after a beat. Animate
   // `right` (not transform / opacity) — either would create a stacking context
   // on .scene and break the cone's multiply blend, bringing back the white box.
   // Duration + delay are mirrored by ENTRANCE_MS in index.tsx (gates the callouts
   // until the cone lands).
-  animation: coneEnter 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.45s backwards;
+  animation: coneEnter 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.9s backwards;
 }
 
-// Starts further off the right edge, settles to the resting right (= base value,
-// so the end is seamless with .scene's own `right`).
+// Starts fully off the right edge (left edge ~5vw past the viewport), settles to
+// the resting right (= base value, so the end is seamless with .scene's `right`).
 @keyframes coneEnter {
   from {
-    right: calc(-0.055 * var(--w) - 12vw);
+    right: calc(-1 * var(--w) - 5vw);
   }
   to {
     right: calc(-0.055 * var(--w));

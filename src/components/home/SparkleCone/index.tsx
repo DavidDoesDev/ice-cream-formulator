@@ -52,7 +52,7 @@ const getServerMotionOK = () => false;
 
 // The cone's CSS entrance (delay + duration) in .scene — mirror it here so the
 // callouts hold off until the cone has landed. Keep in sync with the animation.
-const ENTRANCE_MS = 450 + 1600;
+const ENTRANCE_MS = 900 + 1800;
 
 // The dev tuning panel is opt-in via a ?dev query param (any environment), so
 // it never ships to real visitors but can be summoned on the deployed site.
