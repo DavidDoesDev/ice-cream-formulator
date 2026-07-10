@@ -22,7 +22,7 @@ const MACRO_VAR: Record<MacroKey, string> = {
 const MACRO_LABEL: Record<MacroKey, string> = {
   fat: "Fat",
   sugar: "Sugar",
-  nonfatSolids: "Milk solids",
+  nonfatSolids: "Non-fat solids",
   stabilizer: "Stabilizer",
   emulsifier: "Emulsifier",
   alcohol: "Alcohol",

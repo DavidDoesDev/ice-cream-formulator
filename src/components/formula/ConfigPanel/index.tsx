@@ -110,13 +110,21 @@ export function ConfigPanel({
     (m) => m.kind === "emulsifier" && m.presetId !== "emulsifier-empty",
   );
 
+  // A mix that's actually present in the recipe is always editable, even if it's
+  // unusual for the current style (D4: changing style never orphans a mix). Only
+  // hide a style-specific row when its mix is absent.
+  const present = (kind: SmartMixKind) => recipe.smartMixes.some((m) => m.kind === kind);
   const mixRows = MIX_CONFIG_KINDS.filter(({ kind, custardGelato }) => {
-    if (custardGelato && style !== "custard" && style !== "gelato") return false;
+    if (custardGelato && style !== "custard" && style !== "gelato" && !present(kind)) return false;
     if (kind === "alcohol" && !showAlcohol) return false;
     if (kind === "emulsifier" && !showEmulsifier) return false;
     if (kind === "liquid") return false;
     return getPresetsByKind(kind).length > 0;
   });
+
+  // Non-destructive nudge (D4): a custard is defined by egg yolks — if one isn't
+  // in the mix, point the user to add it, without changing anything for them.
+  const needsEggsNudge = style === "custard" && !present("eggs");
 
   return (
     <div className={styles.root}>
@@ -151,6 +159,11 @@ export function ConfigPanel({
 
         <div className={styles.section}>
           <SectionHeader role="specific" label="Smart Ingredients" />
+          {needsEggsNudge && (
+            <p className={styles.nudge}>
+              Custards are built on egg yolks — add an Egg mix below for that silky, coating body.
+            </p>
+          )}
           <div className={styles.mixRows}>
             {mixRows.map(({ kind, label, icon: Icon }) => {
               const activePresetId = currentPresetId(kind);

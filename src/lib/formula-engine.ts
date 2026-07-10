@@ -147,7 +147,7 @@ export function removeIngredient(state: FormulaState, id: string): FormulaState 
 const MACRO_BLOCK_NAMES: Record<keyof MacroRatios, string> = {
   fat: "Fat",
   sugar: "Sugar",
-  nonfatSolids: "Milk solids",
+  nonfatSolids: "Non-fat solids",
   stabilizer: "Stabilizer",
   emulsifier: "Emulsifier",
   alcohol: "Alcohol",

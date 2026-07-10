@@ -33,7 +33,7 @@ const MACRO_BLOCKS: { id: string; name: string; key: keyof IngredientMacros }[] 
   { id: "_base-water", name: "Water", key: "water" },
   { id: "_base-fat", name: "Fat blend", key: "fat" },
   { id: "_base-sugar", name: "Sugar blend", key: "sugar" },
-  { id: "_base-nonfat", name: "Milk solids", key: "nonfatSolids" },
+  { id: "_base-nonfat", name: "Non-fat solids", key: "nonfatSolids" },
   { id: "_base-stabilizer", name: "Stabilizer", key: "stabilizer" },
   { id: "_base-emulsifier", name: "Emulsifier", key: "emulsifier" },
   { id: "_base-alcohol", name: "Alcohol", key: "alcohol" },

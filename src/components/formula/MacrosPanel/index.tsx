@@ -19,7 +19,7 @@ const SLIDER_SCALE = 1000;
 const SLIDERS: { key: MacroKey; label: string }[] = [
   { key: "fat", label: "Fat" },
   { key: "sugar", label: "Sugar" },
-  { key: "nonfatSolids", label: "Milk solids" },
+  { key: "nonfatSolids", label: "Non-fat solids" },
   { key: "stabilizer", label: "Stabilizer" },
   { key: "emulsifier", label: "Emulsifier" },
   { key: "alcohol", label: "Alcohol" },

@@ -16,7 +16,7 @@ const ADVICE: Record<string, { low: string; high: string }> = {
 const LABEL: Record<string, string> = {
   fat: "Fat",
   sugar: "Sugar",
-  nonfatSolids: "Milk solids",
+  nonfatSolids: "Non-fat solids",
   totalSolids: "Total solids",
 };
 const TS_TOLERANCE = 0.04;
