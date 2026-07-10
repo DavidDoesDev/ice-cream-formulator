@@ -11,13 +11,16 @@ import type { StyleCategory } from "@/data/types";
 // recipes, not transcribed from docs/formulation/style-targets.md.
 // Custard is measured from its 6 authored bases; the other styles are provisional
 // until their recipes land (#60), which will tighten them.
+// All six styles are now measured from their authored bases (#60). App convention:
+// dairy lactose sits in `sugar`, so sugar reads high and nonfatSolids (protein+
+// minerals) reads low vs Goff. Bands contain each style's recipe span with margin.
 const STYLE_TARGETS: Record<StyleCategory, Record<keyof MacroRatios, [number, number]>> = {
-  philadelphia: { fat: [0.10, 0.18], sugar: [0.16, 0.24], nonfatSolids: [0.03, 0.08], stabilizer: [0, 0.004], emulsifier: [0, 0.002], alcohol: [0, 0.06], water: [0.52, 0.64] },
+  philadelphia: { fat: [0.03, 0.18], sugar: [0.19, 0.25], nonfatSolids: [0.02, 0.10], stabilizer: [0, 0.005], emulsifier: [0, 0.003], alcohol: [0, 0.06], water: [0.52, 0.67] },
   custard:      { fat: [0.12, 0.22], sugar: [0.16, 0.24], nonfatSolids: [0.025, 0.09], stabilizer: [0, 0.005], emulsifier: [0.001, 0.005], alcohol: [0, 0.06], water: [0.50, 0.62] },
-  gelato:       { fat: [0.04, 0.10], sugar: [0.18, 0.26], nonfatSolids: [0.04, 0.09], stabilizer: [0.002, 0.006], emulsifier: [0, 0.002], alcohol: [0, 0.05], water: [0.56, 0.66] },
-  sherbet:      { fat: [0.01, 0.03], sugar: [0.22, 0.30], nonfatSolids: [0.005, 0.03], stabilizer: [0.003, 0.006], emulsifier: [0, 0.001], alcohol: [0, 0.04], water: [0.62, 0.72] },
-  sorbet:       { fat: [0, 0.02], sugar: [0.22, 0.32], nonfatSolids: [0, 0.02], stabilizer: [0.002, 0.006], emulsifier: [0, 0.001], alcohol: [0, 0.06], water: [0.62, 0.75] },
-  vegan:        { fat: [0.03, 0.17], sugar: [0.14, 0.26], nonfatSolids: [0, 0.05], stabilizer: [0.002, 0.006], emulsifier: [0, 0.003], alcohol: [0, 0.05], water: [0.52, 0.70] },
+  gelato:       { fat: [0.03, 0.13], sugar: [0.21, 0.28], nonfatSolids: [0.03, 0.09], stabilizer: [0.002, 0.006], emulsifier: [0, 0.003], alcohol: [0, 0.05], water: [0.53, 0.68] },
+  sherbet:      { fat: [0.02, 0.07], sugar: [0.23, 0.31], nonfatSolids: [0.005, 0.04], stabilizer: [0.002, 0.006], emulsifier: [0, 0.002], alcohol: [0, 0.04], water: [0.61, 0.71] },
+  sorbet:       { fat: [0, 0.02], sugar: [0.27, 0.38], nonfatSolids: [0, 0.02], stabilizer: [0.002, 0.006], emulsifier: [0, 0.001], alcohol: [0, 0.06], water: [0.59, 0.73] },
+  vegan:        { fat: [0.05, 0.18], sugar: [0.20, 0.28], nonfatSolids: [0, 0.07], stabilizer: [0.002, 0.006], emulsifier: [0, 0.003], alcohol: [0, 0.05], water: [0.52, 0.68] },
 };
 
 // How far the slider roams beyond the green band on each side (clamped to MACRO_BOUNDS),
