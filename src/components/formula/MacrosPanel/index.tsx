@@ -7,6 +7,7 @@ import { balanceReport } from "@/lib/balance";
 import { relationshipHints } from "@/lib/relationships";
 import type { DerivedIndices } from "@/lib/derive";
 import { DEFAULT_EQUIPMENT, type EquipmentProfile } from "@/data/types";
+import { equipmentInfo } from "@/lib/equipment";
 import { formatPercent } from "@/lib/measure";
 import { PintCup } from "@/components/shared/PintCup";
 import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
@@ -39,8 +40,10 @@ interface MacrosPanelProps {
   style: string;
   equipment?: EquipmentProfile;
   conflict: boolean;
+  recalNeeded?: boolean;
   onMacroTarget: (macro: keyof MacroRatios, target: number) => void;
   onRebalance: () => void;
+  onRecalibrate?: () => void;
 }
 
 // Right workspace panel: the composition as a live cup + draggable macro sliders.
@@ -53,8 +56,10 @@ export function MacrosPanel({
   style,
   equipment = DEFAULT_EQUIPMENT,
   conflict,
+  recalNeeded = false,
   onMacroTarget,
   onRebalance,
+  onRecalibrate,
 }: MacrosPanelProps) {
   // While a slider is actively dragged, its thumb follows the pointer's target
   // value rather than the solved ratio — so it can't fight the continuous solve.
@@ -246,6 +251,20 @@ export function MacrosPanel({
           </span>
           <Pill tone="accent" size="sm" onClick={onRebalance}>
             Rebalance
+          </Pill>
+        </div>
+      )}
+
+      {/* Advisory retune when the sugar sits outside the machine's window. The hard
+          conflict takes precedence; this never fires alongside it and changes
+          nothing until tapped. */}
+      {recalNeeded && !conflict && onRecalibrate && (
+        <div className={styles.nudge}>
+          <span className={styles.nudgeMsg}>
+            Out of range for the {equipmentInfo(equipment).label} — recalibrate the sugar to match.
+          </span>
+          <Pill tone="accent" size="sm" onClick={onRecalibrate}>
+            Recalibrate
           </Pill>
         </div>
       )}
