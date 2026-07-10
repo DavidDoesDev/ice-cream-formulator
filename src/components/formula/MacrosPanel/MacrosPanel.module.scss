@@ -237,3 +237,24 @@
   font-weight: 600;
   color: var(--text);
 }
+
+.nudge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--c-sky);
+  background: color-mix(in oklab, var(--c-sky) 12%, transparent);
+}
+
+.nudgeMsg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--text);
+}

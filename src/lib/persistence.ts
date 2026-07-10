@@ -1,10 +1,11 @@
 import type { FormulaState } from "./formula-engine";
-import type { Recipe } from "@/data/types";
+import type { Recipe, EquipmentProfile } from "@/data/types";
 
 export interface SavedFormula {
   id: string;
   name: string;
   style: string;
+  equipment?: EquipmentProfile; // freezing/serving machine (D8); absent → home-dasher
   createdAt: number;
   updatedAt: number;
   state: FormulaState;

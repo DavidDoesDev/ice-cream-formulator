@@ -13,7 +13,8 @@ Slider target windows are defined by **(style × equipment)** (not per-archetype
 Style drives the composition macros (fat, MSNF, emulsifier); **equipment** shifts the
 scoopability macros (sugar/PAC, stabilizer). The table below is the **home-dasher baseline**
 (default equipment — a basic canister/frozen-bowl churn); other equipment profiles shift the
-sugar/stabilizer windows off this baseline and are filled in by the equipment feature. Values
+sugar/stabilizer windows off this baseline via a per-machine PAC-target offset (now in
+`src/lib/equipment.ts` — D8). Values
 are **% by weight**; the code stores them as 0–1 fractions. Water is the remainder, so it's
 derived rather than given a slider target.
 

@@ -7,12 +7,15 @@ import {
   addAdditionalIngredient,
   removeAdditionalIngredient,
   rebalanceWorkspace,
+  recalibrate,
+  needsRecalibration,
   workspaceRatios,
   workspaceConflict,
   totalGrams,
   type LiveWorkspace,
   type WorkspaceDeps,
 } from "./live-workspace";
+import { isInRange } from "./macro-bands";
 import type { MacroRatios } from "./formula-engine";
 import type { SmartMix } from "@/data/types";
 import { getPresetById } from "@/data/mix-presets";
@@ -130,5 +133,50 @@ describe("live workspace binding", () => {
     expect(workspaceConflict(pushed, deps)).toBe(true);
     const fixed = rebalanceWorkspace(pushed, deps);
     expect(workspaceConflict(fixed, deps)).toBe(false);
+  });
+});
+
+// A Philadelphia-style mix at ~23% sugar — comfortably in the home-dasher window
+// (0.19–0.25) but above a colder machine's shifted-down window.
+function sweetWorkspace(): LiveWorkspace {
+  const ws = setMacroTarget(seededWorkspace(), "sugar", 0.23, deps);
+  return ws;
+}
+
+describe("recalibrate for equipment", () => {
+  it("flags a mismatch only when the recipe is out of range for the machine", () => {
+    const ws = sweetWorkspace();
+    expect(needsRecalibration(ws, deps, "philadelphia", "home-dasher")).toBe(false);
+    expect(needsRecalibration(ws, deps, "philadelphia", "commercial-batch")).toBe(true);
+  });
+
+  it("brings an out-of-range recipe back in range for the colder machine", () => {
+    const ws = sweetWorkspace();
+    expect(isInRange("philadelphia", "sugar", workspaceRatios(ws, deps).sugar, "commercial-batch")).toBe(false);
+    const fixed = recalibrate(ws, deps, "philadelphia", "commercial-batch");
+    expect(isInRange("philadelphia", "sugar", workspaceRatios(fixed, deps).sugar, "commercial-batch")).toBe(true);
+  });
+
+  it("conserves the batch yield while retuning", () => {
+    const ws = sweetWorkspace();
+    const fixed = recalibrate(ws, deps, "philadelphia", "commercial-batch");
+    expect(fixed.yieldGrams).toBe(ws.yieldGrams);
+    expect(totalGrams(fixed.recipe)).toBeCloseTo(ws.yieldGrams, 0);
+  });
+
+  it("moves the sugar lever while leaving fat essentially untouched", () => {
+    const ws = sweetWorkspace();
+    const before = workspaceRatios(ws, deps);
+    const after = workspaceRatios(recalibrate(ws, deps, "philadelphia", "commercial-batch"), deps);
+    // Sugar drops by ~0.02 to reach the colder window; fat barely budges (only an
+    // incidental least-squares residual), so scoopability moves and composition holds.
+    expect(before.sugar - after.sugar).toBeGreaterThan(0.01);
+    expect(Math.abs(after.fat - before.fat)).toBeLessThan(0.001);
+  });
+
+  it("leaves a recipe already in range unchanged", () => {
+    const ws = sweetWorkspace();
+    const same = recalibrate(ws, deps, "philadelphia", "home-dasher");
+    expect(workspaceRatios(same, deps).sugar).toBeCloseTo(workspaceRatios(ws, deps).sugar, 6);
   });
 });

@@ -51,6 +51,19 @@ describe("scoopability (PAC)", () => {
   });
 });
 
+describe("scoopability window shifts with equipment", () => {
+  // PAC 0.28 sits inside the home-dasher custard band (0.16–0.30) but above the
+  // colder commercial-batch band (shifted down ~0.04 → 0.12–0.26) → reads soft there.
+  it("passes a PAC that's fine for the warm home churn", () => {
+    const hints = relationshipHints(ratios(), derived({ pac: 0.28 }), "custard", "home-dasher");
+    expect(keys(hints)).not.toContain("soft");
+  });
+  it("flags the same PAC as soft on a colder machine", () => {
+    const hints = relationshipHints(ratios(), derived({ pac: 0.28 }), "custard", "commercial-batch");
+    expect(keys(hints)).toContain("soft");
+  });
+});
+
 describe("on real authored recipes", () => {
   const hintsFor = (id: string) => {
     const a = ARCHETYPES.find((x) => x.id === id)!;

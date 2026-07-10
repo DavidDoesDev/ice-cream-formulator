@@ -72,6 +72,49 @@
   font-weight: 700;
 }
 
+.equipGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.equipBtn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-family: var(--font-display);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+
+.equipBtn.equipBtnActive {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  border-color: var(--color-accent);
+}
+
+.equipName {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.equipBtn.equipBtnActive .equipName {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.equipBlurb {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.35;
+}
+
 .select {
   font-family: var(--font-display);
   font-size: 15px;

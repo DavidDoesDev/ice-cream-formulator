@@ -1,7 +1,8 @@
 import type { MacroRatios } from "./formula-engine";
 import type { DerivedIndices } from "./derive";
 import { healthyBand } from "./macro-bands";
-import type { StyleCategory } from "@/data/types";
+import { pacOffset } from "./equipment";
+import { DEFAULT_EQUIPMENT, type StyleCategory, type EquipmentProfile } from "@/data/types";
 
 // Advisory relationship coaching (D6). The per-macro sliders stay independent;
 // these hints watch relationships between macros that a single-macro band can't
@@ -32,6 +33,7 @@ export function relationshipHints(
   ratios: MacroRatios,
   d: DerivedIndices,
   style: string,
+  equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
 ): RelationshipHint[] {
   const hints: RelationshipHint[] = [];
 
@@ -43,14 +45,18 @@ export function relationshipHints(
   }
 
   // Ice control — a watery mix that's under-stabilized grows big ice crystals.
-  const [, waterHi] = healthyBand(style, "water");
-  const [stabLo] = healthyBand(style, "stabilizer");
+  const [, waterHi] = healthyBand(style, "water", equipment);
+  const [stabLo] = healthyBand(style, "stabilizer", equipment);
   if (ratios.water > waterHi && ratios.stabilizer < stabLo) {
     hints.push({ key: "ice-control", message: "Watery and under-stabilized — add stabilizer to hold off ice crystals." });
   }
 
   // Scoopability (fat↔sugar↔alcohol via PAC): too firm or too soft to serve.
-  const [pacLo, pacHi] = PAC_BANDS[style as StyleCategory] ?? [0.18, 0.3];
+  // A colder machine's target hardness is lower, so shift the PAC window by its
+  // offset (same signed shift as the sugar window — PAC is the sugar lever's index).
+  const [pacBaseLo, pacBaseHi] = PAC_BANDS[style as StyleCategory] ?? [0.18, 0.3];
+  const off = pacOffset(equipment);
+  const [pacLo, pacHi] = [pacBaseLo + off, pacBaseHi + off];
   if (d.pac < pacLo) {
     hints.push({ key: "firm", message: "Will freeze firm — raise the sugar (or shift to dextrose) to keep it scoopable." });
   } else if (d.pac > pacHi) {

@@ -1,6 +1,7 @@
 import { computeRatiosFromRecipe, solveRecipe } from "./recipe-solver";
 import { MACRO_BOUNDS, type MacroRatios, type IngredientMacros } from "./formula-engine";
-import type { Recipe, MixPreset, SmartMix, SmartMixKind } from "@/data/types";
+import { healthyBand, isInRange } from "./macro-bands";
+import { DEFAULT_EQUIPMENT, type Recipe, type MixPreset, type SmartMix, type SmartMixKind, type EquipmentProfile } from "@/data/types";
 
 // Trace additives are dosed directly (setTraceMacro), so a big-macro solve must
 // leave them alone — otherwise the solver flings their grams around to minimize
@@ -213,6 +214,38 @@ export function setTraceMacro(
   );
   const additionalIngredients = ws.recipe.additionalIngredients.map((a) => ({ ...a, grams: a.grams * scale }));
   return { recipe: { ...ws.recipe, smartMixes, additionalIngredients }, yieldGrams: Y };
+}
+
+// The recipe's sugar sits outside the scoopability window for this (style,
+// equipment) — the mismatch the Recalibrate nudge surfaces (D8). Sugar is the
+// freeze-depression lever equipment shifts; the composition macros are untouched.
+export function needsRecalibration(
+  ws: LiveWorkspace,
+  deps: WorkspaceDeps,
+  style: string,
+  equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
+): boolean {
+  return !isInRange(style, "sugar", workspaceRatios(ws, deps).sugar, equipment);
+}
+
+// User-invoked retune for a machine change: re-solve the SUGAR lever toward the
+// equipment-adjusted window at fixed yield, so the mix scoops right on the new
+// machine. Nudges to the nearest in-window edge (minimal move), a touch inside so
+// the solver residual still lands in range. Only sugar (and the free water
+// remainder) move — fat/MSNF/emulsifier/stabilizer stay put. A recipe already in
+// range is returned unchanged, so tapping is safe.
+export function recalibrate(
+  ws: LiveWorkspace,
+  deps: WorkspaceDeps,
+  style: string,
+  equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
+): LiveWorkspace {
+  const sugar = workspaceRatios(ws, deps).sugar;
+  const [lo, hi] = healthyBand(style, "sugar", equipment);
+  if (sugar >= lo - 1e-9 && sugar <= hi + 1e-9) return ws; // already scoopable — no-op
+  const margin = (hi - lo) * 0.15;
+  const target = sugar < lo ? lo + margin : hi - margin;
+  return setMacroTarget(ws, "sugar", target, deps);
 }
 
 // Explicit yield change: scale every gram so the whole batch grows or shrinks.

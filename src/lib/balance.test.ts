@@ -39,3 +39,24 @@ describe("balance report (per style)", () => {
     expect(balanceReport(custard, "custard").checks.some((c) => c.key === "totalSolids")).toBe(true);
   });
 });
+
+describe("balance report (per equipment)", () => {
+  // Sugar 0.23 sits inside the home-dasher custard window (0.16–0.24) but above
+  // the colder commercial-batch window (shifted down ~0.04 → ~0.12–0.20).
+  const sweet: MacroRatios = { ...custard, sugar: 0.23, water: 0.546 };
+
+  it("passes sugar for the warm home churn", () => {
+    expect(balanceReport(sweet, "custard", "home-dasher").checks.find((c) => c.key === "sugar")!.verdict).toBe("ok");
+  });
+
+  it("flags the same sugar as high for a colder machine", () => {
+    expect(balanceReport(sweet, "custard", "commercial-batch").checks.find((c) => c.key === "sugar")!.verdict).toBe("high");
+  });
+
+  it("leaves fat unchanged by equipment", () => {
+    const home = balanceReport(sweet, "custard", "home-dasher").checks.find((c) => c.key === "fat")!;
+    const cold = balanceReport(sweet, "custard", "commercial-batch").checks.find((c) => c.key === "fat")!;
+    expect(cold.verdict).toBe(home.verdict);
+    expect(cold.band).toEqual(home.band);
+  });
+});
