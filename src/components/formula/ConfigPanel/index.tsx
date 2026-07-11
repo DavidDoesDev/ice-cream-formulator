@@ -68,8 +68,10 @@ export function ConfigPanel({
   const [name, setName] = useState(formulaName);
   const [style, setStyle] = useState(formulaStyle);
   const [equipment, setEquipment] = useState<EquipmentProfile>(formulaEquipment ?? DEFAULT_EQUIPMENT);
-  const [building, setBuilding] = useState<SmartMixKind | null>(null);
-  const [customItems, setCustomItems] = useState<CustomBlendItem[]>([]);
+  // Per-kind edit buffer for custom blends. A key is present while that slot is
+  // custom; its rows are the source of truth for the builder (the applied preset
+  // only stores normalized proportions, so we can't round-trip weights from it).
+  const [drafts, setDrafts] = useState<Record<string, CustomBlendItem[]>>({});
 
   // Live-apply like every other blend: a valid custom blend re-solves the recipe
   // immediately on each edit. While degenerate (empty / all-zero) we hold the last
@@ -84,16 +86,19 @@ export function ConfigPanel({
     onCustomPreset(kind, preset);
   }, [onCustomPreset]);
 
-  const addCustomItem = useCallback((kind: SmartMixKind) => {
-    // The builder is hidden behind the selector modal, so customItems can't change
-    // between opening it and the pick — capturing it here is safe.
+  const setDraft = useCallback((kind: SmartMixKind, items: CustomBlendItem[]) => {
+    setDrafts((prev) => ({ ...prev, [kind]: items }));
+    applyCustom(kind, items);
+  }, [applyCustom]);
+
+  const addCustomItem = useCallback((kind: SmartMixKind, rows: CustomBlendItem[]) => {
+    // The builder sits behind the selector modal, so rows can't change between
+    // opening it and the pick — capturing them here is safe.
     onOpenIngredientSelector(`${kind}-custom`, (ing) => {
-      if (customItems.some((i) => i.ingredientId === ing.id)) return;
-      const next = [...customItems, { ingredientId: ing.id, weight: 1 }];
-      setCustomItems(next);
-      applyCustom(kind, next);
+      if (rows.some((i) => i.ingredientId === ing.id)) return;
+      setDraft(kind, [...rows, { ingredientId: ing.id, weight: 1 }]);
     });
-  }, [onOpenIngredientSelector, applyCustom, customItems]);
+  }, [onOpenIngredientSelector, setDraft]);
 
   const handleNameBlur = useCallback(() => {
     if (name.trim()) onNameChange(name.trim());
@@ -196,7 +201,18 @@ export function ConfigPanel({
             {mixRows.map(({ kind, label, icon: Icon }) => {
               const activePresetId = currentPresetId(kind);
               const activePreset = getPresetById(activePresetId);
-              const breakdown = activePreset && activePreset.ingredients.length > 1
+              // A slot is custom when its active preset isn't one of the built-ins.
+              const isCustom =
+                !!activePreset && !getPresetsByKind(kind).some((p) => p.id === activePresetId);
+              // In custom mode = the applied blend is custom, OR a draft is in
+              // progress (covers converting from an empty preset like "None", whose
+              // blank blend can't apply yet).
+              const inCustom = isCustom || drafts[kind] !== undefined;
+              // Custom slots show an editable builder (rows from the draft buffer,
+              // seeded from the applied blend the first time); named presets show a
+              // read-only breakdown.
+              const rows = drafts[kind] ?? (isCustom && activePreset ? seedCustomItems(activePreset) : []);
+              const breakdown = !inCustom && activePreset && activePreset.ingredients.length > 1
                 ? activePreset.ingredients
                 : [];
 
@@ -245,17 +261,18 @@ export function ConfigPanel({
                     <select
                       id={`mix-${kind}`}
                       className={styles.select}
-                      value={building === kind ? "custom" : activePresetId}
+                      value={inCustom ? "custom" : activePresetId}
                       onChange={(e) => {
                         if (e.target.value === "custom") {
-                          // Seed the builder from the current blend so Custom… starts
-                          // as an editable copy, not a blank slate.
-                          setBuilding(kind);
-                          setCustomItems(activePreset ? seedCustomItems(activePreset) : []);
+                          // Convert to a custom blend seeded from the current one, and
+                          // apply immediately (same proportions → no gram change).
+                          setDraft(kind, activePreset ? seedCustomItems(activePreset) : []);
                         } else {
-                          // Choosing a named preset also cancels any in-progress build.
-                          setBuilding(null);
-                          setCustomItems([]);
+                          setDrafts((prev) => {
+                            const next = { ...prev };
+                            delete next[kind];
+                            return next;
+                          });
                           onPresetChange(kind, e.target.value);
                         }
                       }}
@@ -263,13 +280,10 @@ export function ConfigPanel({
                       {getPresetsByKind(kind).map((p) => (
                         <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
-                      {activePreset && !getPresetsByKind(kind).some((p) => p.id === activePresetId) && (
-                        <option value={activePresetId}>{activePreset.name}</option>
-                      )}
                       <option value="custom">Custom…</option>
                     </select>
                   </div>
-                  {building !== kind && breakdown.length > 0 && (
+                  {!inCustom && breakdown.length > 0 && (
                     <div className={styles.breakdown}>
                       {breakdown.map(({ ingredientId, proportion }) => (
                         <div key={ingredientId} className={styles.breakdownRow}>
@@ -283,10 +297,10 @@ export function ConfigPanel({
                       ))}
                     </div>
                   )}
-                  {building === kind && (
+                  {inCustom && (
                     <div className={styles.customBuilder}>
-                      {customItems.map((item, idx) => {
-                        const totalW = customItems.reduce((s, i) => s + i.weight, 0) || 1;
+                      {rows.map((item, idx) => {
+                        const totalW = rows.reduce((s, i) => s + i.weight, 0) || 1;
                         const pct = (item.weight / totalW) * 100;
                         return (
                           <div key={item.ingredientId} className={styles.customRow}>
@@ -301,40 +315,38 @@ export function ConfigPanel({
                               value={item.weight}
                               onChange={(e) => {
                                 const w = parseFloat(e.target.value);
-                                setCustomItems((prev) =>
-                                  prev.map((it, i) =>
-                                    i === idx ? { ...it, weight: isNaN(w) ? 0 : Math.max(0, w) } : it,
+                                const val = isNaN(w) ? 0 : Math.max(0, w);
+                                setDrafts((prev) => ({
+                                  ...prev,
+                                  [kind]: (prev[kind] ?? rows).map((it, i) =>
+                                    i === idx ? { ...it, weight: val } : it,
                                   ),
-                                );
+                                }));
                               }}
                               // Re-solve once the edit settles, not on every keystroke.
-                              onBlur={() => applyCustom(kind, customItems)}
+                              onBlur={() => applyCustom(kind, drafts[kind] ?? rows)}
                             />
                             <span className={styles.customPct}>{formatPercent(pct)}%</span>
                             <button
                               className={styles.customRemove}
                               type="button"
                               aria-label="Remove"
-                              onClick={() => {
-                                const next = customItems.filter((_, i) => i !== idx);
-                                setCustomItems(next);
-                                applyCustom(kind, next);
-                              }}
+                              onClick={() => setDraft(kind, rows.filter((_, i) => i !== idx))}
                             >
                               <X size={14} strokeWidth={2} />
                             </button>
                           </div>
                         );
                       })}
-                      {isDegenerateBlend(customItems) && (
+                      {isDegenerateBlend(rows) && (
                         <p className={styles.customHint}>
-                          {customItems.length === 0
+                          {rows.length === 0
                             ? "Add an ingredient to build this blend."
                             : "Give an ingredient some weight to apply the blend."}
                         </p>
                       )}
                       <div className={styles.customActions}>
-                        <button className={styles.customAdd} type="button" onClick={() => addCustomItem(kind)}>
+                        <button className={styles.customAdd} type="button" onClick={() => addCustomItem(kind, rows)}>
                           + Ingredient
                         </button>
                       </div>
