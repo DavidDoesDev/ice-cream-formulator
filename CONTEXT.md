@@ -28,4 +28,5 @@ _Avoid_: exposing "preset" in the UI.
 
 **Custom blend**:
 A Blend the user builds themselves in the Config panel rather than choosing a
-Preset. Seeded from the outgoing preset's ingredients; saved as its own Blend.
+Preset. Seeded from the outgoing preset's ingredients; edits apply live to the
+recipe, like any other Blend.

@@ -71,27 +71,29 @@ export function ConfigPanel({
   const [building, setBuilding] = useState<SmartMixKind | null>(null);
   const [customItems, setCustomItems] = useState<CustomBlendItem[]>([]);
 
-  const addCustomItem = useCallback((kind: SmartMixKind) => {
-    onOpenIngredientSelector(`${kind}-custom`, (ing) => {
-      setCustomItems((prev) =>
-        prev.some((i) => i.ingredientId === ing.id)
-          ? prev
-          : [...prev, { ingredientId: ing.id, weight: 1 }],
-      );
-    });
-  }, [onOpenIngredientSelector]);
-
-  const saveCustom = useCallback((kind: SmartMixKind) => {
-    if (isDegenerateBlend(customItems)) return;
+  // Live-apply like every other blend: a valid custom blend re-solves the recipe
+  // immediately on each edit. While degenerate (empty / all-zero) we hold the last
+  // applied blend and apply nothing.
+  const applyCustom = useCallback((kind: SmartMixKind, items: CustomBlendItem[]) => {
+    if (isDegenerateBlend(items)) return;
     const preset = buildCustomPreset(
       kind,
       "Custom",
-      customItems.map((i) => ({ ingredientId: i.ingredientId, proportion: i.weight })),
+      items.map((i) => ({ ingredientId: i.ingredientId, proportion: i.weight })),
     );
     onCustomPreset(kind, preset);
-    setBuilding(null);
-    setCustomItems([]);
-  }, [customItems, onCustomPreset]);
+  }, [onCustomPreset]);
+
+  const addCustomItem = useCallback((kind: SmartMixKind) => {
+    // The builder is hidden behind the selector modal, so customItems can't change
+    // between opening it and the pick — capturing it here is safe.
+    onOpenIngredientSelector(`${kind}-custom`, (ing) => {
+      if (customItems.some((i) => i.ingredientId === ing.id)) return;
+      const next = [...customItems, { ingredientId: ing.id, weight: 1 }];
+      setCustomItems(next);
+      applyCustom(kind, next);
+    });
+  }, [onOpenIngredientSelector, applyCustom, customItems]);
 
   const handleNameBlur = useCallback(() => {
     if (name.trim()) onNameChange(name.trim());
@@ -305,13 +307,19 @@ export function ConfigPanel({
                                   ),
                                 );
                               }}
+                              // Re-solve once the edit settles, not on every keystroke.
+                              onBlur={() => applyCustom(kind, customItems)}
                             />
                             <span className={styles.customPct}>{formatPercent(pct)}%</span>
                             <button
                               className={styles.customRemove}
                               type="button"
                               aria-label="Remove"
-                              onClick={() => setCustomItems((prev) => prev.filter((_, i) => i !== idx))}
+                              onClick={() => {
+                                const next = customItems.filter((_, i) => i !== idx);
+                                setCustomItems(next);
+                                applyCustom(kind, next);
+                              }}
                             >
                               <X size={14} strokeWidth={2} />
                             </button>
@@ -321,21 +329,13 @@ export function ConfigPanel({
                       {isDegenerateBlend(customItems) && (
                         <p className={styles.customHint}>
                           {customItems.length === 0
-                            ? "Add an ingredient to save."
-                            : "Give an ingredient some weight to save."}
+                            ? "Add an ingredient to build this blend."
+                            : "Give an ingredient some weight to apply the blend."}
                         </p>
                       )}
                       <div className={styles.customActions}>
                         <button className={styles.customAdd} type="button" onClick={() => addCustomItem(kind)}>
                           + Ingredient
-                        </button>
-                        <button
-                          className={styles.customSave}
-                          type="button"
-                          disabled={isDegenerateBlend(customItems)}
-                          onClick={() => saveCustom(kind)}
-                        >
-                          Save blend
                         </button>
                       </div>
                     </div>
