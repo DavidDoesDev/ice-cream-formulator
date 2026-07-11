@@ -250,24 +250,38 @@ export function needsRecalibration(
   return !isInRange(style, "sugar", workspaceRatios(ws, deps).sugar, equipment);
 }
 
-// User-invoked retune for a machine change: re-solve the SUGAR lever toward the
-// equipment-adjusted window at fixed yield, so the mix scoops right on the new
-// machine. Nudges to the nearest in-window edge (minimal move), a touch inside so
-// the solver residual still lands in range. Only sugar (and the free water
-// remainder) move — fat/MSNF/emulsifier/stabilizer stay put. A recipe already in
-// range is returned unchanged, so tapping is safe.
+// Macros the scorecard (balanceReport) judges against the healthy windows.
+const WINDOW_KEYS: (keyof MacroRatios)[] = ["fat", "sugar", "nonfatSolids"];
+
+// User-invoked retune: bring the recipe into the green for this (style ×
+// equipment) — every tracked macro that's outside its equipment-adjusted window
+// is nudged just inside the nearest edge, then the blend is solved toward those
+// targets at fixed yield (so the scorecard reaches Balanced). Sugar is the usual
+// mover (equipment shifts its window), but a composition macro that's out of
+// range is pulled in too. In-range macros are left alone; a recipe already fully
+// in range is a no-op, so tapping is safe.
 export function recalibrate(
   ws: LiveWorkspace,
   deps: WorkspaceDeps,
   style: string,
   equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
 ): LiveWorkspace {
-  const sugar = workspaceRatios(ws, deps).sugar;
-  const [lo, hi] = healthyBand(style, "sugar", equipment);
-  if (sugar >= lo - 1e-9 && sugar <= hi + 1e-9) return ws; // already scoopable — no-op
-  const margin = (hi - lo) * 0.15;
-  const target = sugar < lo ? lo + margin : hi - margin;
-  return setMacroTarget(ws, "sugar", target, deps);
+  const r = workspaceRatios(ws, deps);
+  const targets = { ...r };
+  let changed = false;
+  for (const key of WINDOW_KEYS) {
+    const [lo, hi] = healthyBand(style, key, equipment);
+    const margin = (hi - lo) * 0.15; // aim a touch inside so the solve lands in range
+    if (r[key] < lo - 1e-9) {
+      targets[key] = lo + margin;
+      changed = true;
+    } else if (r[key] > hi + 1e-9) {
+      targets[key] = hi - margin;
+      changed = true;
+    }
+  }
+  if (!changed) return ws; // already in the green — no-op
+  return solveBlend(ws, targets, deps);
 }
 
 // Explicit yield change: scale every gram so the whole batch grows or shrinks.

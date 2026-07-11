@@ -195,14 +195,27 @@ describe("recalibrate for equipment", () => {
     expect(totalGrams(fixed.recipe)).toBeCloseTo(ws.yieldGrams, 0);
   });
 
-  it("moves the sugar lever while leaving fat essentially untouched", () => {
-    const ws = sweetWorkspace();
+  it("moves sugar but leaves an in-range fat essentially untouched", () => {
+    const ws = sweetWorkspace(); // fat 0.13 is inside the philadelphia window
     const before = workspaceRatios(ws, deps);
     const after = workspaceRatios(recalibrate(ws, deps, "philadelphia", "commercial-batch"), deps);
-    // Sugar drops by ~0.02 to reach the colder window; fat barely budges (only an
-    // incidental least-squares residual), so scoopability moves and composition holds.
+    // Sugar drops to reach the colder window; an already-in-range fat is held put
+    // (only an incidental least-squares residual moves it).
     expect(before.sugar - after.sugar).toBeGreaterThan(0.01);
     expect(Math.abs(after.fat - before.fat)).toBeLessThan(0.001);
+  });
+
+  it("pulls an out-of-range composition macro into range too, not just sugar", () => {
+    // Fat dragged above the philadelphia window (hi 0.18) and sugar above the
+    // colder machine's window — Recalibrate should bring BOTH into the green.
+    let ws = setMacroTarget(seededWorkspace(), "fat", 0.2, deps);
+    ws = setMacroTarget(ws, "sugar", 0.24, deps);
+    const before = workspaceRatios(ws, deps);
+    expect(isInRange("philadelphia", "fat", before.fat, "commercial-batch")).toBe(false);
+    expect(isInRange("philadelphia", "sugar", before.sugar, "commercial-batch")).toBe(false);
+    const after = workspaceRatios(recalibrate(ws, deps, "philadelphia", "commercial-batch"), deps);
+    expect(isInRange("philadelphia", "fat", after.fat, "commercial-batch")).toBe(true);
+    expect(isInRange("philadelphia", "sugar", after.sugar, "commercial-batch")).toBe(true);
   });
 
   it("leaves a recipe already in range unchanged", () => {
