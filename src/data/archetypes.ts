@@ -193,7 +193,7 @@ export const ARCHETYPES: Archetype[] = [
     decisionCards: [
       { label: "Style", reason: "Custard — egg yolks soften honey's sharpness and round the flavor" },
       { label: "Sugar", reason: "19% — honey's sweetness is intense but short, needs the extra to sustain it" },
-      { label: "Sugar system", reason: "Natural (honey) — fructose keeps texture soft straight from the freezer" },
+      { label: "Sugar blend", reason: "Natural (honey) — fructose keeps texture soft straight from the freezer" },
     ],
   },
   {

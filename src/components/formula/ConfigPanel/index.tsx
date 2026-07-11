@@ -29,8 +29,8 @@ const MIX_CONFIG_KINDS: {
   custardGelato?: boolean;
 }[] = [
   { kind: "milk", label: "Milk base", icon: Milk },
-  { kind: "sugar", label: "Sugar system", icon: Candy },
-  { kind: "stabilizer", label: "Stabilizer system", icon: Atom },
+  { kind: "sugar", label: "Sugar blend", icon: Candy },
+  { kind: "stabilizer", label: "Stabilizer blend", icon: Atom },
   { kind: "eggs", label: "Egg mix", icon: GlassWater, custardGelato: true },
   { kind: "alcohol", label: "Alcohol", icon: Wine },
   { kind: "emulsifier", label: "Emulsifier", icon: Droplets },
@@ -320,7 +320,7 @@ export function ConfigPanel({
                           disabled={customItems.length === 0}
                           onClick={() => saveCustom(kind)}
                         >
-                          Save system
+                          Save blend
                         </button>
                       </div>
                     </div>
