@@ -40,7 +40,6 @@ interface MacrosPanelProps {
   style: string;
   equipment?: EquipmentProfile;
   conflict: boolean;
-  recalNeeded?: boolean;
   onMacroTarget: (macro: keyof MacroRatios, target: number) => void;
   onRebalance: () => void;
   onRecalibrate?: () => void;
@@ -56,7 +55,6 @@ export function MacrosPanel({
   style,
   equipment = DEFAULT_EQUIPMENT,
   conflict,
-  recalNeeded = false,
   onMacroTarget,
   onRebalance,
   onRecalibrate,
@@ -221,17 +219,25 @@ export function MacrosPanel({
         Each macro checked against its window for a {style.toLowerCase()} on a{" "}
         {equipmentInfo(equipment).label.toLowerCase()}
       </p>
-      <div className={styles.scoreRow}>
-        <span className={`${styles.score} ${report.balanced ? styles.scoreOk : ""}`}>
-          {report.balanced ? (
-            <>
-              <Icon name="check" size={14} /> Balanced
-            </>
-          ) : (
-            `${report.inRange} / ${report.total} in range`
+      {conflict ? (
+        <div className={styles.statusOff}>
+          <span className={styles.statusMsg}>
+            <Icon name="bolt" size={16} /> Can&apos;t hit that target with these ingredients.
+          </span>
+          <Pill tone="accent" size="sm" onClick={onRebalance}>Rebalance</Pill>
+        </div>
+      ) : report.balanced ? (
+        <div className={styles.statusOk}>
+          <Icon name="check" size={15} /> Balanced
+        </div>
+      ) : (
+        <div className={styles.statusOff}>
+          <span className={styles.statusMsg}>Out of range</span>
+          {onRecalibrate && (
+            <Pill tone="accent" size="sm" onClick={onRecalibrate}>Rebalance</Pill>
           )}
-        </span>
-      </div>
+        </div>
+      )}
 
       <div className={styles.readoutRow}>
         <span className={styles.readout}>Scoopability <b>{Math.round(derived.pac * 100)}</b></span>
@@ -253,30 +259,6 @@ export function MacrosPanel({
         </div>
       )}
 
-      {conflict && (
-        <div className={styles.conflict}>
-          <span className={styles.conflictMsg}>
-            <Icon name="bolt" size={16} /> Can&apos;t hit that target with these ingredients.
-          </span>
-          <Pill tone="accent" size="sm" onClick={onRebalance}>
-            Rebalance
-          </Pill>
-        </div>
-      )}
-
-      {/* Advisory retune when the sugar sits outside the machine's window. The hard
-          conflict takes precedence; this never fires alongside it and changes
-          nothing until tapped. */}
-      {recalNeeded && !conflict && onRecalibrate && (
-        <div className={styles.nudge}>
-          <span className={styles.nudgeMsg}>
-            Out of range for the {equipmentInfo(equipment).label} — recalibrate the sugar to match.
-          </span>
-          <Pill tone="accent" size="sm" onClick={onRecalibrate}>
-            Recalibrate
-          </Pill>
-        </div>
-      )}
     </section>
   );
 }

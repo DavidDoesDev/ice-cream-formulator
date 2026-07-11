@@ -1,6 +1,7 @@
 import { computeRatiosFromRecipe, solveRecipe } from "./recipe-solver";
 import { MACRO_BOUNDS, type MacroRatios, type IngredientMacros } from "./formula-engine";
-import { healthyBand, isInRange } from "./macro-bands";
+import { healthyBand } from "./macro-bands";
+import { balanceReport } from "./balance";
 import { DEFAULT_EQUIPMENT, type Recipe, type MixPreset, type SmartMix, type SmartMixKind, type EquipmentProfile } from "@/data/types";
 
 // Trace additives are dosed directly (setTraceMacro), so a big-macro solve must
@@ -238,28 +239,13 @@ export function setTraceMacro(
   return { recipe: { ...ws.recipe, smartMixes, additionalIngredients }, yieldGrams: Y };
 }
 
-// The recipe's sugar sits outside the scoopability window for this (style,
-// equipment) — the mismatch the Recalibrate nudge surfaces (D8). Sugar is the
-// freeze-depression lever equipment shifts; the composition macros are untouched.
-export function needsRecalibration(
-  ws: LiveWorkspace,
-  deps: WorkspaceDeps,
-  style: string,
-  equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
-): boolean {
-  return !isInRange(style, "sugar", workspaceRatios(ws, deps).sugar, equipment);
-}
-
 // Macros the scorecard (balanceReport) judges against the healthy windows.
 const WINDOW_KEYS: (keyof MacroRatios)[] = ["fat", "sugar", "nonfatSolids"];
 
-// User-invoked retune: bring the recipe into the green for this (style ×
-// equipment) — every tracked macro that's outside its equipment-adjusted window
-// is nudged just inside the nearest edge, then the blend is solved toward those
-// targets at fixed yield (so the scorecard reaches Balanced). Sugar is the usual
-// mover (equipment shifts its window), but a composition macro that's out of
-// range is pulled in too. In-range macros are left alone; a recipe already fully
-// in range is a no-op, so tapping is safe.
+// User-invoked "Rebalance": bring the recipe into the green for this (style ×
+// equipment) by centering each tracked macro on its window midpoint and solving
+// at fixed yield — reliably reaching Balanced (including the total-solids sum). A
+// recipe that's already balanced is a no-op, so tapping is safe.
 export function recalibrate(
   ws: LiveWorkspace,
   deps: WorkspaceDeps,
@@ -267,20 +253,17 @@ export function recalibrate(
   equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
 ): LiveWorkspace {
   const r = workspaceRatios(ws, deps);
+  if (balanceReport(r, style, equipment).balanced) return ws; // already balanced — no-op
+  // Center each tracked macro on its (equipment-adjusted) window midpoint, then
+  // solve toward those targets at fixed yield. Centering lands every macro in the
+  // green AND makes the sum hit the total-solids target — so the scorecard reaches
+  // Balanced even when the only thing "off" was the total (each slider in range,
+  // but summing outside tolerance), which nudging edges can't fix.
   const targets = { ...r };
-  let changed = false;
   for (const key of WINDOW_KEYS) {
     const [lo, hi] = healthyBand(style, key, equipment);
-    const margin = (hi - lo) * 0.15; // aim a touch inside so the solve lands in range
-    if (r[key] < lo - 1e-9) {
-      targets[key] = lo + margin;
-      changed = true;
-    } else if (r[key] > hi + 1e-9) {
-      targets[key] = hi - margin;
-      changed = true;
-    }
+    targets[key] = (lo + hi) / 2;
   }
-  if (!changed) return ws; // already in the green — no-op
   return solveBlend(ws, targets, deps);
 }
 
