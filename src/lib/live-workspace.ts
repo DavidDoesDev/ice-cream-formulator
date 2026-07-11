@@ -271,11 +271,23 @@ export function recalibrate(
     const v = workspaceRatios(cur, deps)[macro];
     if (v > max + 1e-6 || v < min - 1e-6) cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, v)), deps);
   }
-  // 2. Ice control: bring the stabilizer up into its window (guarantees the
-  //    watery + under-stabilized condition can't hold once we're done).
+  // 2. Center the trace additives on their windows (dosed exactly). Stabilizer
+  //    always — it's scored, so the slider and status agree, and it can't be
+  //    watery+under-stabilized. Emulsifier only when it's a dedicated mix, not
+  //    egg-derived (egg yolk's emulsifier is a byproduct we leave alone).
   const [stabLo, stabHi] = healthyBand(style, "stabilizer", equipment);
-  if (workspaceRatios(cur, deps).stabilizer < stabLo - 1e-9) {
+  const sv = workspaceRatios(cur, deps).stabilizer;
+  if (sv < stabLo - 1e-9 || sv > stabHi + 1e-9) {
     cur = setTraceMacro(cur, "stabilizer", (stabLo + stabHi) / 2, deps);
+  }
+  const hasEmulMix = cur.recipe.smartMixes.some(
+    (m) => m.kind === "emulsifier" && (deps.getPreset(m.presetId)?.ingredients.length ?? 0) > 0,
+  );
+  const hasEggs = cur.recipe.smartMixes.some((m) => m.kind === "eggs");
+  if (hasEmulMix && !hasEggs) {
+    const [emLo, emHi] = healthyBand(style, "emulsifier", equipment);
+    const ev = workspaceRatios(cur, deps).emulsifier;
+    if (ev < emLo - 1e-9 || ev > emHi + 1e-9) cur = setTraceMacro(cur, "emulsifier", (emLo + emHi) / 2, deps);
   }
   // 3. Center each tracked macro on its window midpoint — lands the windows + the
   //    total-solids sum, and eases milk solids down (which usually clears sandiness).

@@ -220,6 +220,16 @@ describe("recalibrate (Rebalance to Balanced)", () => {
     expect(balanceReport(workspaceRatios(fixed, deps), "custard", "home-dasher").balanced).toBe(true);
   });
 
+  it("brings stabilizer into its window and counts it toward Balanced", () => {
+    const a = ARCHETYPES.find((x) => x.id === "gelato-fior-di-latte")!;
+    let ws: LiveWorkspace = { recipe: a.recipe!, yieldGrams: totalGrams(a.recipe!) };
+    ws = setTraceMacro(ws, "stabilizer", 0, deps); // below gelato's stabilizer window
+    expect(isInRange("gelato", "stabilizer", workspaceRatios(ws, deps).stabilizer, "home-dasher")).toBe(false);
+    const fixed = recalibrate(ws, deps, "gelato", "home-dasher");
+    expect(isInRange("gelato", "stabilizer", workspaceRatios(fixed, deps).stabilizer, "home-dasher")).toBe(true);
+    expect(balanceReport(workspaceRatios(fixed, deps), "gelato", "home-dasher").balanced).toBe(true);
+  });
+
   it("is a no-op once nothing fixable remains (idempotent)", () => {
     const once = recalibrate(sweetWorkspace(), deps, "philadelphia", "commercial-batch");
     const twice = recalibrate(once, deps, "philadelphia", "commercial-batch");
