@@ -263,6 +263,13 @@
   cursor: pointer;
 }
 
+.customHint {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
 .customActions {
   display: flex;
   gap: var(--space-3);

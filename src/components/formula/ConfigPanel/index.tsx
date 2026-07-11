@@ -7,7 +7,7 @@ import type { StyleCategory, SmartMixKind, Recipe, MixPreset, EquipmentProfile }
 import { DEFAULT_EQUIPMENT } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
 import { equipmentInfo, EQUIPMENT_ORDER } from "@/lib/equipment";
-import { getPresetsByKind, getPresetById, buildCustomPreset } from "@/data/mix-presets";
+import { getPresetsByKind, getPresetById, buildCustomPreset, seedCustomItems, isDegenerateBlend, type CustomBlendItem } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 import { formatPercent } from "@/lib/measure";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -69,7 +69,7 @@ export function ConfigPanel({
   const [style, setStyle] = useState(formulaStyle);
   const [equipment, setEquipment] = useState<EquipmentProfile>(formulaEquipment ?? DEFAULT_EQUIPMENT);
   const [building, setBuilding] = useState<SmartMixKind | null>(null);
-  const [customItems, setCustomItems] = useState<{ ingredientId: string; weight: number }[]>([]);
+  const [customItems, setCustomItems] = useState<CustomBlendItem[]>([]);
 
   const addCustomItem = useCallback((kind: SmartMixKind) => {
     onOpenIngredientSelector(`${kind}-custom`, (ing) => {
@@ -82,7 +82,7 @@ export function ConfigPanel({
   }, [onOpenIngredientSelector]);
 
   const saveCustom = useCallback((kind: SmartMixKind) => {
-    if (customItems.length === 0) return;
+    if (isDegenerateBlend(customItems)) return;
     const preset = buildCustomPreset(
       kind,
       "Custom",
@@ -243,12 +243,17 @@ export function ConfigPanel({
                     <select
                       id={`mix-${kind}`}
                       className={styles.select}
-                      value={activePresetId}
+                      value={building === kind ? "custom" : activePresetId}
                       onChange={(e) => {
                         if (e.target.value === "custom") {
+                          // Seed the builder from the current blend so Custom… starts
+                          // as an editable copy, not a blank slate.
                           setBuilding(kind);
-                          setCustomItems([]);
+                          setCustomItems(activePreset ? seedCustomItems(activePreset) : []);
                         } else {
+                          // Choosing a named preset also cancels any in-progress build.
+                          setBuilding(null);
+                          setCustomItems([]);
                           onPresetChange(kind, e.target.value);
                         }
                       }}
@@ -256,10 +261,13 @@ export function ConfigPanel({
                       {getPresetsByKind(kind).map((p) => (
                         <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
+                      {activePreset && !getPresetsByKind(kind).some((p) => p.id === activePresetId) && (
+                        <option value={activePresetId}>{activePreset.name}</option>
+                      )}
                       <option value="custom">Custom…</option>
                     </select>
                   </div>
-                  {breakdown.length > 0 && (
+                  {building !== kind && breakdown.length > 0 && (
                     <div className={styles.breakdown}>
                       {breakdown.map(({ ingredientId, proportion }) => (
                         <div key={ingredientId} className={styles.breakdownRow}>
@@ -310,6 +318,9 @@ export function ConfigPanel({
                           </div>
                         );
                       })}
+                      {isDegenerateBlend(customItems) && (
+                        <p className={styles.customHint}>Add an ingredient with some weight to save.</p>
+                      )}
                       <div className={styles.customActions}>
                         <button className={styles.customAdd} type="button" onClick={() => addCustomItem(kind)}>
                           + Ingredient
@@ -317,7 +328,7 @@ export function ConfigPanel({
                         <button
                           className={styles.customSave}
                           type="button"
-                          disabled={customItems.length === 0}
+                          disabled={isDegenerateBlend(customItems)}
                           onClick={() => saveCustom(kind)}
                         >
                           Save blend
