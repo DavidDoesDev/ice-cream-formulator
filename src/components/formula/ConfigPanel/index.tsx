@@ -31,7 +31,7 @@ const MIX_CONFIG_KINDS: {
   { kind: "milk", label: "Milk base", icon: Milk },
   { kind: "sugar", label: "Sugar blend", icon: Candy },
   { kind: "stabilizer", label: "Stabilizer blend", icon: Atom },
-  { kind: "eggs", label: "Egg mix", icon: GlassWater, custardGelato: true },
+  { kind: "eggs", label: "Egg base", icon: GlassWater, custardGelato: true },
   { kind: "alcohol", label: "Alcohol", icon: Wine },
   { kind: "emulsifier", label: "Emulsifier", icon: Droplets },
 ];
@@ -319,7 +319,11 @@ export function ConfigPanel({
                         );
                       })}
                       {isDegenerateBlend(customItems) && (
-                        <p className={styles.customHint}>Add an ingredient with some weight to save.</p>
+                        <p className={styles.customHint}>
+                          {customItems.length === 0
+                            ? "Add an ingredient to save."
+                            : "Give an ingredient some weight to save."}
+                        </p>
                       )}
                       <div className={styles.customActions}>
                         <button className={styles.customAdd} type="button" onClick={() => addCustomItem(kind)}>
