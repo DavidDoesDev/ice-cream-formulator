@@ -9,7 +9,6 @@ import {
   addSmartMix,
   rebalanceWorkspace,
   recalibrate,
-  needsRecalibration,
   workspaceRatios,
   workspaceConflict,
   totalGrams,
@@ -17,6 +16,8 @@ import {
   type WorkspaceDeps,
 } from "./live-workspace";
 import { isInRange } from "./macro-bands";
+import { balanceReport } from "./balance";
+import { ARCHETYPES } from "@/data/archetypes";
 import type { MacroRatios } from "./formula-engine";
 import type { SmartMix } from "@/data/types";
 import { getPresetById } from "@/data/mix-presets";
@@ -174,18 +175,18 @@ describe("addSmartMix (one-tap add, e.g. the custard egg nudge)", () => {
   });
 });
 
-describe("recalibrate for equipment", () => {
-  it("flags a mismatch only when the recipe is out of range for the machine", () => {
-    const ws = sweetWorkspace();
-    expect(needsRecalibration(ws, deps, "philadelphia", "home-dasher")).toBe(false);
-    expect(needsRecalibration(ws, deps, "philadelphia", "commercial-batch")).toBe(true);
-  });
-
-  it("brings an out-of-range recipe back in range for the colder machine", () => {
+describe("recalibrate (Rebalance to Balanced)", () => {
+  it("brings an out-of-range recipe into the green for the colder machine", () => {
     const ws = sweetWorkspace();
     expect(isInRange("philadelphia", "sugar", workspaceRatios(ws, deps).sugar, "commercial-batch")).toBe(false);
     const fixed = recalibrate(ws, deps, "philadelphia", "commercial-batch");
     expect(isInRange("philadelphia", "sugar", workspaceRatios(fixed, deps).sugar, "commercial-batch")).toBe(true);
+  });
+
+  it("reaches a balanced scorecard", () => {
+    const ws = sweetWorkspace();
+    const fixed = recalibrate(ws, deps, "philadelphia", "commercial-batch");
+    expect(balanceReport(workspaceRatios(fixed, deps), "philadelphia", "commercial-batch").balanced).toBe(true);
   });
 
   it("conserves the batch yield while retuning", () => {
@@ -195,32 +196,33 @@ describe("recalibrate for equipment", () => {
     expect(totalGrams(fixed.recipe)).toBeCloseTo(ws.yieldGrams, 0);
   });
 
-  it("moves sugar but leaves an in-range fat essentially untouched", () => {
-    const ws = sweetWorkspace(); // fat 0.13 is inside the philadelphia window
-    const before = workspaceRatios(ws, deps);
-    const after = workspaceRatios(recalibrate(ws, deps, "philadelphia", "commercial-batch"), deps);
-    // Sugar drops to reach the colder window; an already-in-range fat is held put
-    // (only an incidental least-squares residual moves it).
-    expect(before.sugar - after.sugar).toBeGreaterThan(0.01);
-    expect(Math.abs(after.fat - before.fat)).toBeLessThan(0.001);
-  });
-
-  it("pulls an out-of-range composition macro into range too, not just sugar", () => {
-    // Fat dragged above the philadelphia window (hi 0.18) and sugar above the
-    // colder machine's window — Recalibrate should bring BOTH into the green.
+  it("pulls every out-of-range macro in, not just sugar", () => {
+    // Fat dragged above the philadelphia window and sugar above the colder
+    // machine's window — Rebalance brings BOTH into the green.
     let ws = setMacroTarget(seededWorkspace(), "fat", 0.2, deps);
     ws = setMacroTarget(ws, "sugar", 0.24, deps);
-    const before = workspaceRatios(ws, deps);
-    expect(isInRange("philadelphia", "fat", before.fat, "commercial-batch")).toBe(false);
-    expect(isInRange("philadelphia", "sugar", before.sugar, "commercial-batch")).toBe(false);
+    expect(isInRange("philadelphia", "fat", workspaceRatios(ws, deps).fat, "commercial-batch")).toBe(false);
     const after = workspaceRatios(recalibrate(ws, deps, "philadelphia", "commercial-batch"), deps);
     expect(isInRange("philadelphia", "fat", after.fat, "commercial-batch")).toBe(true);
     expect(isInRange("philadelphia", "sugar", after.sugar, "commercial-batch")).toBe(true);
   });
 
-  it("leaves a recipe already in range unchanged", () => {
-    const ws = sweetWorkspace();
-    const same = recalibrate(ws, deps, "philadelphia", "home-dasher");
-    expect(workspaceRatios(same, deps).sugar).toBeCloseTo(workspaceRatios(ws, deps).sugar, 6);
+  it("reaches Balanced with no conflict even for a hard-dragged egg custard", () => {
+    // Centering an egg-rich custard pulls in yolk, which nudges the incidental
+    // emulsifier over its bound — the final clamp keeps it in, so no conflict.
+    const a = ARCHETYPES.find((x) => x.id === "custard-rum-raisin")!;
+    let ws: LiveWorkspace = { recipe: a.recipe!, yieldGrams: totalGrams(a.recipe!) };
+    ws = setMacroTarget(ws, "sugar", 0.34, deps);
+    ws = setMacroTarget(ws, "fat", 0.2, deps);
+    ws = setMacroTarget(ws, "nonfatSolids", 0.13, deps);
+    const fixed = recalibrate(ws, deps, "custard", "home-dasher");
+    expect(workspaceConflict(fixed, deps)).toBe(false);
+    expect(balanceReport(workspaceRatios(fixed, deps), "custard", "home-dasher").balanced).toBe(true);
+  });
+
+  it("is a no-op once nothing fixable remains (idempotent)", () => {
+    const once = recalibrate(sweetWorkspace(), deps, "philadelphia", "commercial-batch");
+    const twice = recalibrate(once, deps, "philadelphia", "commercial-batch");
+    expect(twice).toBe(once); // same reference — only choice-driven notes could remain
   });
 });

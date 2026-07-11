@@ -26,9 +26,7 @@ import {
   addAdditionalIngredient,
   removeAdditionalIngredient,
   addSmartMix,
-  rebalanceWorkspace,
   recalibrate,
-  needsRecalibration,
   type LiveWorkspace,
   type WorkspaceDeps,
 } from "@/lib/live-workspace";
@@ -88,7 +86,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const ratios = workspaceRatios(ws, deps);
   const derived = derive(ws.recipe);
   const conflict = workspaceConflict(ws, deps);
-  const recalNeeded = needsRecalibration(ws, deps, meta.style, meta.equipment);
   const total = totalGrams(ws.recipe);
 
   // Single source of truth for writing the workspace to storage.
@@ -187,7 +184,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     },
     [deps],
   );
-  const onRebalance = useCallback(() => setWs((w) => rebalanceWorkspace(w, deps)), [deps]);
   const onRecalibrate = useCallback(
     () => setWs((w) => recalibrate(w, deps, meta.style, meta.equipment)),
     [deps, meta.style, meta.equipment],
@@ -294,9 +290,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               style={meta.style}
               equipment={meta.equipment}
               conflict={conflict}
-              recalNeeded={recalNeeded}
               onMacroTarget={onMacroTarget}
-              onRebalance={onRebalance}
               onRecalibrate={onRecalibrate}
             />
             <RecipePanel

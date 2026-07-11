@@ -143,34 +143,46 @@
   color: var(--ink);
 }
 
-.scoreRow {
+// Full-width balance status: "Balanced" (green) or "Out of range" (accent + a
+// Rebalance action). Replaces the old N-in-range fraction.
+.statusOk {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.score {
-  display: flex;
-  width: 100%;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid #0d3324;
+  background: var(--c-mint);
+  color: #0d3324;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.statusOff {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 10px 9px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+}
+
+.statusMsg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--muted);
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius-pill);
-  padding: 8px 12px;
-}
-
-.scoreOk {
-  background: var(--c-mint);
-  color: #0d3324;
-  border-color: #0d3324;
+  color: var(--text);
 }
 
 .scoreNote {
@@ -218,44 +230,3 @@
   font-family: var(--font-display);
 }
 
-.conflict {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-top: 16px;
-  padding: 11px 14px;
-  border-radius: var(--radius-md);
-  border: 2px solid var(--accent);
-  background: color-mix(in oklab, var(--accent) 10%, transparent);
-}
-
-.conflictMsg {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.nudge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-top: 16px;
-  padding: 11px 14px;
-  border-radius: var(--radius-md);
-  border: 2px solid var(--c-sky);
-  background: color-mix(in oklab, var(--c-sky) 12%, transparent);
-}
-
-.nudgeMsg {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  line-height: 1.4;
-  color: var(--text);
-}

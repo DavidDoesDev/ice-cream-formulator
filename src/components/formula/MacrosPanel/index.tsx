@@ -40,9 +40,7 @@ interface MacrosPanelProps {
   style: string;
   equipment?: EquipmentProfile;
   conflict: boolean;
-  recalNeeded?: boolean;
   onMacroTarget: (macro: keyof MacroRatios, target: number) => void;
-  onRebalance: () => void;
   onRecalibrate?: () => void;
 }
 
@@ -56,9 +54,7 @@ export function MacrosPanel({
   style,
   equipment = DEFAULT_EQUIPMENT,
   conflict,
-  recalNeeded = false,
   onMacroTarget,
-  onRebalance,
   onRecalibrate,
 }: MacrosPanelProps) {
   // While a slider is actively dragged, its thumb follows the pointer's target
@@ -153,6 +149,19 @@ export function MacrosPanel({
   const hints = relationshipHints(ratios, derived, style, equipment).filter(
     (h) => !(sugarFlagged && (h.key === "firm" || h.key === "soft")),
   );
+  // Only reliably-fixable issues block Balanced: the window checks and ice control
+  // (Rebalance guarantees both). Sandiness and scoopability (sugar type / alcohol)
+  // can't always be cleared without changing the recipe's intent, so they're
+  // always-shown NOTES — surfaced even when Balanced, never faked into a fail.
+  const blockerHints = hints.filter((h) => h.key === "ice-control");
+  const noteHints = hints.filter((h) => h.key === "sandiness" || h.key === "firm" || h.key === "soft");
+  const balanced = report.balanced && blockerHints.length === 0;
+  const adviceRows: { key: string; label: string; text: string }[] = [];
+  if (!balanced) {
+    offChecks.forEach((c) => adviceRows.push({ key: c.key, label: c.label, text: c.advice ?? "" }));
+    blockerHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
+  }
+  noteHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
   return (
     <section className={styles.panel}>
       <div className={styles.bar}>
@@ -221,62 +230,43 @@ export function MacrosPanel({
         Each macro checked against its window for a {style.toLowerCase()} on a{" "}
         {equipmentInfo(equipment).label.toLowerCase()}
       </p>
-      <div className={styles.scoreRow}>
-        <span className={`${styles.score} ${report.balanced ? styles.scoreOk : ""}`}>
-          {report.balanced ? (
-            <>
-              <Icon name="check" size={14} /> Balanced
-            </>
-          ) : (
-            `${report.inRange} / ${report.total} in range`
+      {conflict ? (
+        <div className={styles.statusOff}>
+          <span className={styles.statusMsg}>
+            <Icon name="bolt" size={16} /> Can&apos;t hit that target with these ingredients.
+          </span>
+          {onRecalibrate && (
+            <Pill tone="accent" size="sm" onClick={onRecalibrate}>Rebalance</Pill>
           )}
-        </span>
-      </div>
+        </div>
+      ) : balanced ? (
+        <div className={styles.statusOk}>
+          <Icon name="check" size={15} /> Balanced
+        </div>
+      ) : (
+        <div className={styles.statusOff}>
+          <span className={styles.statusMsg}>Out of range</span>
+          {onRecalibrate && (
+            <Pill tone="accent" size="sm" onClick={onRecalibrate}>Rebalance</Pill>
+          )}
+        </div>
+      )}
 
       <div className={styles.readoutRow}>
         <span className={styles.readout}>Scoopability <b>{Math.round(derived.pac * 100)}</b></span>
         <span className={styles.readout}>Sweetness <b>{Math.round(derived.pod * 100)}</b></span>
       </div>
 
-      {(offChecks.length > 0 || hints.length > 0) && (
+      {adviceRows.length > 0 && (
         <div className={styles.advice}>
-          {offChecks.map((c) => (
-            <div key={c.key} className={styles.adviceRow}>
-              <b>{c.label}</b> — {c.advice}
-            </div>
-          ))}
-          {hints.map((h) => (
-            <div key={h.key} className={styles.adviceRow}>
-              <b>{h.label}</b> — {h.message}
+          {adviceRows.map((a) => (
+            <div key={a.key} className={styles.adviceRow}>
+              <b>{a.label}</b> — {a.text}
             </div>
           ))}
         </div>
       )}
 
-      {conflict && (
-        <div className={styles.conflict}>
-          <span className={styles.conflictMsg}>
-            <Icon name="bolt" size={16} /> Can&apos;t hit that target with these ingredients.
-          </span>
-          <Pill tone="accent" size="sm" onClick={onRebalance}>
-            Rebalance
-          </Pill>
-        </div>
-      )}
-
-      {/* Advisory retune when the sugar sits outside the machine's window. The hard
-          conflict takes precedence; this never fires alongside it and changes
-          nothing until tapped. */}
-      {recalNeeded && !conflict && onRecalibrate && (
-        <div className={styles.nudge}>
-          <span className={styles.nudgeMsg}>
-            Out of range for the {equipmentInfo(equipment).label} — recalibrate the sugar to match.
-          </span>
-          <Pill tone="accent" size="sm" onClick={onRecalibrate}>
-            Recalibrate
-          </Pill>
-        </div>
-      )}
     </section>
   );
 }
