@@ -204,4 +204,12 @@
   border: 2px solid var(--ink);
   background: var(--paper);
   color: var(--ink);
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+// On card hover, reverse the + chip's fill (like the close button's hover) so it
+// reads as the active "add" affordance.
+.card:hover .addBtn {
+  background: var(--ink);
+  color: var(--paper);
 }
