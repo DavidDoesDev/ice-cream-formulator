@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Milk, GlassWater, Wine, MapPin, Waypoints, Droplets, X } from "lucide-react";
+import { Milk, GlassWater, Wine, Candy, Atom, Droplets, X } from "lucide-react";
 import type { StyleCategory, SmartMixKind, Recipe, MixPreset, EquipmentProfile } from "@/data/types";
 import { DEFAULT_EQUIPMENT } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
@@ -29,8 +29,8 @@ const MIX_CONFIG_KINDS: {
   custardGelato?: boolean;
 }[] = [
   { kind: "milk", label: "Milk base", icon: Milk },
-  { kind: "sugar", label: "Sugar system", icon: MapPin },
-  { kind: "stabilizer", label: "Stabilizer system", icon: Waypoints },
+  { kind: "sugar", label: "Sugar system", icon: Candy },
+  { kind: "stabilizer", label: "Stabilizer system", icon: Atom },
   { kind: "eggs", label: "Egg mix", icon: GlassWater, custardGelato: true },
   { kind: "alcohol", label: "Alcohol", icon: Wine },
   { kind: "emulsifier", label: "Emulsifier", icon: Droplets },
