@@ -10,6 +10,7 @@ import { DEFAULT_EQUIPMENT, type StyleCategory, type EquipmentProfile } from "@/
 
 export interface RelationshipHint {
   key: string;
+  label: string; // bold prefix, matching the balance checks' format
   message: string;
 }
 
@@ -41,14 +42,14 @@ export function relationshipHints(
   const serumWater = Math.max(0, 1 - d.totalSolids);
   const msnfInSerum = d.dairyMsnf > 0 ? d.dairyMsnf / (d.dairyMsnf + serumWater) : 0;
   if (msnfInSerum > SANDY_MSNF_IN_SERUM) {
-    hints.push({ key: "sandiness", message: "Milk solids are high for the water content — sandy (lactose) risk." });
+    hints.push({ key: "sandiness", label: "Milk solids", message: "High for the water content — sandy (lactose) risk." });
   }
 
   // Ice control — a watery mix that's under-stabilized grows big ice crystals.
   const [, waterHi] = healthyBand(style, "water", equipment);
   const [stabLo] = healthyBand(style, "stabilizer", equipment);
   if (ratios.water > waterHi && ratios.stabilizer < stabLo) {
-    hints.push({ key: "ice-control", message: "Watery and under-stabilized — add stabilizer to hold off ice crystals." });
+    hints.push({ key: "ice-control", label: "Water", message: "Watery and under-stabilized — add stabilizer to hold off ice crystals." });
   }
 
   // Scoopability (fat↔sugar↔alcohol via PAC): too firm or too soft to serve.
@@ -58,9 +59,9 @@ export function relationshipHints(
   const off = pacOffset(equipment);
   const [pacLo, pacHi] = [pacBaseLo + off, pacBaseHi + off];
   if (d.pac < pacLo) {
-    hints.push({ key: "firm", message: "Will freeze firm — raise the sugar (or shift to dextrose) to keep it scoopable." });
+    hints.push({ key: "firm", label: "Scoopability", message: "Will freeze firm — raise the sugar (or shift to dextrose) to keep it scoopable." });
   } else if (d.pac > pacHi) {
-    hints.push({ key: "soft", message: "Very soft — high sugar/alcohol may keep it from setting." });
+    hints.push({ key: "soft", label: "Scoopability", message: "Very soft — high sugar/alcohol may keep it from setting." });
   }
 
   return hints;

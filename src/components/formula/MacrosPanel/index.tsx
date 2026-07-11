@@ -146,7 +146,13 @@ export function MacrosPanel({
 
   const report = balanceReport(ratios, style, equipment);
   const offChecks = report.checks.filter((c) => c.verdict !== "ok");
-  const hints = relationshipHints(ratios, derived, style, equipment);
+  // Relationship hints, de-duped against the window checks: the scoopability
+  // (firm/soft) hint restates the Sugar check when sugar is the cause, so drop it
+  // when Sugar is already flagged (keeps it for the sugar-in-range/alcohol case).
+  const sugarFlagged = offChecks.some((c) => c.key === "sugar");
+  const hints = relationshipHints(ratios, derived, style, equipment).filter(
+    (h) => !(sugarFlagged && (h.key === "firm" || h.key === "soft")),
+  );
   return (
     <section className={styles.panel}>
       <div className={styles.bar}>
@@ -241,7 +247,7 @@ export function MacrosPanel({
           ))}
           {hints.map((h) => (
             <div key={h.key} className={styles.adviceRow}>
-              {h.message}
+              <b>{h.label}</b> — {h.message}
             </div>
           ))}
         </div>
