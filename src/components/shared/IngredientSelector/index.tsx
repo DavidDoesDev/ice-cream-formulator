@@ -12,9 +12,10 @@ import styles from "./IngredientSelector.module.scss";
 const CONTEXT_CATEGORIES: Record<string, IngredientCategory[]> = {
   "sugar-mix": ["sweetener"],
   "stabilizer-mix": ["stabilizer", "emulsifier"],
-  // Custom-system builders only accept ingredients valid for that system.
+  // Custom-blend builders only accept ingredients valid for that blend. Stabilizer
+  // blends may include an emulsifier, matching the built-in stabilizer presets.
   "sugar-custom": ["sweetener"],
-  "stabilizer-custom": ["stabilizer"],
+  "stabilizer-custom": ["stabilizer", "emulsifier"],
   "milk-custom": ["dairy", "vegan-dairy"],
   "eggs-custom": ["emulsifier"],
   "alcohol-custom": ["alcohol"],

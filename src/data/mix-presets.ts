@@ -55,6 +55,30 @@ export function buildCustomPreset(
   };
 }
 
+// A single row in the custom-blend builder: an ingredient and its raw weight
+// (normalized to a proportion at save time, mirroring buildCustomPreset).
+export interface CustomBlendItem {
+  ingredientId: string;
+  weight: number;
+}
+
+// Seed the custom-blend builder from an existing preset, so choosing "Custom…"
+// starts as an editable copy of the current blend rather than a blank slate.
+// Proportions become friendly integer weights (×100) that rebuild to the same
+// blend; a positive floor keeps a real ingredient from seeding at weight 0.
+export function seedCustomItems(preset: MixPreset): CustomBlendItem[] {
+  return preset.ingredients.map((i) => ({
+    ingredientId: i.ingredientId,
+    weight: Math.max(1, Math.round(i.proportion * 100)),
+  }));
+}
+
+// A custom blend is degenerate — it would contribute nothing — when it has no
+// ingredients or every weight is zero. Save is blocked in this state.
+export function isDegenerateBlend(items: CustomBlendItem[]): boolean {
+  return items.reduce((s, i) => s + i.weight, 0) === 0;
+}
+
 // ---------------------------------------------------------------------------
 // Sugar Mix presets
 // ---------------------------------------------------------------------------

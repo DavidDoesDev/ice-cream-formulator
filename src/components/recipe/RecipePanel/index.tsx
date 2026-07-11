@@ -13,12 +13,15 @@ import { Icon } from "@/components/shared/Icon";
 import { formatGrams } from "@/lib/measure";
 import styles from "./RecipePanel.module.scss";
 
-// Sugar and stabilizer are fixed-proportion systems shown by their system label;
-// every other mix shows the chosen preset's name.
-const GROUPED_KINDS: SmartMixKind[] = ["sugar", "stabilizer"];
+// Sugar and stabilizer are shown by their canonical blend label (their internal
+// proportions live in the read-only breakdown); every other mix shows the chosen
+// preset's name.
+const BLEND_LABEL: Partial<Record<SmartMixKind, string>> = {
+  sugar: "Sugar blend",
+  stabilizer: "Stabilizer blend",
+};
 function mixLabel(mix: SmartMix): string {
-  if (GROUPED_KINDS.includes(mix.kind)) return mix.label;
-  return getPresetById(mix.presetId)?.name ?? mix.label;
+  return BLEND_LABEL[mix.kind] ?? getPresetById(mix.presetId)?.name ?? mix.label;
 }
 
 // Common flavor additions offered as one-tap pills (skipped once already added).

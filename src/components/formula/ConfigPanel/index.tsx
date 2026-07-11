@@ -7,7 +7,7 @@ import type { StyleCategory, SmartMixKind, Recipe, MixPreset, EquipmentProfile }
 import { DEFAULT_EQUIPMENT } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
 import { equipmentInfo, EQUIPMENT_ORDER } from "@/lib/equipment";
-import { getPresetsByKind, getPresetById, buildCustomPreset } from "@/data/mix-presets";
+import { getPresetsByKind, getPresetById, buildCustomPreset, seedCustomItems, isDegenerateBlend, type CustomBlendItem } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 import { formatPercent } from "@/lib/measure";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -29,9 +29,9 @@ const MIX_CONFIG_KINDS: {
   custardGelato?: boolean;
 }[] = [
   { kind: "milk", label: "Milk base", icon: Milk },
-  { kind: "sugar", label: "Sugar system", icon: Candy },
-  { kind: "stabilizer", label: "Stabilizer system", icon: Atom },
-  { kind: "eggs", label: "Egg mix", icon: GlassWater, custardGelato: true },
+  { kind: "sugar", label: "Sugar blend", icon: Candy },
+  { kind: "stabilizer", label: "Stabilizer blend", icon: Atom },
+  { kind: "eggs", label: "Egg base", icon: GlassWater, custardGelato: true },
   { kind: "alcohol", label: "Alcohol", icon: Wine },
   { kind: "emulsifier", label: "Emulsifier", icon: Droplets },
 ];
@@ -68,30 +68,37 @@ export function ConfigPanel({
   const [name, setName] = useState(formulaName);
   const [style, setStyle] = useState(formulaStyle);
   const [equipment, setEquipment] = useState<EquipmentProfile>(formulaEquipment ?? DEFAULT_EQUIPMENT);
-  const [building, setBuilding] = useState<SmartMixKind | null>(null);
-  const [customItems, setCustomItems] = useState<{ ingredientId: string; weight: number }[]>([]);
+  // Per-kind edit buffer for custom blends. A key is present while that slot is
+  // custom; its rows are the source of truth for the builder (the applied preset
+  // only stores normalized proportions, so we can't round-trip weights from it).
+  const [drafts, setDrafts] = useState<Record<string, CustomBlendItem[]>>({});
 
-  const addCustomItem = useCallback((kind: SmartMixKind) => {
-    onOpenIngredientSelector(`${kind}-custom`, (ing) => {
-      setCustomItems((prev) =>
-        prev.some((i) => i.ingredientId === ing.id)
-          ? prev
-          : [...prev, { ingredientId: ing.id, weight: 1 }],
-      );
-    });
-  }, [onOpenIngredientSelector]);
-
-  const saveCustom = useCallback((kind: SmartMixKind) => {
-    if (customItems.length === 0) return;
+  // Live-apply like every other blend: a valid custom blend re-solves the recipe
+  // immediately on each edit. While degenerate (empty / all-zero) we hold the last
+  // applied blend and apply nothing.
+  const applyCustom = useCallback((kind: SmartMixKind, items: CustomBlendItem[]) => {
+    if (isDegenerateBlend(items)) return;
     const preset = buildCustomPreset(
       kind,
       "Custom",
-      customItems.map((i) => ({ ingredientId: i.ingredientId, proportion: i.weight })),
+      items.map((i) => ({ ingredientId: i.ingredientId, proportion: i.weight })),
     );
     onCustomPreset(kind, preset);
-    setBuilding(null);
-    setCustomItems([]);
-  }, [customItems, onCustomPreset]);
+  }, [onCustomPreset]);
+
+  const setDraft = useCallback((kind: SmartMixKind, items: CustomBlendItem[]) => {
+    setDrafts((prev) => ({ ...prev, [kind]: items }));
+    applyCustom(kind, items);
+  }, [applyCustom]);
+
+  const addCustomItem = useCallback((kind: SmartMixKind, rows: CustomBlendItem[]) => {
+    // The builder sits behind the selector modal, so rows can't change between
+    // opening it and the pick — capturing them here is safe.
+    onOpenIngredientSelector(`${kind}-custom`, (ing) => {
+      if (rows.some((i) => i.ingredientId === ing.id)) return;
+      setDraft(kind, [...rows, { ingredientId: ing.id, weight: 1 }]);
+    });
+  }, [onOpenIngredientSelector, setDraft]);
 
   const handleNameBlur = useCallback(() => {
     if (name.trim()) onNameChange(name.trim());
@@ -194,7 +201,18 @@ export function ConfigPanel({
             {mixRows.map(({ kind, label, icon: Icon }) => {
               const activePresetId = currentPresetId(kind);
               const activePreset = getPresetById(activePresetId);
-              const breakdown = activePreset && activePreset.ingredients.length > 1
+              // A slot is custom when its active preset isn't one of the built-ins.
+              const isCustom =
+                !!activePreset && !getPresetsByKind(kind).some((p) => p.id === activePresetId);
+              // In custom mode = the applied blend is custom, OR a draft is in
+              // progress (covers converting from an empty preset like "None", whose
+              // blank blend can't apply yet).
+              const inCustom = isCustom || drafts[kind] !== undefined;
+              // Custom slots show an editable builder (rows from the draft buffer,
+              // seeded from the applied blend the first time); named presets show a
+              // read-only breakdown.
+              const rows = drafts[kind] ?? (isCustom && activePreset ? seedCustomItems(activePreset) : []);
+              const breakdown = !inCustom && activePreset && activePreset.ingredients.length > 1
                 ? activePreset.ingredients
                 : [];
 
@@ -243,12 +261,18 @@ export function ConfigPanel({
                     <select
                       id={`mix-${kind}`}
                       className={styles.select}
-                      value={activePresetId}
+                      value={inCustom ? "custom" : activePresetId}
                       onChange={(e) => {
                         if (e.target.value === "custom") {
-                          setBuilding(kind);
-                          setCustomItems([]);
+                          // Convert to a custom blend seeded from the current one, and
+                          // apply immediately (same proportions → no gram change).
+                          setDraft(kind, activePreset ? seedCustomItems(activePreset) : []);
                         } else {
+                          setDrafts((prev) => {
+                            const next = { ...prev };
+                            delete next[kind];
+                            return next;
+                          });
                           onPresetChange(kind, e.target.value);
                         }
                       }}
@@ -259,7 +283,7 @@ export function ConfigPanel({
                       <option value="custom">Custom…</option>
                     </select>
                   </div>
-                  {breakdown.length > 0 && (
+                  {!inCustom && breakdown.length > 0 && (
                     <div className={styles.breakdown}>
                       {breakdown.map(({ ingredientId, proportion }) => (
                         <div key={ingredientId} className={styles.breakdownRow}>
@@ -273,10 +297,10 @@ export function ConfigPanel({
                       ))}
                     </div>
                   )}
-                  {building === kind && (
+                  {inCustom && (
                     <div className={styles.customBuilder}>
-                      {customItems.map((item, idx) => {
-                        const totalW = customItems.reduce((s, i) => s + i.weight, 0) || 1;
+                      {rows.map((item, idx) => {
+                        const totalW = rows.reduce((s, i) => s + i.weight, 0) || 1;
                         const pct = (item.weight / totalW) * 100;
                         return (
                           <div key={item.ingredientId} className={styles.customRow}>
@@ -291,36 +315,39 @@ export function ConfigPanel({
                               value={item.weight}
                               onChange={(e) => {
                                 const w = parseFloat(e.target.value);
-                                setCustomItems((prev) =>
-                                  prev.map((it, i) =>
-                                    i === idx ? { ...it, weight: isNaN(w) ? 0 : Math.max(0, w) } : it,
+                                const val = isNaN(w) ? 0 : Math.max(0, w);
+                                setDrafts((prev) => ({
+                                  ...prev,
+                                  [kind]: (prev[kind] ?? rows).map((it, i) =>
+                                    i === idx ? { ...it, weight: val } : it,
                                   ),
-                                );
+                                }));
                               }}
+                              // Re-solve once the edit settles, not on every keystroke.
+                              onBlur={() => applyCustom(kind, drafts[kind] ?? rows)}
                             />
                             <span className={styles.customPct}>{formatPercent(pct)}%</span>
                             <button
                               className={styles.customRemove}
                               type="button"
                               aria-label="Remove"
-                              onClick={() => setCustomItems((prev) => prev.filter((_, i) => i !== idx))}
+                              onClick={() => setDraft(kind, rows.filter((_, i) => i !== idx))}
                             >
                               <X size={14} strokeWidth={2} />
                             </button>
                           </div>
                         );
                       })}
+                      {isDegenerateBlend(rows) && (
+                        <p className={styles.customHint}>
+                          {rows.length === 0
+                            ? "Add an ingredient to build this blend."
+                            : "Give an ingredient some weight to apply the blend."}
+                        </p>
+                      )}
                       <div className={styles.customActions}>
-                        <button className={styles.customAdd} type="button" onClick={() => addCustomItem(kind)}>
+                        <button className={styles.customAdd} type="button" onClick={() => addCustomItem(kind, rows)}>
                           + Ingredient
-                        </button>
-                        <button
-                          className={styles.customSave}
-                          type="button"
-                          disabled={customItems.length === 0}
-                          onClick={() => saveCustom(kind)}
-                        >
-                          Save system
                         </button>
                       </div>
                     </div>

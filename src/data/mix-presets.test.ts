@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MIX_PRESETS, getPresetById, getPresetsByKind, buildCustomPreset } from "./mix-presets";
+import { MIX_PRESETS, getPresetById, getPresetsByKind, buildCustomPreset, seedCustomItems, isDegenerateBlend } from "./mix-presets";
 import { getIngredientById } from "./ingredients";
 
 describe("mix-presets", () => {
@@ -65,6 +65,30 @@ describe("mix-presets", () => {
     expect(preset.ingredients.map((i) => i.proportion)).toEqual([0.75, 0.25]);
     expect(preset.effectiveMacros.sugar).toBeCloseTo(0.75, 4);
     expect(preset.effectiveMacros.stabilizer).toBeCloseTo(0.25, 4);
+  });
+
+  it("seedCustomItems reproduces a preset's proportions when rebuilt", () => {
+    // Seeding the custom builder from an existing preset, then saving it
+    // unchanged, must yield the same blend the user started from (0.70/0.30).
+    const source = getPresetById("sugar-dextrose-blend")!;
+    const rebuilt = buildCustomPreset(
+      "sugar",
+      "Custom",
+      seedCustomItems(source).map((i) => ({ ingredientId: i.ingredientId, proportion: i.weight })),
+    );
+    expect(rebuilt.ingredients).toEqual(source.ingredients.map((i) => ({ ingredientId: i.ingredientId, proportion: i.proportion })));
+  });
+
+  it("isDegenerateBlend flags empty or all-zero-weight blends only", () => {
+    expect(isDegenerateBlend([])).toBe(true);
+    expect(isDegenerateBlend([
+      { ingredientId: "sucrose", weight: 0 },
+      { ingredientId: "dextrose", weight: 0 },
+    ])).toBe(true);
+    expect(isDegenerateBlend([
+      { ingredientId: "sucrose", weight: 0 },
+      { ingredientId: "dextrose", weight: 5 },
+    ])).toBe(false);
   });
 
   it("every preset references only ingredient ids that exist in the catalog", () => {
