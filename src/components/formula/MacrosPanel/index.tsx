@@ -151,6 +151,20 @@ export function MacrosPanel({
   const hints = relationshipHints(ratios, derived, style, equipment).filter(
     (h) => !(sugarFlagged && (h.key === "firm" || h.key === "soft")),
   );
+  // Fixable hints (sandiness, ice control) block Balanced — Rebalance clears them.
+  // Scoopability (firm/soft) is a choice-driven note (sugar type / alcohol): shown
+  // always, but it doesn't fail the balance nor get a Rebalance that can't fix it.
+  const fixableHints = hints.filter((h) => h.key === "sandiness" || h.key === "ice-control");
+  const noteHints = hints.filter((h) => h.key === "firm" || h.key === "soft");
+  const balanced = report.balanced && fixableHints.length === 0;
+  // Advice: window checks + fixable hints only when out of range (Rebalance clears
+  // them); the scoopability notes show even when balanced (a heads-up, never hidden).
+  const adviceRows: { key: string; label: string; text: string }[] = [];
+  if (!balanced) {
+    offChecks.forEach((c) => adviceRows.push({ key: c.key, label: c.label, text: c.advice ?? "" }));
+    fixableHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
+  }
+  noteHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
   return (
     <section className={styles.panel}>
       <div className={styles.bar}>
@@ -226,7 +240,7 @@ export function MacrosPanel({
           </span>
           <Pill tone="accent" size="sm" onClick={onRebalance}>Rebalance</Pill>
         </div>
-      ) : report.balanced ? (
+      ) : balanced ? (
         <div className={styles.statusOk}>
           <Icon name="check" size={15} /> Balanced
         </div>
@@ -244,18 +258,11 @@ export function MacrosPanel({
         <span className={styles.readout}>Sweetness <b>{Math.round(derived.pod * 100)}</b></span>
       </div>
 
-      {/* Coaching only when out of range — a Balanced recipe shows no advice
-          (the relationship hints are a secondary net, not shown once balanced). */}
-      {!report.balanced && (offChecks.length > 0 || hints.length > 0) && (
+      {adviceRows.length > 0 && (
         <div className={styles.advice}>
-          {offChecks.map((c) => (
-            <div key={c.key} className={styles.adviceRow}>
-              <b>{c.label}</b> — {c.advice}
-            </div>
-          ))}
-          {hints.map((h) => (
-            <div key={h.key} className={styles.adviceRow}>
-              <b>{h.label}</b> — {h.message}
+          {adviceRows.map((a) => (
+            <div key={a.key} className={styles.adviceRow}>
+              <b>{a.label}</b> — {a.text}
             </div>
           ))}
         </div>

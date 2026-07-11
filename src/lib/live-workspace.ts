@@ -2,6 +2,8 @@ import { computeRatiosFromRecipe, solveRecipe } from "./recipe-solver";
 import { MACRO_BOUNDS, type MacroRatios, type IngredientMacros } from "./formula-engine";
 import { healthyBand } from "./macro-bands";
 import { balanceReport } from "./balance";
+import { relationshipHints } from "./relationships";
+import { derive } from "./derive";
 import { DEFAULT_EQUIPMENT, type Recipe, type MixPreset, type SmartMix, type SmartMixKind, type EquipmentProfile } from "@/data/types";
 
 // Trace additives are dosed directly (setTraceMacro), so a big-macro solve must
@@ -242,29 +244,43 @@ export function setTraceMacro(
 // Macros the scorecard (balanceReport) judges against the healthy windows.
 const WINDOW_KEYS: (keyof MacroRatios)[] = ["fat", "sugar", "nonfatSolids"];
 
-// User-invoked "Rebalance": bring the recipe into the green for this (style ×
-// equipment) by centering each tracked macro on its window midpoint and solving
-// at fixed yield — reliably reaching Balanced (including the total-solids sum). A
-// recipe that's already balanced is a no-op, so tapping is safe.
+// User-invoked "Rebalance": fix everything that's fixable without changing the
+// recipe's flavor intent, for this (style × equipment):
+//   • windows + total solids → center each tracked macro on its window midpoint;
+//   • sandiness → falls out of the same centering (milk solids come down);
+//   • ice control (watery + under-stabilized) → dose stabilizer into its window.
+// Solved at fixed yield. What it deliberately does NOT touch: scoopability that's
+// driven by sugar type or alcohol — "fixing" that would mean swapping the sugar
+// system or cutting the booze, i.e. changing what the recipe is. So it's a no-op
+// once only those choice-driven notes remain; tapping is always safe.
 export function recalibrate(
   ws: LiveWorkspace,
   deps: WorkspaceDeps,
   style: string,
   equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
 ): LiveWorkspace {
-  const r = workspaceRatios(ws, deps);
-  if (balanceReport(r, style, equipment).balanced) return ws; // already balanced — no-op
-  // Center each tracked macro on its (equipment-adjusted) window midpoint, then
-  // solve toward those targets at fixed yield. Centering lands every macro in the
-  // green AND makes the sum hit the total-solids target — so the scorecard reaches
-  // Balanced even when the only thing "off" was the total (each slider in range,
-  // but summing outside tolerance), which nudging edges can't fix.
+  const r0 = workspaceRatios(ws, deps);
+  const hints = relationshipHints(r0, derive(ws.recipe), style, equipment);
+  const icy = hints.some((h) => h.key === "ice-control");
+  const sandy = hints.some((h) => h.key === "sandiness");
+  // Nothing Rebalance can fix (only choice-driven scoopability may remain) → no-op.
+  if (balanceReport(r0, style, equipment).balanced && !icy && !sandy) return ws;
+
+  let cur = ws;
+  // Ice control: bring the stabilizer up into its window.
+  if (icy) {
+    const [lo, hi] = healthyBand(style, "stabilizer", equipment);
+    cur = setTraceMacro(cur, "stabilizer", (lo + hi) / 2, deps);
+  }
+  // Center each tracked macro on its window midpoint — lands the windows + total
+  // solids, and eases milk solids down enough to clear sandiness.
+  const r = workspaceRatios(cur, deps);
   const targets = { ...r };
   for (const key of WINDOW_KEYS) {
     const [lo, hi] = healthyBand(style, key, equipment);
     targets[key] = (lo + hi) / 2;
   }
-  return solveBlend(ws, targets, deps);
+  return solveBlend(cur, targets, deps);
 }
 
 // Explicit yield change: scale every gram so the whole batch grows or shrinks.

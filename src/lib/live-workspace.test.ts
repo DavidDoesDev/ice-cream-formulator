@@ -17,6 +17,9 @@ import {
 } from "./live-workspace";
 import { isInRange } from "./macro-bands";
 import { balanceReport } from "./balance";
+import { derive } from "./derive";
+import { relationshipHints } from "./relationships";
+import { ARCHETYPES } from "@/data/archetypes";
 import type { MacroRatios } from "./formula-engine";
 import type { SmartMix } from "@/data/types";
 import { getPresetById } from "@/data/mix-presets";
@@ -206,9 +209,19 @@ describe("recalibrate (Rebalance to Balanced)", () => {
     expect(isInRange("philadelphia", "sugar", after.sugar, "commercial-batch")).toBe(true);
   });
 
-  it("is a no-op once already balanced (idempotent)", () => {
+  it("clears a sandiness warning by easing milk solids down", () => {
+    const a = ARCHETYPES.find((x) => x.id === "philly-high-protein")!;
+    const ws0: LiveWorkspace = { recipe: a.recipe!, yieldGrams: totalGrams(a.recipe!) };
+    const sandy = (w: LiveWorkspace) =>
+      relationshipHints(workspaceRatios(w, deps), derive(w.recipe), "philadelphia", "home-dasher")
+        .some((h) => h.key === "sandiness");
+    expect(sandy(ws0)).toBe(true);
+    expect(sandy(recalibrate(ws0, deps, "philadelphia", "home-dasher"))).toBe(false);
+  });
+
+  it("is a no-op once nothing fixable remains (idempotent)", () => {
     const once = recalibrate(sweetWorkspace(), deps, "philadelphia", "commercial-batch");
     const twice = recalibrate(once, deps, "philadelphia", "commercial-batch");
-    expect(twice).toBe(once); // same reference — nothing left to fix
+    expect(twice).toBe(once); // same reference — only choice-driven notes could remain
   });
 });
