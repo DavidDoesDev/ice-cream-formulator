@@ -10,7 +10,7 @@ import { SearchModule } from "@/components/shared/SearchModule";
 import { Header } from "@/components/shared/Header";
 import { matchTemplate, type MatchResult } from "@/lib/template-matcher";
 import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
-import { saveFormula } from "@/lib/persistence";
+import { saveFormula, assignBatchNo } from "@/lib/persistence";
 import styles from "./page.module.scss";
 
 function NewFormulaInner() {
@@ -23,7 +23,7 @@ function NewFormulaInner() {
       const id = generateFormulaId();
       const { state, recipe } = bootstrapFromArchetype(archetype);
       const now = Date.now();
-      saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state, recipe });
+      saveFormula({ id, name: archetype.name, style: archetype.style, batchNo: assignBatchNo(), createdAt: now, updatedAt: now, state, recipe });
       router.push(`/formula/${id}`);
     },
     [router]

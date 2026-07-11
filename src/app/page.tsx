@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { listFormulas, deleteFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
+import { listFormulas, deleteFormula, saveFormula, assignBatchNo, backfillBatchNumbers, type SavedFormula } from "@/lib/persistence";
 import { computeRatios } from "@/lib/formula-engine";
 import { ARCHETYPES } from "@/data/archetypes";
 import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
@@ -29,6 +29,7 @@ export default function Home() {
   const [formulas, setFormulas] = useState<SavedFormula[] | null>(null);
 
   useEffect(() => {
+    backfillBatchNumbers(); // give any pre-existing formulas a stable number
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormulas(listFormulas());
   }, []);
@@ -40,7 +41,7 @@ export default function Home() {
     const id = generateFormulaId();
     const { state, recipe } = bootstrapFromArchetype(archetype);
     const now = Date.now();
-    saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state, recipe });
+    saveFormula({ id, name: archetype.name, style: archetype.style, batchNo: assignBatchNo(), createdAt: now, updatedAt: now, state, recipe });
     router.push(`/formula/${id}`);
   }, [router]);
 
@@ -189,7 +190,7 @@ export default function Home() {
               const ratios = computeRatios(formula.state);
               const fatPct = Math.round(ratios.fat * 100);
               const sugarPct = Math.round(ratios.sugar * 100);
-              const no = String(idx + 1).padStart(3, "0");
+              const no = String(formula.batchNo ?? idx + 1).padStart(3, "0");
               return (
                 <div key={formula.id} className={styles.specimen}>
                   <button

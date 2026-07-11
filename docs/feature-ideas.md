@@ -86,6 +86,10 @@ Improve the quality of AI-generated recipes.
 
 Batch numbers should be unique — never reissue one that's been used.
 
+**Shipped** — batch numbers are now a permanent field assigned at creation from a
+monotonic counter (`persistence.ts`), so they never reshuffle on delete or get
+reused. Existing formulas are backfilled in creation order on first load.
+
 ## Custom ingredients
 
 Let the user define their own ingredients beyond the built-in library.
