@@ -6,6 +6,7 @@ export interface SavedFormula {
   name: string;
   style: string;
   equipment?: EquipmentProfile; // freezing/serving machine (D8); absent → home-dasher
+  batchNo?: number; // permanent, never-reused batch number ("№ 007"); assigned at creation
   createdAt: number;
   updatedAt: number;
   state: FormulaState;
@@ -14,6 +15,7 @@ export interface SavedFormula {
 
 const PREFIX = "icf:formula:";
 const INDEX_KEY = "icf:index";
+const SEQ_KEY = "icf:batchseq"; // monotonic batch-number counter (only ever increases)
 
 function storage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -73,4 +75,27 @@ export function deleteFormula(id: string): void {
   ls.removeItem(PREFIX + id);
   const index = readIndex(ls);
   writeIndex(ls, index.filter((i) => i !== id));
+}
+
+// Allocate a permanent batch number. Monotonic and never reused, even after
+// deletes: takes the max of the stored counter and any existing batchNo, +1.
+export function assignBatchNo(): number {
+  const ls = storage();
+  if (!ls) return 0;
+  const stored = parseInt(ls.getItem(SEQ_KEY) ?? "0", 10) || 0;
+  const maxExisting = listFormulas().reduce((m, f) => Math.max(m, f.batchNo ?? 0), 0);
+  const next = Math.max(stored, maxExisting) + 1;
+  ls.setItem(SEQ_KEY, String(next));
+  return next;
+}
+
+// One-time migration: give any pre-existing formula a stable batch number, in
+// creation order, so older batches keep low numbers.
+export function backfillBatchNumbers(): void {
+  const missing = listFormulas()
+    .filter((f) => f.batchNo == null)
+    .sort((a, b) => a.createdAt - b.createdAt);
+  for (const f of missing) {
+    saveFormula({ ...f, batchNo: assignBatchNo() });
+  }
 }

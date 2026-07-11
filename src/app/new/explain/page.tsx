@@ -6,7 +6,7 @@ import Link from "next/link";
 import { PintCup } from "@/components/shared/PintCup";
 import type { MatchResult } from "@/lib/template-matcher";
 import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
-import { saveFormula } from "@/lib/persistence";
+import { saveFormula, assignBatchNo } from "@/lib/persistence";
 import styles from "./page.module.scss";
 
 interface PendingMatch {
@@ -33,7 +33,7 @@ export default function ExplainPage() {
     const id = generateFormulaId();
     const { state, recipe } = bootstrapFromArchetype(archetype);
     const now = Date.now();
-    saveFormula({ id, name: archetype.name, style: archetype.style, createdAt: now, updatedAt: now, state, recipe });
+    saveFormula({ id, name: archetype.name, style: archetype.style, batchNo: assignBatchNo(), createdAt: now, updatedAt: now, state, recipe });
     sessionStorage.removeItem("icf:pending-match");
     router.push(`/formula/${id}`);
   }, [pending, router]);
