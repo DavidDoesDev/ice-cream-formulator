@@ -244,15 +244,14 @@ export function setTraceMacro(
 // Macros the scorecard (balanceReport) judges against the healthy windows.
 const WINDOW_KEYS: (keyof MacroRatios)[] = ["fat", "sugar", "nonfatSolids"];
 
-// User-invoked "Rebalance": fix everything that's fixable without changing the
-// recipe's flavor intent, for this (style × equipment):
-//   • windows + total solids → center each tracked macro on its window midpoint;
-//   • sandiness → falls out of the same centering (milk solids come down);
-//   • ice control (watery + under-stabilized) → dose stabilizer into its window.
-// Solved at fixed yield. What it deliberately does NOT touch: scoopability that's
-// driven by sugar type or alcohol — "fixing" that would mean swapping the sugar
-// system or cutting the booze, i.e. changing what the recipe is. So it's a no-op
-// once only those choice-driven notes remain; tapping is always safe.
+// User-invoked "Rebalance": reach a Balanced state at fixed yield. Resolves any
+// out-of-bound conflict (clamp trace to bounds), guarantees no ice control (dose
+// stabilizer into its window), and centers each tracked macro on its window
+// midpoint (windows + total solids). This reliably clears every *blocker*.
+// Sandiness usually clears too (milk solids ease down) but isn't guaranteed, and
+// scoopability from sugar type / alcohol is left alone — both are shown as notes,
+// not blockers, so Rebalance never chases something it can't cleanly fix. No-op
+// once already Balanced; tapping is always safe.
 export function recalibrate(
   ws: LiveWorkspace,
   deps: WorkspaceDeps,
@@ -260,27 +259,42 @@ export function recalibrate(
   equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
 ): LiveWorkspace {
   const r0 = workspaceRatios(ws, deps);
-  const hints = relationshipHints(r0, derive(ws.recipe), style, equipment);
-  const icy = hints.some((h) => h.key === "ice-control");
-  const sandy = hints.some((h) => h.key === "sandiness");
-  // Nothing Rebalance can fix (only choice-driven scoopability may remain) → no-op.
-  if (balanceReport(r0, style, equipment).balanced && !icy && !sandy) return ws;
+  const icy = relationshipHints(r0, derive(ws.recipe), style, equipment).some((h) => h.key === "ice-control");
+  // Already good (windows + no conflict + no ice control) → no-op. Sandiness and
+  // scoopability are choice-driven notes, not blockers, so they don't force work.
+  if (!workspaceConflict(ws, deps) && balanceReport(r0, style, equipment).balanced && !icy) return ws;
 
   let cur = ws;
-  // Ice control: bring the stabilizer up into its window.
-  if (icy) {
-    const [lo, hi] = healthyBand(style, "stabilizer", equipment);
-    cur = setTraceMacro(cur, "stabilizer", (lo + hi) / 2, deps);
+  // 1. Clamp any out-of-bound trace additive back to bounds (resolves a conflict).
+  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+    const [min, max] = MACRO_BOUNDS[macro];
+    const v = workspaceRatios(cur, deps)[macro];
+    if (v > max + 1e-6 || v < min - 1e-6) cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, v)), deps);
   }
-  // Center each tracked macro on its window midpoint — lands the windows + total
-  // solids, and eases milk solids down enough to clear sandiness.
+  // 2. Ice control: bring the stabilizer up into its window (guarantees the
+  //    watery + under-stabilized condition can't hold once we're done).
+  const [stabLo, stabHi] = healthyBand(style, "stabilizer", equipment);
+  if (workspaceRatios(cur, deps).stabilizer < stabLo - 1e-9) {
+    cur = setTraceMacro(cur, "stabilizer", (stabLo + stabHi) / 2, deps);
+  }
+  // 3. Center each tracked macro on its window midpoint — lands the windows + the
+  //    total-solids sum, and eases milk solids down (which usually clears sandiness).
   const r = workspaceRatios(cur, deps);
   const targets = { ...r };
   for (const key of WINDOW_KEYS) {
     const [lo, hi] = healthyBand(style, key, equipment);
     targets[key] = (lo + hi) / 2;
   }
-  return solveBlend(cur, targets, deps);
+  let out = solveBlend(cur, targets, deps);
+
+  // 4. Final clamp: centering an egg-rich custard pulls in yolk, which can push
+  //    its incidental emulsifier just over the bound — clamp trace back in.
+  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+    const [min, max] = MACRO_BOUNDS[macro];
+    const v = workspaceRatios(out, deps)[macro];
+    if (v > max + 1e-6 || v < min - 1e-6) out = setTraceMacro(out, macro, Math.max(min, Math.min(max, v)), deps);
+  }
+  return out;
 }
 
 // Explicit yield change: scale every gram so the whole batch grows or shrinks.

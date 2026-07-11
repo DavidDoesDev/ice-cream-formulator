@@ -26,7 +26,6 @@ import {
   addAdditionalIngredient,
   removeAdditionalIngredient,
   addSmartMix,
-  rebalanceWorkspace,
   recalibrate,
   type LiveWorkspace,
   type WorkspaceDeps,
@@ -185,7 +184,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     },
     [deps],
   );
-  const onRebalance = useCallback(() => setWs((w) => rebalanceWorkspace(w, deps)), [deps]);
   const onRecalibrate = useCallback(
     () => setWs((w) => recalibrate(w, deps, meta.style, meta.equipment)),
     [deps, meta.style, meta.equipment],
@@ -293,7 +291,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               equipment={meta.equipment}
               conflict={conflict}
               onMacroTarget={onMacroTarget}
-              onRebalance={onRebalance}
               onRecalibrate={onRecalibrate}
             />
             <RecipePanel

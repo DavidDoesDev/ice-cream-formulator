@@ -41,7 +41,6 @@ interface MacrosPanelProps {
   equipment?: EquipmentProfile;
   conflict: boolean;
   onMacroTarget: (macro: keyof MacroRatios, target: number) => void;
-  onRebalance: () => void;
   onRecalibrate?: () => void;
 }
 
@@ -56,7 +55,6 @@ export function MacrosPanel({
   equipment = DEFAULT_EQUIPMENT,
   conflict,
   onMacroTarget,
-  onRebalance,
   onRecalibrate,
 }: MacrosPanelProps) {
   // While a slider is actively dragged, its thumb follows the pointer's target
@@ -151,18 +149,17 @@ export function MacrosPanel({
   const hints = relationshipHints(ratios, derived, style, equipment).filter(
     (h) => !(sugarFlagged && (h.key === "firm" || h.key === "soft")),
   );
-  // Fixable hints (sandiness, ice control) block Balanced — Rebalance clears them.
-  // Scoopability (firm/soft) is a choice-driven note (sugar type / alcohol): shown
-  // always, but it doesn't fail the balance nor get a Rebalance that can't fix it.
-  const fixableHints = hints.filter((h) => h.key === "sandiness" || h.key === "ice-control");
-  const noteHints = hints.filter((h) => h.key === "firm" || h.key === "soft");
-  const balanced = report.balanced && fixableHints.length === 0;
-  // Advice: window checks + fixable hints only when out of range (Rebalance clears
-  // them); the scoopability notes show even when balanced (a heads-up, never hidden).
+  // Only reliably-fixable issues block Balanced: the window checks and ice control
+  // (Rebalance guarantees both). Sandiness and scoopability (sugar type / alcohol)
+  // can't always be cleared without changing the recipe's intent, so they're
+  // always-shown NOTES — surfaced even when Balanced, never faked into a fail.
+  const blockerHints = hints.filter((h) => h.key === "ice-control");
+  const noteHints = hints.filter((h) => h.key === "sandiness" || h.key === "firm" || h.key === "soft");
+  const balanced = report.balanced && blockerHints.length === 0;
   const adviceRows: { key: string; label: string; text: string }[] = [];
   if (!balanced) {
     offChecks.forEach((c) => adviceRows.push({ key: c.key, label: c.label, text: c.advice ?? "" }));
-    fixableHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
+    blockerHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
   }
   noteHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
   return (
@@ -238,7 +235,9 @@ export function MacrosPanel({
           <span className={styles.statusMsg}>
             <Icon name="bolt" size={16} /> Can&apos;t hit that target with these ingredients.
           </span>
-          <Pill tone="accent" size="sm" onClick={onRebalance}>Rebalance</Pill>
+          {onRecalibrate && (
+            <Pill tone="accent" size="sm" onClick={onRecalibrate}>Rebalance</Pill>
+          )}
         </div>
       ) : balanced ? (
         <div className={styles.statusOk}>

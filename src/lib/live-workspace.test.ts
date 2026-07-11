@@ -17,8 +17,6 @@ import {
 } from "./live-workspace";
 import { isInRange } from "./macro-bands";
 import { balanceReport } from "./balance";
-import { derive } from "./derive";
-import { relationshipHints } from "./relationships";
 import { ARCHETYPES } from "@/data/archetypes";
 import type { MacroRatios } from "./formula-engine";
 import type { SmartMix } from "@/data/types";
@@ -209,14 +207,17 @@ describe("recalibrate (Rebalance to Balanced)", () => {
     expect(isInRange("philadelphia", "sugar", after.sugar, "commercial-batch")).toBe(true);
   });
 
-  it("clears a sandiness warning by easing milk solids down", () => {
-    const a = ARCHETYPES.find((x) => x.id === "philly-high-protein")!;
-    const ws0: LiveWorkspace = { recipe: a.recipe!, yieldGrams: totalGrams(a.recipe!) };
-    const sandy = (w: LiveWorkspace) =>
-      relationshipHints(workspaceRatios(w, deps), derive(w.recipe), "philadelphia", "home-dasher")
-        .some((h) => h.key === "sandiness");
-    expect(sandy(ws0)).toBe(true);
-    expect(sandy(recalibrate(ws0, deps, "philadelphia", "home-dasher"))).toBe(false);
+  it("reaches Balanced with no conflict even for a hard-dragged egg custard", () => {
+    // Centering an egg-rich custard pulls in yolk, which nudges the incidental
+    // emulsifier over its bound — the final clamp keeps it in, so no conflict.
+    const a = ARCHETYPES.find((x) => x.id === "custard-rum-raisin")!;
+    let ws: LiveWorkspace = { recipe: a.recipe!, yieldGrams: totalGrams(a.recipe!) };
+    ws = setMacroTarget(ws, "sugar", 0.34, deps);
+    ws = setMacroTarget(ws, "fat", 0.2, deps);
+    ws = setMacroTarget(ws, "nonfatSolids", 0.13, deps);
+    const fixed = recalibrate(ws, deps, "custard", "home-dasher");
+    expect(workspaceConflict(fixed, deps)).toBe(false);
+    expect(balanceReport(workspaceRatios(fixed, deps), "custard", "home-dasher").balanced).toBe(true);
   });
 
   it("is a no-op once nothing fixable remains (idempotent)", () => {
