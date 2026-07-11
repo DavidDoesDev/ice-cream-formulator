@@ -12,12 +12,14 @@ const ADVICE: Record<string, { low: string; high: string }> = {
   fat: { low: "Lean — add cream for body.", high: "Heavy — ease off the cream." },
   sugar: { low: "Firm scoop — bump the sugar.", high: "Will freeze soft — cut sugar back." },
   nonfatSolids: { low: "Watery body — add milk powder.", high: "Sandy risk — reduce milk solids." },
+  stabilizer: { low: "Under-stabilized — add stabilizer.", high: "Gummy — ease off the stabilizer." },
   totalSolids: { low: "Thin — needs more solids.", high: "Dense — add milk or water." },
 };
 const LABEL: Record<string, string> = {
   fat: "Fat",
   sugar: "Sugar",
   nonfatSolids: "Non-fat solids",
+  stabilizer: "Stabilizer",
   totalSolids: "Total solids",
 };
 const TS_TOLERANCE = 0.04;
@@ -56,7 +58,9 @@ export function balanceReport(
   style: string,
   equipment: EquipmentProfile = DEFAULT_EQUIPMENT,
 ): BalanceReport {
-  const checks: MacroCheck[] = (["fat", "sugar", "nonfatSolids"] as (keyof MacroRatios)[]).map((key) =>
+  // Stabilizer is a dedicated trace additive Rebalance can dose exactly, so it's
+  // scored (unlike emulsifier, which in custards rides along with the egg yolk).
+  const checks: MacroCheck[] = (["fat", "sugar", "nonfatSolids", "stabilizer"] as (keyof MacroRatios)[]).map((key) =>
     check(key, ratios[key], healthyBand(style, key, equipment)),
   );
 
