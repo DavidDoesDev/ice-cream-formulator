@@ -244,7 +244,9 @@ export function MacrosPanel({
         <span className={styles.readout}>Sweetness <b>{Math.round(derived.pod * 100)}</b></span>
       </div>
 
-      {(offChecks.length > 0 || hints.length > 0) && (
+      {/* Coaching only when out of range — a Balanced recipe shows no advice
+          (the relationship hints are a secondary net, not shown once balanced). */}
+      {!report.balanced && (offChecks.length > 0 || hints.length > 0) && (
         <div className={styles.advice}>
           {offChecks.map((c) => (
             <div key={c.key} className={styles.adviceRow}>
