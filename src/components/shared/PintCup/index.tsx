@@ -1,13 +1,26 @@
 "use client";
 
-import { memo, useEffect, useId, useRef } from "react";
+import { memo, useEffect, useId, useImperativeHandle, useRef, type Ref } from "react";
 import styles from "./PintCup.module.scss";
 import type { MacroRatios } from "@/lib/formula-engine";
+
+// Imperative preview surface (#55): during a slider drag the cup must track
+// solved ratios WITHOUT a React commit (any commit mid-gesture blacks out
+// desktop Safari's input events), so the panel pushes ratios straight into
+// the existing SVG nodes. The next real render replaces everything cleanly.
+export interface PintCupHandle {
+  preview(ratios: MacroRatios): void;
+}
 
 interface PintCupProps {
   ratios: MacroRatios;
   size?: "full" | "mini";
   width?: number;
+  // Freeze the waterline bob (e.g. during a slider drag) — the per-frame SVG
+  // path mutation is cheap in Chromium but a real paint cost in Safari, where
+  // it competes with the drag for the main thread.
+  waveParked?: boolean;
+  ref?: Ref<PintCupHandle>;
 }
 
 // Layer order bottom-to-top: water on the bottom, then the non-water macros in
@@ -95,14 +108,14 @@ function waterPath(meanY: number, t: number): string {
 // ratios actually change — once per coalesced solve frame. Without this the SVG
 // (and its per-frame ripple repaint) rebuilds on every event, which WebKit paints
 // far more slowly than Chromium — the bulk of the Safari drag lag.
-function PintCupImpl({ ratios, size = "full", width }: PintCupProps) {
-  const uid = useId().replace(/:/g, "-");
-  const clipId = `pint-cup-clip${uid}`;
+// Pure layer geometry, shared by render and the imperative preview path.
+function computeLayers(ratios: MacroRatios): {
+  layers: { key: string; color: string; points: string }[];
+  waterMeanY: number;
+} {
   const total = Object.values(ratios).reduce((a, b) => a + b, 0);
-
   const layers: { key: string; color: string; points: string }[] = [];
   let yFloor = VH;
-
   for (const { key, color } of LAYERS) {
     const fraction = total > 0 ? ratios[key as keyof MacroRatios] / total : 0;
     const h = fraction * VH;
@@ -110,22 +123,25 @@ function PintCupImpl({ ratios, size = "full", width }: PintCupProps) {
     const yCeil = yFloor - h;
     const bottom = cupGeomAtY(yFloor);
     const top = cupGeomAtY(yCeil);
-
     const points = [
       `${top.leftX},${yCeil}`,
       `${top.leftX + top.width},${yCeil}`,
       `${bottom.leftX + bottom.width},${yFloor}`,
       `${bottom.leftX},${yFloor}`,
     ].join(" ");
-
     layers.push({ key, color, points });
     yFloor = yCeil;
   }
+  const total2 = total > 0 ? total : 1;
+  const waterMeanY = VH - (ratios.water / total2) * VH;
+  return { layers, waterMeanY };
+}
 
-  // The waterline animates only when there is a water band with a layer above it
-  // and enough room to bob without clipping the rim or the floor.
-  const waterFraction = total > 0 ? ratios.water / total : 0;
-  const waterMeanY = VH - waterFraction * VH;
+function PintCupImpl({ ratios, size = "full", width, waveParked = false, ref }: PintCupProps) {
+  const uid = useId().replace(/:/g, "-");
+  const clipId = `pint-cup-clip${uid}`;
+
+  const { layers, waterMeanY } = computeLayers(ratios);
   const waterIdx = layers.findIndex((l) => l.key === "water");
   const aboveColor = waterIdx >= 0 ? layers[waterIdx + 1]?.color : undefined;
   const waterColor = waterIdx >= 0 ? layers[waterIdx].color : undefined;
@@ -136,24 +152,57 @@ function PintCupImpl({ ratios, size = "full", width }: PintCupProps) {
     waterMeanY < VH - WATER_MAX_AMP;
 
   const waterRef = useRef<SVGPathElement>(null);
+  // The wave loop reads the mean from a ref so the imperative preview can
+  // steer the waterline live without restarting the animation. Synced to the
+  // rendered value at the top of the wave effect below (not during render).
+  const waterMeanYRef = useRef(waterMeanY);
+  const waveLoopRef = useRef(false);
+  const polyRefs = useRef(new Map<string, SVGPolygonElement>());
 
   useEffect(() => {
+    waterMeanYRef.current = waterMeanY;
     const el = waterRef.current;
     if (!hasWave || !el) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.setAttribute("d", waterPath(waterMeanY, 0));
+    if (waveParked || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.setAttribute("d", waterPath(waterMeanYRef.current, 0));
       return;
     }
 
     let raf = 0;
+    waveLoopRef.current = true;
     const tick = () => {
-      el.setAttribute("d", waterPath(waterMeanY, performance.now() / 1000));
+      el.setAttribute("d", waterPath(waterMeanYRef.current, performance.now() / 1000));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [hasWave, waterMeanY]);
+    return () => {
+      waveLoopRef.current = false;
+      cancelAnimationFrame(raf);
+    };
+    // waterMeanY: the parked/reduced-motion branch must rewrite its static
+    // path when a solve commit moves the waterline (loop restarts are cheap —
+    // commits only happen on pointer pauses now).
+  }, [hasWave, waveParked, waterMeanY]);
+
+  // #55 imperative preview: retarget the existing polygons + waterline from
+  // fresh ratios with zero React involvement. Layers that appear/disappear
+  // across the 0.5-unit threshold mid-drag stay stale until the next real
+  // render — invisible at preview granularity.
+  useImperativeHandle(ref, () => ({
+    preview(r: MacroRatios) {
+      const next = computeLayers(r);
+      for (const layer of next.layers) {
+        polyRefs.current.get(layer.key)?.setAttribute("points", layer.points);
+      }
+      waterMeanYRef.current = next.waterMeanY;
+      // With the wave loop running, the next tick picks the new mean up; the
+      // parked/reduced-motion branch needs the static path rewritten here.
+      if (!waveLoopRef.current && waterRef.current) {
+        waterRef.current.setAttribute("d", waterPath(next.waterMeanY, 0));
+      }
+    },
+  }), []);
 
   const sizeStyle = width
     ? { width: `${width}px`, height: `${Math.round(width * ASPECT)}px` }
@@ -185,6 +234,10 @@ function PintCupImpl({ ratios, size = "full", width }: PintCupProps) {
             key === "water" && hasWave ? null : (
               <polygon
                 key={key}
+                ref={(el) => {
+                  if (el) polyRefs.current.set(key, el);
+                  else polyRefs.current.delete(key);
+                }}
                 points={points}
                 fill={color}
                 stroke="var(--ink)"

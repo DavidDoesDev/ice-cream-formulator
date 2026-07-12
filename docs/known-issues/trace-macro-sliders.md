@@ -1,97 +1,140 @@
-# Known issue: stabilizer / emulsifier sliders feel unresponsive
+# Known issue: macro sliders lag in desktop Safari (#55)
 
-Status: **still open** — the main-thread saturation fix below measured well in
-WebKit, but the user reports slider issues persist in real Safari (tracked in
-issue #55). The remaining hypotheses are at the end of this doc.
+Status: **mechanism fully understood (research + v9); smooth-but-not-live fix
+works (v11/v14); every attempt to add mid-drag liveness back has re-triggered
+suppression (v10, v12, v13, v15, v16). Current deployed: v16.** See
+`docs/research/webkit-range-slider-event-throttling.md` for the WebKit
+internals (primary-sourced).
 
-## Symptom
+## The mechanism (research, confirmed in WebKit source)
 
-Dragging the **stabilizer** or **emulsifier** sliders in the macros panel appears
-to do "nothing" for the user. The big-macro sliders (fat, sugar, milk-solids,
-alcohol) feel fine.
+macOS WebKit sends mouse events to the web process **stop-and-wait**: one
+event in flight, the next ships only after the previous is ACKED
+(`WebPageProxy::handleMouseEvent` → `mouseEventHandlingCompleted` →
+`processNextQueuedMouseEvent`); newer moves replace the queued one. JS-visible
+event rate = **1 / round-trip-time** — 10Hz means RTT ≈ 100ms. The native
+thumb is moved BY the DOM event in the web process
+(`SliderThumbElement::defaultEventHandler`), so it stutters at the same rate.
+Rendering preempts async-IPC processing per runloop cycle, and layer-tree
+commit backpressure (`waitingForBackingStoreSwap`) gates the next event. iOS
+touch is pipelined/coalesced off-thread; Chromium aligns input to frames —
+neither has the failure mode. No matching WebKit bug exists (worth filing).
 
-## What we know
+## The version ladder (all measured in real Safari 18.3, `?perf=1` HUD)
 
-- The **math is correct in isolation.** `setTraceMacro` (unit-tested) doses the
-  source ingredient to hit the target exactly and holds yield. Confirmed:
-  stabilizer 1.47% → 0.60%, emulsifier 0% → 0.40% via a direct module call.
-- Both sliders **do respond in Chromium** when scrolled into view. A Playwright
-  drag moved stabilizer 375→875 and emulsifier 0→875 (on the 0–1000 input scale),
-  and emulsifier auto-activated its default (soy lecithin).
-- **Emulsifier auto-activate works**: raising it from 0 swaps `emulsifier-empty`
-  → `emulsifier-lecithin` (page `onMacroTarget`, `AUTO_ACTIVATE`).
-- Earlier "it's stuck" test results were **false negatives**: the trace sliders
-  sit below the fold in the default headless viewport, so synthetic mouse events
-  missed them (`elementFromPoint` returned `null` at their coordinates). Always
-  `scrollIntoViewIfNeeded()` before driving them in a test.
+| v | During-drag behavior | nat (events) | verdict |
+|---|---|---|---|
+| v6–v8 | uncontrolled inputs, rAF setDrag renders + 90ms-throttle commits | ~20 | jerky |
+| v9 | `?freeze=1`: NOTHING (imperative fill only, solve on release) | **365** | smooth |
+| v10 | imperative fill + 90ms-throttle commits (no per-frame renders) | 25 | jerky — event rate locks to commit rate; 1 commit ≈ 100ms blackout |
+| v11 | imperative fill + commits ONLY on ≥140ms pause/release | **277** | smooth but nothing else updates mid-drag |
+| v12 | v11 + solve+preview (siblings+cup) IN the input handler | 21 | jerky |
+| v13 | v12's preview moved to a drag-scoped 80ms `setInterval` | 35 (7 mid-drag commits) | jerky |
+| v15 | preview moved into a rAF loop (research-informed) | 38 (10 mid-drag commits) | jerky |
+| v16 | rAF preview, CUP ONLY (no sibling `el.value` writes) | 17 (7 mid-drag commits) | jerky |
 
-## What we've changed (did not fully resolve for the user)
+Key confound discovered in the ladder: **v13/v15/v16 all show mid-drag quiet
+commits firing** (`solve` 7–10) — once any disturbance gaps events past the
+140ms quiet window, a commit fires, its ~100ms blackout guarantees the next
+gap, and the loop locks at commit cadence. The preview's own cost and the
+commit amplifier have never been separated experimentally.
 
-- Slider inputs now run on a fixed **0–1000 scale** mapped to each macro's range
-  (`SLIDER_SCALE` in `MacrosPanel`), to defend against browsers that mishandle
-  very small float ranges (stabilizer is 0–0.008). Chromium worked without this,
-  but other engines may not.
-- Soy lecithin modeled as a **pure emulsifier** (no fat) so the emulsifier lever
-  is clean.
-- Trace macros dosed directly (`setTraceMacro`), held out of the big-macro solve,
-  and normalized to the style target on workspace load.
-- **Drag-lock release moved off the input's own pointer events.** The slider held
-  a per-drag lock (thumb follows the pointer, not the re-solved ratio) and cleared
-  it on the input's `pointercancel`/`pointerup`. Safari fires `pointercancel` on a
-  native range input the moment its slider gesture claims the pointer — mid-drag —
-  which cleared the lock, so the controlled thumb snapped back to the solved ratio
-  each frame and fought the pointer. Release is now watched at the window level
-  (`pointerup`/`mouseup`/`touchend`), which fires only on genuine release in every
-  engine. Kept, but was not the main cause (below).
-- **Auto-save debounced.** The formula auto-saved in a `useEffect` keyed on `ws`,
-  which changes on *every* drag frame, so `saveFormula` (a synchronous
-  `localStorage.setItem` of the whole formula) ran per frame. A real per-frame
-  cost — now debounced ~400ms with a flush-on-unmount — but not the dominant one
-  (below). (`src/app/formula/[id]/page.tsx`)
+## Open theories (ranked) — next experiments
 
-## Root cause (measured in WebKit)
+1. **Quiet-commit feedback amplifier (T1, primary).** The preview only needs
+   to cause ONE ≥140ms event gap; the mid-drag commit it triggers guarantees
+   the next. Predicts: cup preview with mid-drag commits DISABLED (commit on
+   release only) recovers high `nat`. Cheapest, strongest-evidence experiment.
+2. **The ~12ms solve JS itself (T2).** Even inside rAF it stretches the
+   rendering update the ACK rides on; if the ack slips runloop cycles
+   non-linearly this could dominate. Predicts: cup preview WITHOUT solve
+   (e.g. geometric interpolation, or solve every 300ms+) recovers `nat`.
+3. **SVG polygon invalidation class (T3).** Polygon `points` changes on 5–7
+   clipped polygons may trigger a heavier repaint/commit than the wave's
+   single path-`d` mutation (which is proven free at 60fps). Predicts:
+   water-path-only preview is free; polygons alone suppress.
+4. **Native form-control repaint (T4, weakened).** Was the rationale for v16
+   (dropping sibling `el.value` writes) — v16 still suppressed, so siblings
+   were not the (only) cost. Possibly a contributor.
 
-Reproduced with a Playwright driver dragging the Fat slider fast in **WebKit
-(Safari's engine) vs Chromium**, capturing frame cadence + cup re-renders:
+## Current symptom (sharpened 2026-07-11)
 
-- Before: **WebKit ~21fps, 477/502 frames dropped, worst frames 80–94ms**;
-  Chromium ~59fps, 26 dropped. Same code, ~3× worse in Safari.
+- The **big-macro sliders** (fat, sugar, non-fat solids, alcohol) feel laggy;
+  the **native thumb itself stutters** under the pointer.
+- **Trace sliders feel fine** — their travel is tiny, so a 10Hz update is
+  invisible there; the mechanism is the same.
+- **macOS Safari only.** iOS Safari and Chromium are smooth.
 
-The continuous re-solve ran **once per input event**. Each solve (a whole-recipe
-NNLS re-derivation) spikes to ~30–50ms, and the `PintCup` — an SVG with a
-per-frame `requestAnimationFrame` ripple — re-rendered on every event too.
-WebKit's JS engine runs the solve slower than V8 *and* repaints SVG far more
-slowly, so the main thread saturated: pointer moves themselves queued up, which is
-exactly the user's "on delay", and the controlled thumb committing stale solved
-values a frame late is the "snap back". Chromium's faster engine hid the same
-inefficiency.
+## Instrumentation (all still in the tree; remove when closed)
 
-## Fix (three layers, `MacrosPanel` + `PintCup`)
+- **PerfHud** (`src/components/shared/PerfHud`): `?perf=1` on the formula page.
+  Readout: `vN fps · worst frame · nat (native input events, capture phase) ·
+  in (React onChange) · solve (throttled commits) · blur! (mid-drag blurs)`.
+  Click-to-copy (legacy execCommand fallback — Safari has no async clipboard on
+  plain-http localhost).
+- **`public/slider-probe.html`**: React-free sliders with toggles for every
+  eliminated hypothesis (write-back modes, app CSS, grain, backdrop-blur, heavy
+  handlers, pointermove listener, sibling writes, rAF churn).
+- **Debug flags on the formula page**: `?hide=cup,recipe,grain,header`
+  (cup/recipe in page.tsx; grain/header stripped by PerfHud via direct DOM),
+  `?freeze=1` (drag does zero React work; solve on release).
+- **`cache/`** (gitignored): `safari-drag-probe.mjs` (drives REAL Safari via
+  safaridriver — WARNING: never call WebDriver `window/fullscreen`, it wedges
+  Safari's session pairing until Safari restarts), `drag-smoke.mjs` (Playwright
+  functional drag check), `solve-bench-entry.ts` (V8-vs-JSC solve benchmark).
 
-1. **Thumb decoupled from the solve.** During a drag the thumb follows the pointer
-   via cheap local `drag` state; the solve is separate.
-2. **Solve throttled to ~11/sec** (`SOLVE_THROTTLE_MS`, leading + trailing, flushed
-   on release). The cup/recipe stay visibly live; the main thread stays free for a
-   60fps thumb. (Per-frame coalescing alone still capped Safari at ~28fps — a
-   time throttle was needed.)
-3. **`PintCup` memoized** so it only repaints when ratios actually change, not on
-   every input event.
-4. **Drag-lock release** moved off the input's Safari-hijacked `pointercancel` to
-   window-level pointer/mouse/touch events (kept; minor).
+## Fact table (measured in real Safari 18.3, trackpad, 2026-07-11/12)
 
-After: **WebKit ~59fps, 14 dropped frames, cup re-renders 3240 → 156**, and the
-drag completes promptly instead of the main thread backing up.
+| Experiment | Result |
+|---|---|
+| Bare `<input type=range>` on minimal page | **~100 ev/s** |
+| + same-value write-back in handler | ~108/s |
+| + async (100ms) stale write-back | ~98/s |
+| + sync stale write-back (React-controlled-restore-alike) | ~103/s |
+| + app's slider CSS replica | ~104/s |
+| + grain overlay replica (mix-blend multiply) | ~104/s |
+| + backdrop-filter header replica | ~108/s |
+| + document pointermove capture listener | ~106/s |
+| + write SIBLING slider per event | ~107/s |
+| + 15ms busy work per event | **~60/s** (frame-coalesced, not 10) |
+| App formula page, native capture-phase count | **~10 ev/s**, `nat == in` |
+| App with `?hide=cup` / `recipe` / `cup,recipe` / `grain` / `grain,header` | still ~10/s each |
+| App with solve throttle 90ms → 250ms (v7) | **~16 ev/s** — the only dial that moved it |
+| Main thread during all of the above | 60fps, worst frame ≤28ms |
+| Solve benchmark | JSC 11.9ms/solve vs V8 14.7ms — **JSC faster**; "Safari runs the solve slower" is refuted |
 
-## If the user still reports trace-slider trouble specifically
+## Hypotheses eliminated (with the fix attempts that are now in the tree)
 
-The above fixed the general Safari lag. If stabilizer/emulsifier still feel dead
-in isolation, the remaining hypotheses are perceptual (0–0.8% travel is tiny) or
-range-too-tight (`computeSliderBounds` for a 0-target emulsifier is
-`[0, tolerance]`) — consider a numeric stepper alongside the slider.
+1. ~~Safari runs the solve slower~~ — JSC benches faster than V8.
+2. ~~Main-thread saturation~~ — 60fps throughout; the 2026-07 fixes (throttle,
+   thumb decouple, PintCup memo) stand but were not this bug.
+3. ~~Mid-drag blur drops the drag lock~~ — `blur!` counter is always 0. (The
+   pointer-held blur guard shipped anyway; it's correct.)
+4. ~~React controlled-input restore writes stale values mid-gesture~~ — probe D
+   is fine; sliders are now uncontrolled regardless (also correct to keep).
+5. ~~Sibling-slider DOM writes re-latch the gesture~~ — probe H is fine; the
+   sync-on-release-only effect shipped anyway.
+6. ~~Compositing layers (grain multiply / backdrop-filter)~~ — replicas fine,
+   AND removing the real layers from the app changed nothing.
+7. ~~PintCup SVG / RecipePanel re-renders~~ — hiding them changed nothing.
+8. ~~React event dispatch drops events~~ — `nat == in` always.
+
+## Live hypothesis — RESOLVED
+
+The v9 experiment confirmed it (see the version ladder above); the surviving
+questions live in “Open theories” above.
+
+## Fixes shipped along the way (all sound, none sufficient)
+
+- Uncontrolled range inputs; idle-slider DOM sync only between drags.
+- Drag lock in a ref (sync) + rAF-coalesced drag state for rendering.
+- Blur guard while pointer held; lifetime window-level release listeners.
+- PintCup waterline rAF parks during drags (`waveParked`).
+- HUD + probe pages (above).
 
 ## Relevant code
 
-- `src/components/formula/MacrosPanel/index.tsx` — slider rendering, drag tracking.
-- `src/lib/live-workspace.ts` — `setTraceMacro`.
-- `src/app/formula/[id]/page.tsx` — `onMacroTarget`, `AUTO_ACTIVATE`, `TRACE_MACROS`.
-- `src/lib/macro-bands.ts` — `computeSliderBounds` (via `sliderGeometry`).
+- `src/components/formula/MacrosPanel/index.tsx` — sliders, drag path, flags.
+- `src/components/shared/PerfHud/index.tsx` — HUD + layout-level hide flags.
+- `src/app/formula/[id]/page.tsx` — `?hide=cup,recipe`, solve commit path.
+- `public/slider-probe.html` — React-free hypothesis toggles.

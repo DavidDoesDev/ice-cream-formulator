@@ -11,6 +11,7 @@ import { ConfigPanel } from "@/components/formula/ConfigPanel";
 import { Header } from "@/components/shared/Header";
 import { Pill } from "@/components/shared/Pill";
 import { Toast } from "@/components/shared/Toast";
+import { PerfHud } from "@/components/shared/PerfHud";
 import { seedRecipe } from "@/lib/recipe-seeder";
 import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
 import { derive } from "@/lib/derive";
@@ -82,6 +83,16 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [editName, setEditName] = useState(false);
   const [selector, setSelector] = useState<SelectorState | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+
+  // Debug-only (#55): `?hide=cup,recipe,header` strips heavy co-renderers so a
+  // human check can bisect what strangles Safari's slider event rate. Read once
+  // at mount; the server renders everything (a one-off hydration mismatch on a
+  // debug flag is acceptable). Remove with the rest of the #55 instrumentation.
+  const [debugHide] = useState<ReadonlySet<string>>(() =>
+    typeof window === "undefined"
+      ? new Set()
+      : new Set((new URLSearchParams(window.location.search).get("hide") ?? "").split(",").filter(Boolean)),
+  );
 
   const ratios = workspaceRatios(ws, deps);
   const derived = derive(ws.recipe);
@@ -189,6 +200,22 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     [deps, meta.style, meta.equipment],
   );
 
+  // Commit-free preview of a macro-target change (#55): same math as
+  // onMacroTarget, no setState. During a drag, MacrosPanel paints these ratios
+  // via direct DOM — any React commit mid-gesture blacks out desktop Safari's
+  // input events, so the real commit waits for a pointer pause. Auto-activate
+  // is deliberately skipped (it belongs to the committed edit).
+  const onPreviewMacro = useCallback(
+    (macro: keyof MacroRatios, target: number): MacroRatios => {
+      const w = latest.current.ws;
+      const next = TRACE_MACROS.has(macro)
+        ? setTraceMacro(w, macro, target, deps)
+        : setMacroTarget(w, macro, target, deps);
+      return workspaceRatios(next, deps);
+    },
+    [deps],
+  );
+
   // --- Config (base systems) — re-solve at fixed yield on any change ---
   const resolveSolve = useCallback(
     (mixes: LiveWorkspace["recipe"]["smartMixes"], w: LiveWorkspace) => {
@@ -252,6 +279,8 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
 
   return (
     <>
+      {/* Inert unless the page is loaded with ?perf=1 (see PerfHud). */}
+      <PerfHud />
       <Header>
         <Pill tone="ghost" size="sm" onClick={() => setShowConfig(true)}>
           <Settings size={15} strokeWidth={2} /> Config
@@ -291,9 +320,11 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               equipment={meta.equipment}
               conflict={conflict}
               onMacroTarget={onMacroTarget}
+              onPreview={onPreviewMacro}
               onRecalibrate={onRecalibrate}
+              hideCup={debugHide.has("cup")}
             />
-            <RecipePanel
+            {!debugHide.has("recipe") && <RecipePanel
               recipe={ws.recipe}
               style={meta.style}
               yieldGrams={ws.yieldGrams}
@@ -309,7 +340,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               onQuickAdd={onQuickAdd}
               onYield={onYield}
               onNotes={setNotes}
-            />
+            />}
           </div>
         </div>
 
