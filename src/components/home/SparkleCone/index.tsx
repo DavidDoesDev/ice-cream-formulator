@@ -7,6 +7,14 @@ import { Callouts } from "./Callouts";
 import { Notation } from "./Notation";
 import { Structures } from "./Structures";
 import { FxPanel, getFx, getServerFx, setFx, subscribeFx } from "./FxPanel";
+import {
+  ConeFitPanel,
+  layerStyle,
+  getConeFit,
+  getServerConeFit,
+  setConeFit,
+  subscribeConeFit,
+} from "./ConeFitPanel";
 import { ramp } from "./palette";
 
 // Sprite-sheet geometry: 180 frames at 30fps in an 8×23 grid (last row holds
@@ -83,6 +91,7 @@ export function SparkleCone() {
   // each atom can add its own dome-depth parallax on top of the plane drift.
   const pointerRef = useRef({ x: 0, y: 0 });
   const fx = useSyncExternalStore(subscribeFx, getFx, getServerFx);
+  const coneFit = useSyncExternalStore(subscribeConeFit, getConeFit, getServerConeFit);
   const motionOK = useSyncExternalStore(subscribeMotion, getMotionOK, getServerMotionOK);
   const devPanel = useSyncExternalStore(subscribeDev, getDevPanel, getServerDevPanel);
 
@@ -101,6 +110,26 @@ export function SparkleCone() {
 
   // A static cone stands in until the video (2.4 MB mp4) has its first frame.
   const [videoReady, setVideoReady] = useState(false);
+
+  // The footage is keyed by blend mode, which is theme-dependent: the
+  // white-background cut multiplies into the light paper, but on the dark
+  // theme a light background is needed to screen out. So we carry a
+  // black-background cut + screen blend for dark, swapping the source here and
+  // the blend in CSS off <html data-theme>. Init to "light" (matches SSR and
+  // the default :root theme) and sync after mount to avoid a hydration mismatch.
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  useEffect(() => {
+    const root = document.documentElement;
+    const read = () => {
+      const t = root.getAttribute("data-theme");
+      setTheme(t === "dark" ? "dark" : "light");
+    };
+    read();
+    const obs = new MutationObserver(read);
+    obs.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const dark = theme === "dark";
 
   useEffect(() => {
     const cone = coneRef.current;
@@ -202,7 +231,13 @@ export function SparkleCone() {
   const calloutsColor = fx.callouts.color.on ? ramp(fx.callouts.color.t) : "var(--ink)";
 
   return (
-    <div ref={sceneRef} className={styles.scene} aria-hidden>
+    <div
+      ref={sceneRef}
+      className={styles.scene}
+      aria-hidden
+      // Dev bounds outline (?dev + border toggle) so the component box is visible.
+      style={devPanel && coneFit.border ? { outline: "2px solid #ff2d9b" } : undefined}
+    >
       <div ref={backRef} className={styles.fxPlane}>
         {motionOK && atoms.on && (
           <Atoms density={atoms.density * 0.5} size={atoms.size} opacity={atoms.opacity} pointer={pointerRef} color={atomsColor} back />
@@ -219,20 +254,39 @@ export function SparkleCone() {
           muted + playsInline are required for autoplay to be allowed at all. */}
       {/* Placeholder for the video, part of the component: shown in the cone's
           spot (same multiply blend) until the mp4's first frame is decoded. */}
-      {!videoReady && (
+      {!videoReady && !dark && (
         // eslint-disable-next-line @next/next/no-img-element
         <img className={styles.placeholder} src="/home/cone-placeholder.webp" alt="" aria-hidden />
       )}
       <video
+        key={theme}
         ref={coneRef}
         className={styles.cone}
-        src="/home/sparkle-cone.mp4"
+        // Dark cut: original landscape footage masked into the portrait slot.
+        // Crop/alignment/scale/blend are dialed in via the ConeFit tuner (?dev)
+        // and applied inline (these props compose with the parallax transform).
+        style={dark ? layerStyle(coneFit.video, coneFit.blend) : undefined}
+        src={dark ? "/home/sparkle-cone-dark.mp4" : "/home/sparkle-cone.mp4"}
+        poster={dark ? "/home/cone-placeholder-dark.webp" : undefined}
         autoPlay
         muted
         loop
         playsInline
         onLoadedData={() => setVideoReady(true)}
       />
+      {/* Dev alignment aid: an independent reference overlay (light or dark
+          cone) with its own transform, so the dark video can be aligned to
+          where light-mode's cone sits. Normal blend so its silhouette reads. */}
+      {devPanel && dark && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className={styles.cone}
+          src={coneFit.imgSrc === "dark" ? "/home/cone-placeholder-dark.webp" : "/home/cone-ref-light.webp"}
+          alt=""
+          aria-hidden
+          style={{ ...layerStyle(coneFit.image), mixBlendMode: "normal" }}
+        />
+      )}
       <div ref={frontRef} className={styles.fxPlane}>
         {fx.sparkles.on && <div ref={sparkRef} className={styles.sparkles} />}
         {motionOK && atoms.on && (
@@ -249,6 +303,7 @@ export function SparkleCone() {
         {motionOK && entered && fx.callouts.on && <Callouts color={calloutsColor} />}
       </div>
       {devPanel && <FxPanel value={fx} onChange={setFx} />}
+      {devPanel && <ConeFitPanel value={coneFit} onChange={setConeFit} />}
     </div>
   );
 }
