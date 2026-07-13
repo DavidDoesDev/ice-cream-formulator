@@ -6,10 +6,13 @@ import { relationshipHints } from "./relationships";
 import { derive } from "./derive";
 import { DEFAULT_EQUIPMENT, type Recipe, type MixPreset, type SmartMix, type SmartMixKind, type EquipmentProfile } from "@/data/types";
 
-// Trace additives are dosed directly (setTraceMacro), so a big-macro solve must
-// leave them alone — otherwise the solver flings their grams around to minimize
-// a trace target it can't meaningfully influence.
-const TRACE_KINDS = new Set<SmartMixKind>(["stabilizer", "emulsifier"]);
+// Directly-dosed mixes (setTraceMacro), held out of every big-macro solve.
+// Stabilizer/emulsifier: the solver flings trace grams around chasing targets
+// it can't meaningfully influence. Alcohol: it's a flavor choice, not a
+// balancing lever — water is inferred (not an ingredient), so a free alcohol
+// mix becomes the solver's cleanest dilution source (vodka ≈ 60% water) and
+// lowering fat re-doses alcohol the user explicitly zeroed.
+const TRACE_KINDS = new Set<SmartMixKind>(["stabilizer", "emulsifier", "alcohol"]);
 
 // The always-live workspace: a Recipe (the source of truth for grams) plus the
 // batch yield. Ratios are always derived from the recipe; a macro-slider change
@@ -105,12 +108,19 @@ function solveBlend(
   return { ...ws, recipe: { ...ws.recipe, smartMixes } };
 }
 
+// Macros whose mixes are direct-dosed (TRACE_KINDS above, by the same names).
+const TRACE_TARGET_MACROS = new Set<keyof MacroRatios>(["stabilizer", "emulsifier", "alcohol"]);
+
 export function setMacroTarget(
   ws: LiveWorkspace,
   macro: keyof MacroRatios,
   target: number,
   deps: WorkspaceDeps,
 ): LiveWorkspace {
+  // Direct-dosed macros route to their exact dose HERE, not just in the UI —
+  // their mixes are held out of solveBlend, so solving toward them would be a
+  // silent no-op for any caller that skips the page's routing.
+  if (TRACE_TARGET_MACROS.has(macro)) return setTraceMacro(ws, macro, target, deps);
   return solveBlend(ws, { ...workspaceRatios(ws, deps), [macro]: target }, deps, macro);
 }
 
@@ -171,7 +181,7 @@ export function rebalanceWorkspace(ws: LiveWorkspace, deps: WorkspaceDeps): Live
 
   // 1. Dose out-of-bound trace additives to their bound.
   const r0 = workspaceRatios(cur, deps);
-  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+  for (const macro of ["stabilizer", "emulsifier", "alcohol"] as (keyof MacroRatios)[]) {
     const [min, max] = MACRO_BOUNDS[macro];
     if (r0[macro] > max + 1e-6 || r0[macro] < min - 1e-6) {
       cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, r0[macro])), deps);
@@ -223,15 +233,35 @@ export function setTraceMacro(
   deps: WorkspaceDeps,
 ): LiveWorkspace {
   const mixes = ws.recipe.smartMixes;
-  const srcIdx = mixes.findIndex((m) => (deps.getPreset(m.presetId)?.effectiveMacros[macro] ?? 0) > 0);
+  // Dose the DEDICATED mix for this macro (kind === macro). The old "first
+  // mix carrying the macro" rule dosed EGGS on a custard — their incidental
+  // emulsifier made them the first hit — silently draining or growing the
+  // egg base when the user dragged Emulsifier (cache/emul-snap.js repro).
+  const carries = (m: SmartMix) => (deps.getPreset(m.presetId)?.effectiveMacros[macro] ?? 0) > 0;
+  let srcIdx = mixes.findIndex((m) => m.kind === (macro as SmartMixKind) && carries(m));
+  if (srcIdx < 0) srcIdx = mixes.findIndex(carries);
   if (srcIdx < 0) return ws;
 
   const f = deps.getPreset(mixes[srcIdx].presetId)!.effectiveMacros[macro];
   const Y = ws.yieldGrams;
-  // Grams of source needed to hit the target fraction of the fixed yield; the
-  // rest of the batch scales to fill the remainder, so the yield stays put.
-  const sourceGrams = f <= target ? Y : Math.max(0, Math.min(Y, (target * Y) / f));
+  // The rest of the batch may carry this macro too (egg yolk's incidental
+  // emulsifier), and it scales with the remainder. With c = the rest's macro
+  // fraction: target·Y = src·f + (Y − src)·c → src = Y·(target − c)/(f − c).
+  // Ignoring c overshot the target, so the handle "snapped" to the achieved
+  // ratio on release. Clamping src ≥ 0 gives an honest floor at the rest's
+  // contribution — the dedicated mix empties; eggs are left alone.
   const otherGrams = totalGrams(ws.recipe) - mixes[srcIdx].grams;
+  let otherMacro = 0;
+  mixes.forEach((m, i) => {
+    if (i !== srcIdx) otherMacro += m.grams * (deps.getPreset(m.presetId)?.effectiveMacros[macro] ?? 0);
+  });
+  for (const a of ws.recipe.additionalIngredients) {
+    otherMacro += a.grams * (deps.resolveIngredient(a.ingredientId)?.[macro] ?? 0);
+  }
+  const c = otherGrams > 1e-9 ? otherMacro / otherGrams : 0;
+  const denom = f - c;
+  const sourceGrams =
+    denom > 1e-9 ? Math.max(0, Math.min(Y, (Y * (target - c)) / denom)) : f <= target ? Y : 0;
   const scale = otherGrams > 1e-9 ? (Y - sourceGrams) / otherGrams : 0;
 
   const smartMixes = mixes.map((m, i) =>
@@ -266,7 +296,7 @@ export function recalibrate(
 
   let cur = ws;
   // 1. Clamp any out-of-bound trace additive back to bounds (resolves a conflict).
-  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+  for (const macro of ["stabilizer", "emulsifier", "alcohol"] as (keyof MacroRatios)[]) {
     const [min, max] = MACRO_BOUNDS[macro];
     const v = workspaceRatios(cur, deps)[macro];
     if (v > max + 1e-6 || v < min - 1e-6) cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, v)), deps);
@@ -301,7 +331,7 @@ export function recalibrate(
 
   // 4. Final clamp: centering an egg-rich custard pulls in yolk, which can push
   //    its incidental emulsifier just over the bound — clamp trace back in.
-  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+  for (const macro of ["stabilizer", "emulsifier", "alcohol"] as (keyof MacroRatios)[]) {
     const [min, max] = MACRO_BOUNDS[macro];
     const v = workspaceRatios(out, deps)[macro];
     if (v > max + 1e-6 || v < min - 1e-6) out = setTraceMacro(out, macro, Math.max(min, Math.min(max, v)), deps);

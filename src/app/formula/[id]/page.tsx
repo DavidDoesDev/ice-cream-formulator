@@ -11,6 +11,7 @@ import { ConfigPanel } from "@/components/formula/ConfigPanel";
 import { Header } from "@/components/shared/Header";
 import { Pill } from "@/components/shared/Pill";
 import { Toast } from "@/components/shared/Toast";
+import { PerfHud } from "@/components/shared/PerfHud";
 import { seedRecipe } from "@/lib/recipe-seeder";
 import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
 import { derive } from "@/lib/derive";
@@ -41,13 +42,22 @@ import styles from "./page.module.scss";
 // Empty-by-default mixes that activate a real ingredient the first time their
 // slider rises above zero.
 // Trace additives placed directly from a single source, not via the solve.
-const TRACE_MACROS = new Set<keyof MacroRatios>(["stabilizer", "emulsifier"]);
+// Direct-dosed macros: dosed exactly from their single source, held out of the
+// big-macro solve. Stabilizer/emulsifier because the solve can't nail trace
+// amounts; alcohol because it's a flavor CHOICE, not a balancing lever — left
+// in the solve, vodka (~60% water) doubles as the cleanest dilution source in
+// a model where water is inferred, so lowering fat would re-dose alcohol the
+// user had zeroed (#55 follow-up, reproduced in cache/alcohol-creep.js).
+const TRACE_MACROS = new Set<keyof MacroRatios>(["stabilizer", "emulsifier", "alcohol"]);
 
 const AUTO_ACTIVATE: Partial<
-  Record<keyof MacroRatios, { kind: SmartMixKind; label: string; empty: string; default: string }>
+  Record<keyof MacroRatios, { kind: SmartMixKind; label: string; default: string }>
 > = {
-  alcohol: { kind: "alcohol", label: "Alcohol", empty: "alcohol-empty", default: "alcohol-vodka" },
-  emulsifier: { kind: "emulsifier", label: "Emulsifier", empty: "emulsifier-empty", default: "emulsifier-lecithin" },
+  alcohol: { kind: "alcohol", label: "Alcohol", default: "alcohol-vodka" },
+  emulsifier: { kind: "emulsifier", label: "Emulsifier", default: "emulsifier-lecithin" },
+  // Custards ship "stab-none" (deliberately empty) — raising the Stabilizer
+  // slider then needs a carrier just like the emulsifier case.
+  stabilizer: { kind: "stabilizer", label: "Stabilizer", default: "stab-modernist" },
 };
 
 interface SelectorState {
@@ -169,8 +179,14 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
         const auto = AUTO_ACTIVATE[macro];
         if (auto && target > 0) {
           const mixes = cur.recipe.smartMixes;
+          // Activate on CAPABILITY, not preset name: any zero-carrier preset
+          // ("emulsifier-empty", "stab-none", a custom blend without the
+          // macro) leaves setTraceMacro without a source — the drag becomes a
+          // silent no-op and the handle snaps back on release. Raising the
+          // slider expresses wanting the macro, so swap in the default carrier.
+          const carriesNone = (id: string) => (deps.getPreset(id)?.effectiveMacros[macro] ?? 0) <= 0;
           const next = mixes.some((m) => m.kind === auto.kind)
-            ? mixes.map((m) => (m.kind === auto.kind && m.presetId === auto.empty ? { ...m, presetId: auto.default } : m))
+            ? mixes.map((m) => (m.kind === auto.kind && carriesNone(m.presetId) ? { ...m, presetId: auto.default } : m))
             : [...mixes, { kind: auto.kind, label: auto.label, presetId: auto.default, grams: 0 }];
           cur = { ...cur, recipe: { ...cur.recipe, smartMixes: next } };
         }
@@ -188,6 +204,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     () => setWs((w) => recalibrate(w, deps, meta.style, meta.equipment)),
     [deps, meta.style, meta.equipment],
   );
+
 
   // --- Config (base systems) — re-solve at fixed yield on any change ---
   const resolveSolve = useCallback(
@@ -252,6 +269,8 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
 
   return (
     <>
+      {/* Inert unless the page is loaded with ?perf=1 (see PerfHud). */}
+      <PerfHud />
       <Header>
         <Pill tone="ghost" size="sm" onClick={() => setShowConfig(true)}>
           <Settings size={15} strokeWidth={2} /> Config
@@ -291,6 +310,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               equipment={meta.equipment}
               conflict={conflict}
               onMacroTarget={onMacroTarget}
+              ws={ws}
               onRecalibrate={onRecalibrate}
             />
             <RecipePanel
