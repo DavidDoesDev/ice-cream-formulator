@@ -88,7 +88,7 @@ export default function Home() {
         <h1 className={styles.title}>
           <span className={styles.titleRow}>Cold</span>
           <span className={`${styles.titleRow} ${styles.titleShift}`}>Hard</span>
-          <span className={styles.titleRow}>
+          <span className={`${styles.titleRow} ${styles.titleShift2}`}>
             <em className={styles.titleHollow}>Science</em>
           </span>
         </h1>

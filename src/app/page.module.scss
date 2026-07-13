@@ -54,6 +54,12 @@
   transform: translateX(0.18em);
 }
 
+.titleShift2 {
+  // Second step of the staircase — "Science" sits twice as far right as "Hard"
+  // so each row indents a little more than the one above it.
+  transform: translateX(0.36em);
+}
+
 .titleHollow {
   // Opaque paper fill (not transparent) so where "Science" overlaps the rows
   // above it, it occludes them; z-index lifts it on top of its siblings.
