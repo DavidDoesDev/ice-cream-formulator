@@ -6,10 +6,13 @@ import { relationshipHints } from "./relationships";
 import { derive } from "./derive";
 import { DEFAULT_EQUIPMENT, type Recipe, type MixPreset, type SmartMix, type SmartMixKind, type EquipmentProfile } from "@/data/types";
 
-// Trace additives are dosed directly (setTraceMacro), so a big-macro solve must
-// leave them alone — otherwise the solver flings their grams around to minimize
-// a trace target it can't meaningfully influence.
-const TRACE_KINDS = new Set<SmartMixKind>(["stabilizer", "emulsifier"]);
+// Directly-dosed mixes (setTraceMacro), held out of every big-macro solve.
+// Stabilizer/emulsifier: the solver flings trace grams around chasing targets
+// it can't meaningfully influence. Alcohol: it's a flavor choice, not a
+// balancing lever — water is inferred (not an ingredient), so a free alcohol
+// mix becomes the solver's cleanest dilution source (vodka ≈ 60% water) and
+// lowering fat re-doses alcohol the user explicitly zeroed.
+const TRACE_KINDS = new Set<SmartMixKind>(["stabilizer", "emulsifier", "alcohol"]);
 
 // The always-live workspace: a Recipe (the source of truth for grams) plus the
 // batch yield. Ratios are always derived from the recipe; a macro-slider change
@@ -105,12 +108,19 @@ function solveBlend(
   return { ...ws, recipe: { ...ws.recipe, smartMixes } };
 }
 
+// Macros whose mixes are direct-dosed (TRACE_KINDS above, by the same names).
+const TRACE_TARGET_MACROS = new Set<keyof MacroRatios>(["stabilizer", "emulsifier", "alcohol"]);
+
 export function setMacroTarget(
   ws: LiveWorkspace,
   macro: keyof MacroRatios,
   target: number,
   deps: WorkspaceDeps,
 ): LiveWorkspace {
+  // Direct-dosed macros route to their exact dose HERE, not just in the UI —
+  // their mixes are held out of solveBlend, so solving toward them would be a
+  // silent no-op for any caller that skips the page's routing.
+  if (TRACE_TARGET_MACROS.has(macro)) return setTraceMacro(ws, macro, target, deps);
   return solveBlend(ws, { ...workspaceRatios(ws, deps), [macro]: target }, deps, macro);
 }
 
@@ -171,7 +181,7 @@ export function rebalanceWorkspace(ws: LiveWorkspace, deps: WorkspaceDeps): Live
 
   // 1. Dose out-of-bound trace additives to their bound.
   const r0 = workspaceRatios(cur, deps);
-  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+  for (const macro of ["stabilizer", "emulsifier", "alcohol"] as (keyof MacroRatios)[]) {
     const [min, max] = MACRO_BOUNDS[macro];
     if (r0[macro] > max + 1e-6 || r0[macro] < min - 1e-6) {
       cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, r0[macro])), deps);
@@ -266,7 +276,7 @@ export function recalibrate(
 
   let cur = ws;
   // 1. Clamp any out-of-bound trace additive back to bounds (resolves a conflict).
-  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+  for (const macro of ["stabilizer", "emulsifier", "alcohol"] as (keyof MacroRatios)[]) {
     const [min, max] = MACRO_BOUNDS[macro];
     const v = workspaceRatios(cur, deps)[macro];
     if (v > max + 1e-6 || v < min - 1e-6) cur = setTraceMacro(cur, macro, Math.max(min, Math.min(max, v)), deps);
@@ -301,7 +311,7 @@ export function recalibrate(
 
   // 4. Final clamp: centering an egg-rich custard pulls in yolk, which can push
   //    its incidental emulsifier just over the bound — clamp trace back in.
-  for (const macro of ["stabilizer", "emulsifier"] as (keyof MacroRatios)[]) {
+  for (const macro of ["stabilizer", "emulsifier", "alcohol"] as (keyof MacroRatios)[]) {
     const [min, max] = MACRO_BOUNDS[macro];
     const v = workspaceRatios(out, deps)[macro];
     if (v > max + 1e-6 || v < min - 1e-6) out = setTraceMacro(out, macro, Math.max(min, Math.min(max, v)), deps);

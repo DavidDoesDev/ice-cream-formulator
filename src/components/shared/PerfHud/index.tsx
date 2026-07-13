@@ -77,7 +77,7 @@ export function PerfHud() {
         const flash = t < flashRef.current.until ? ` · ${flashRef.current.label}` : "";
         // HUD_TAG: bump when iterating on #55 so a pasted readout identifies its bundle.
         ref.current.textContent =
-          `v16 ${fps}fps worst ${worst}ms · nat ${c.native ?? 0} · in ${c.inputs ?? 0} · solve ${c.commits ?? 0} · blur! ${c.blurMidDrag ?? 0}${flash}`;
+          `v24 ${fps}fps worst ${worst}ms · nat ${c.native ?? 0} · in ${c.inputs ?? 0} · solve ${c.commits ?? 0} · blur! ${c.blurMidDrag ?? 0}${flash}`;
       }
       raf = requestAnimationFrame(tick);
     };

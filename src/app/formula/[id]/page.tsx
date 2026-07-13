@@ -42,7 +42,13 @@ import styles from "./page.module.scss";
 // Empty-by-default mixes that activate a real ingredient the first time their
 // slider rises above zero.
 // Trace additives placed directly from a single source, not via the solve.
-const TRACE_MACROS = new Set<keyof MacroRatios>(["stabilizer", "emulsifier"]);
+// Direct-dosed macros: dosed exactly from their single source, held out of the
+// big-macro solve. Stabilizer/emulsifier because the solve can't nail trace
+// amounts; alcohol because it's a flavor CHOICE, not a balancing lever — left
+// in the solve, vodka (~60% water) doubles as the cleanest dilution source in
+// a model where water is inferred, so lowering fat would re-dose alcohol the
+// user had zeroed (#55 follow-up, reproduced in cache/alcohol-creep.js).
+const TRACE_MACROS = new Set<keyof MacroRatios>(["stabilizer", "emulsifier", "alcohol"]);
 
 const AUTO_ACTIVATE: Partial<
   Record<keyof MacroRatios, { kind: SmartMixKind; label: string; empty: string; default: string }>
@@ -200,21 +206,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     [deps, meta.style, meta.equipment],
   );
 
-  // Commit-free preview of a macro-target change (#55): same math as
-  // onMacroTarget, no setState. During a drag, MacrosPanel paints these ratios
-  // via direct DOM — any React commit mid-gesture blacks out desktop Safari's
-  // input events, so the real commit waits for a pointer pause. Auto-activate
-  // is deliberately skipped (it belongs to the committed edit).
-  const onPreviewMacro = useCallback(
-    (macro: keyof MacroRatios, target: number): MacroRatios => {
-      const w = latest.current.ws;
-      const next = TRACE_MACROS.has(macro)
-        ? setTraceMacro(w, macro, target, deps)
-        : setMacroTarget(w, macro, target, deps);
-      return workspaceRatios(next, deps);
-    },
-    [deps],
-  );
 
   // --- Config (base systems) — re-solve at fixed yield on any change ---
   const resolveSolve = useCallback(
@@ -320,7 +311,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               equipment={meta.equipment}
               conflict={conflict}
               onMacroTarget={onMacroTarget}
-              onPreview={onPreviewMacro}
+              ws={ws}
               onRecalibrate={onRecalibrate}
               hideCup={debugHide.has("cup")}
             />
