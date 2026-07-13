@@ -14,6 +14,7 @@ import { Pill } from "@/components/shared/Pill";
 import { Header } from "@/components/shared/Header";
 import { Logo } from "@/components/shared/Logo";
 import { SparkleCone } from "@/components/home/SparkleCone";
+import { ScienceSection } from "@/components/home/ScienceSection";
 import styles from "./page.module.scss";
 
 const MARQUEE_ITEMS = ["TEST BATCH", "IN PROGRESS"];
@@ -225,6 +226,8 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <ScienceSection />
     </main>
   );
 }

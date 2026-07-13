@@ -11,6 +11,17 @@
   padding: calc(30px * var(--u)) 0 calc(28px * var(--u));
 }
 
+// Hero content sits above the SparkleCone overlay at every width (the cone is
+// absolutely positioned and later in the DOM, so it would otherwise paint over
+// the title where they overlap). The cone itself stays z-index-free so its
+// multiply blend fuses to the paper.
+.brandLockup,
+.title,
+.lead,
+.cta {
+  z-index: 1;
+}
+
 .brandLockup {
   display: inline-flex;
   align-items: center;
@@ -219,6 +230,9 @@
 /* ---- library ---- */
 .lib {
   margin-top: calc(76px * var(--u));
+  // "See my batches" scrolls here: clear the slide-in header (42px row +
+  // 16px·u padding each side) plus breathing room, so the title stays visible.
+  scroll-margin-top: calc(56px + 32px * var(--u));
 }
 
 .libHead {
@@ -441,17 +455,7 @@
 
 @media (max-width: 900px) {
   // Poster layout: left-aligned content column with the SparkleCone as an
-  // absolute backdrop hugging the right (see SparkleCone). Left alignment is
-  // the block default, so the hero just needs its content lifted above the
-  // cone — which stays z-index-free so its multiply blend fuses to the paper.
-  .brandLockup,
-  .title,
-  .lead,
-  .cta {
-    position: relative;
-    z-index: 1;
-  }
-
+  // absolute backdrop hugging the right (see SparkleCone).
   .title {
     // Bigger on phone — it's the hero now, sitting over the cone.
     font-size: clamp(70px, 19vw, 128px);

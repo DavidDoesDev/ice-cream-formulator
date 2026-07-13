@@ -1,0 +1,163 @@
+.science {
+  margin-top: calc(76px * var(--u));
+}
+
+/* Same head treatment as the library section above it. */
+.head {
+  margin-bottom: 26px;
+  padding-bottom: 14px;
+  border-bottom: 2.5px solid var(--ink);
+}
+
+.title {
+  font-family: var(--font-poster);
+  text-transform: uppercase;
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 0.9;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Text column beside the pint figure, which spans thesis + macro list. */
+.body {
+  display: grid;
+  grid-template-columns: 1fr 40%;
+  gap: calc(56px * var(--u));
+  align-items: start;
+  margin-bottom: calc(64px * var(--u));
+}
+
+/* The thesis — one register below the section title, above everything else. */
+.lead {
+  max-width: min(680px, 92vw);
+  margin: 0 0 calc(44px * var(--u));
+  font-size: clamp(18px, 2.1vw, 23px);
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Mono kicker labels a subsection — reference material, not controls. */
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+
+/* Macro list — deliberately flat, no border/shadow sticker chrome, so it
+   doesn't read as the interactive specimen tiles above. */
+.macroList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.macro {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) 1fr;
+  gap: 24px;
+  align-items: baseline;
+  padding: 13px 0;
+  border-top: 1.5px solid var(--line);
+}
+
+.macro:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.macroName {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.macroRole {
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 60ch;
+  color: var(--text);
+}
+
+.figure {
+  // Nudge below the grid top so the lid lines up optically with the lead's
+  // first line of text rather than floating above it.
+  margin: 12px 0 0;
+}
+
+/* The workflow — the loudest element after the hero: giant hollow numerals
+   and poster titles, one full-width row per step. */
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: minmax(110px, 170px) 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: calc(26px * var(--u)) 0;
+}
+
+.stepNo {
+  font-family: var(--font-poster);
+  font-size: clamp(72px, 9vw, 128px);
+  line-height: 0.85;
+  -webkit-text-stroke: 2.5px var(--ink);
+  color: transparent;
+}
+
+.stepTitle {
+  font-family: var(--font-poster);
+  text-transform: uppercase;
+  font-size: clamp(28px, 4vw, 54px);
+  line-height: 0.9;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+
+.stepBody {
+  margin: 0;
+  max-width: 58ch;
+  font-size: clamp(15px, 1.6vw, 17px);
+  line-height: 1.55;
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  .figure {
+    // The cup reads as a footnote to the list on narrow screens.
+    width: min(220px, 60vw);
+    justify-self: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .macro {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .step {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stepNo {
+    font-size: 64px;
+  }
+}

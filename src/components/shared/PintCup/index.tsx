@@ -14,7 +14,8 @@ export interface PintCupHandle {
 
 interface PintCupProps {
   ratios: MacroRatios;
-  size?: "full" | "mini";
+  // "fluid" fills the parent's width, keeping the cup's natural aspect ratio.
+  size?: "full" | "mini" | "fluid";
   width?: number;
   ref?: Ref<PintCupHandle>;
 }
@@ -202,11 +203,13 @@ function PintCupImpl({ ratios, size = "full", width, ref }: PintCupProps) {
 
   const sizeStyle = width
     ? { width: `${width}px`, height: `${Math.round(width * ASPECT)}px` }
-    : undefined;
+    : size === "fluid"
+      ? { width: "100%", aspectRatio: `${LID_W} / ${VH + LID_H + LID_GAP}` }
+      : undefined;
 
   return (
     <div
-      className={`${styles.cup} ${width ? "" : size === "mini" ? styles.mini : styles.full}`}
+      className={`${styles.cup} ${width || size === "fluid" ? "" : size === "mini" ? styles.mini : styles.full}`}
       style={sizeStyle}
     >
       <svg
