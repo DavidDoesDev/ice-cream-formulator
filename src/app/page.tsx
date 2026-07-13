@@ -12,6 +12,7 @@ import { PintCup } from "@/components/shared/PintCup";
 import { Icon } from "@/components/shared/Icon";
 import { Pill } from "@/components/shared/Pill";
 import { Header } from "@/components/shared/Header";
+import { Logo } from "@/components/shared/Logo";
 import { SparkleCone } from "@/components/home/SparkleCone";
 import styles from "./page.module.scss";
 
@@ -81,8 +82,7 @@ export default function Home() {
       <Header revealOnScroll />
       <section className={styles.hero}>
         <div className={styles.brandLockup}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Ice Cream Lab logo" className={styles.brandMark} />
+          <Logo className={styles.brandMark} />
           <span className={styles.brandWord}>Ice Cream Lab</span>
         </div>
         <h1 className={styles.title}>

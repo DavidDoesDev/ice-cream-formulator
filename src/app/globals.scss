@@ -25,8 +25,8 @@
   --color-macro-emulsifier: var(--c-grape);
   --color-macro-alcohol: var(--c-peach);
 
-  // blue-violet ink / accent
-  --accent: #4b39f2;
+  // blue-violet ink / accent — EXPERIMENT: OKLCh chroma ×0.15, L ×0.3 (muted + much darker). Was #4b39f2.
+  --accent: #07091b;
 
   // shape
   --radius: 22px;
@@ -85,8 +85,8 @@
 @mixin dark-theme {
   // press · dark — mirrors palette.ts pressDark
   --paper: var(--accent);
-  --paper-2: #5b4bf4;
-  --panel: #3f2fc9;
+  --paper-2: #0a0c1d; // EXPERIMENT: OKLCh chroma ×0.15, L ×0.3. Was #5b4bf4.
+  --panel: #050615; // EXPERIMENT: OKLCh chroma ×0.15, L ×0.3. Was #3f2fc9.
   --ink: #f7efdd;
   --text: #f7efdd;
   --muted: color-mix(in oklab, #f7efdd 55%, var(--accent));

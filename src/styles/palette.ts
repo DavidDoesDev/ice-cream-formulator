@@ -13,7 +13,8 @@ export const CANDY = {
 } as const;
 
 // Blue-violet ink — the accent that carries headings, outlines, and links.
-export const ACCENT = "#4b39f2";
+// EXPERIMENT: OKLCh chroma ×0.15, perceptual lightness ×0.3 (muted + much darker). Was #4b39f2.
+export const ACCENT = "#07091b";
 
 // Press · light: warm paper ground, ink drawn in the accent.
 export const pressLight = {
@@ -27,8 +28,8 @@ export const pressLight = {
 // Press · dark: indigo field, paper-tone ink.
 export const pressDark = {
   paper: ACCENT,
-  paper2: "#5b4bf4",
-  panel: "#3f2fc9",
+  paper2: "#0a0c1d", // EXPERIMENT: OKLCh chroma ×0.15, L ×0.3. Was #5b4bf4.
+  panel: "#050615", // EXPERIMENT: OKLCh chroma ×0.15, L ×0.3. Was #3f2fc9.
   ink: "#F7EFDD",
   text: "#F7EFDD",
 } as const;
