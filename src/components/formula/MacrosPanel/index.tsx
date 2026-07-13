@@ -222,17 +222,43 @@ export function MacrosPanel({
     const d = dragLatestRef.current;
     if (!d) return;
     // 1. Evaluate the sample cache AT THE CURRENT POINTER VALUE: interpolate
-    //    between the bracketing samples; past either end, hold the endpoint
-    //    (at most ~one worker round-trip stale — the next sample lands there
-    //    within ~15ms; safer than extrapolating). Then ease lightly and paint
-    //    cup + siblings. All DOM writes stay inside this rAF tick.
+    //    between the bracketing samples; past either end — the leading edge of
+    //    a fast sweep, where samples trail the pointer by a worker round trip —
+    //    extrapolate along the end segment's slope so siblings keep moving at
+    //    hand speed instead of holding and catching up. The slope anchor must
+    //    span ≥5% of the sampled range (two near-identical samples give a
+    //    noise slope), and the extrapolation distance is capped at 2× that
+    //    span so a reply stall can't fling the display. Then ease lightly and
+    //    paint cup + siblings. All DOM writes stay inside this rAF tick.
     const s = samplesRef.current;
     let target: MacroRatios | null = null;
     if (s.macro === d.key && s.pts.length > 0) {
       const pts = s.pts;
       const last = pts.length - 1;
-      if (d.value <= pts[0].v) target = pts[0].r;
-      else if (d.value >= pts[last].v) target = pts[last].r;
+      const extrapolate = (endIdx: number, inward: 1 | -1): MacroRatios => {
+        const end = pts[endIdx];
+        const range = Math.abs(pts[last].v - pts[0].v);
+        const minSpan = Math.max(1e-6, range * 0.05);
+        let a: { v: number; r: MacroRatios } | null = null;
+        for (let i = endIdx + inward; i >= 0 && i <= last; i += inward) {
+          if (Math.abs(end.v - pts[i].v) >= minSpan) {
+            a = pts[i];
+            break;
+          }
+        }
+        if (!a) return end.r;
+        const span = end.v - a.v;
+        const dist = d.value - end.v;
+        const capped = Math.max(-2 * Math.abs(span), Math.min(2 * Math.abs(span), dist));
+        const t = capped / span;
+        const r = {} as MacroRatios;
+        for (const k of Object.keys(end.r) as (keyof MacroRatios)[]) {
+          r[k] = Math.max(0, end.r[k] + (end.r[k] - a.r[k]) * t);
+        }
+        return r;
+      };
+      if (d.value <= pts[0].v) target = extrapolate(0, 1);
+      else if (d.value >= pts[last].v) target = extrapolate(last, -1);
       else {
         let lo = 0;
         let hi = last;

@@ -51,10 +51,13 @@ import styles from "./page.module.scss";
 const TRACE_MACROS = new Set<keyof MacroRatios>(["stabilizer", "emulsifier", "alcohol"]);
 
 const AUTO_ACTIVATE: Partial<
-  Record<keyof MacroRatios, { kind: SmartMixKind; label: string; empty: string; default: string }>
+  Record<keyof MacroRatios, { kind: SmartMixKind; label: string; default: string }>
 > = {
-  alcohol: { kind: "alcohol", label: "Alcohol", empty: "alcohol-empty", default: "alcohol-vodka" },
-  emulsifier: { kind: "emulsifier", label: "Emulsifier", empty: "emulsifier-empty", default: "emulsifier-lecithin" },
+  alcohol: { kind: "alcohol", label: "Alcohol", default: "alcohol-vodka" },
+  emulsifier: { kind: "emulsifier", label: "Emulsifier", default: "emulsifier-lecithin" },
+  // Custards ship "stab-none" (deliberately empty) — raising the Stabilizer
+  // slider then needs a carrier just like the emulsifier case.
+  stabilizer: { kind: "stabilizer", label: "Stabilizer", default: "stab-modernist" },
 };
 
 interface SelectorState {
@@ -186,8 +189,14 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
         const auto = AUTO_ACTIVATE[macro];
         if (auto && target > 0) {
           const mixes = cur.recipe.smartMixes;
+          // Activate on CAPABILITY, not preset name: any zero-carrier preset
+          // ("emulsifier-empty", "stab-none", a custom blend without the
+          // macro) leaves setTraceMacro without a source — the drag becomes a
+          // silent no-op and the handle snaps back on release. Raising the
+          // slider expresses wanting the macro, so swap in the default carrier.
+          const carriesNone = (id: string) => (deps.getPreset(id)?.effectiveMacros[macro] ?? 0) <= 0;
           const next = mixes.some((m) => m.kind === auto.kind)
-            ? mixes.map((m) => (m.kind === auto.kind && m.presetId === auto.empty ? { ...m, presetId: auto.default } : m))
+            ? mixes.map((m) => (m.kind === auto.kind && carriesNone(m.presetId) ? { ...m, presetId: auto.default } : m))
             : [...mixes, { kind: auto.kind, label: auto.label, presetId: auto.default, grams: 0 }];
           cur = { ...cur, recipe: { ...cur.recipe, smartMixes: next } };
         }

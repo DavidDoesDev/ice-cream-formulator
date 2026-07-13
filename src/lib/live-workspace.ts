@@ -233,15 +233,35 @@ export function setTraceMacro(
   deps: WorkspaceDeps,
 ): LiveWorkspace {
   const mixes = ws.recipe.smartMixes;
-  const srcIdx = mixes.findIndex((m) => (deps.getPreset(m.presetId)?.effectiveMacros[macro] ?? 0) > 0);
+  // Dose the DEDICATED mix for this macro (kind === macro). The old "first
+  // mix carrying the macro" rule dosed EGGS on a custard — their incidental
+  // emulsifier made them the first hit — silently draining or growing the
+  // egg base when the user dragged Emulsifier (cache/emul-snap.js repro).
+  const carries = (m: SmartMix) => (deps.getPreset(m.presetId)?.effectiveMacros[macro] ?? 0) > 0;
+  let srcIdx = mixes.findIndex((m) => m.kind === (macro as SmartMixKind) && carries(m));
+  if (srcIdx < 0) srcIdx = mixes.findIndex(carries);
   if (srcIdx < 0) return ws;
 
   const f = deps.getPreset(mixes[srcIdx].presetId)!.effectiveMacros[macro];
   const Y = ws.yieldGrams;
-  // Grams of source needed to hit the target fraction of the fixed yield; the
-  // rest of the batch scales to fill the remainder, so the yield stays put.
-  const sourceGrams = f <= target ? Y : Math.max(0, Math.min(Y, (target * Y) / f));
+  // The rest of the batch may carry this macro too (egg yolk's incidental
+  // emulsifier), and it scales with the remainder. With c = the rest's macro
+  // fraction: target·Y = src·f + (Y − src)·c → src = Y·(target − c)/(f − c).
+  // Ignoring c overshot the target, so the handle "snapped" to the achieved
+  // ratio on release. Clamping src ≥ 0 gives an honest floor at the rest's
+  // contribution — the dedicated mix empties; eggs are left alone.
   const otherGrams = totalGrams(ws.recipe) - mixes[srcIdx].grams;
+  let otherMacro = 0;
+  mixes.forEach((m, i) => {
+    if (i !== srcIdx) otherMacro += m.grams * (deps.getPreset(m.presetId)?.effectiveMacros[macro] ?? 0);
+  });
+  for (const a of ws.recipe.additionalIngredients) {
+    otherMacro += a.grams * (deps.resolveIngredient(a.ingredientId)?.[macro] ?? 0);
+  }
+  const c = otherGrams > 1e-9 ? otherMacro / otherGrams : 0;
+  const denom = f - c;
+  const sourceGrams =
+    denom > 1e-9 ? Math.max(0, Math.min(Y, (Y * (target - c)) / denom)) : f <= target ? Y : 0;
   const scale = otherGrams > 1e-9 ? (Y - sourceGrams) / otherGrams : 0;
 
   const smartMixes = mixes.map((m, i) =>
