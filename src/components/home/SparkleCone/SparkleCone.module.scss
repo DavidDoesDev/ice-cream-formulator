@@ -54,8 +54,11 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  // Melts the footage's white background into the paper. Trade-off, accepted
-  // for now: on the dark theme the whole video takes the paper tint.
+  // Melts the footage's white background into the paper. The dark theme swaps
+  // to a black-background cut (see index.tsx) and screens it out instead, so
+  // the cone stays lit against the dark ground rather than sinking into it.
+  // Dark's blend + object-fit/position/scale come inline from the ConeFit
+  // tuner (?dev), which composes with the parallax transform.
   mix-blend-mode: multiply;
   will-change: transform;
 }
@@ -321,14 +324,80 @@
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--ink);
+  // Never let a tall panel push controls off-screen — scroll inside instead.
+  max-height: calc(100dvh - 28px);
+  overflow-y: auto;
   // The scene disables pointer events; the panel needs them back.
   pointer-events: auto;
+}
+
+// The cone-fit tuner sits opposite the fx panel so the two don't overlap.
+.conePanel {
+  right: auto;
+  left: 14px;
 }
 
 .panelTitle {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+// Sticky header keeps the title + copy/reset buttons pinned to the top of the
+// (scrollable) panel, so the copy button is always in reach.
+.panelHead {
+  position: sticky;
+  top: -10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -10px -12px 2px;
+  padding: 10px 12px 4px;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--line);
+}
+
+// Group sub-heading (video / image) inside the cone-fit panel.
+.panelSub {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+  border-top: 1px solid var(--line);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+.panelSelect {
+  margin-left: auto;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 2px;
+}
+
+.panelBtnRow {
+  display: flex;
+  gap: 6px;
+}
+
+.panelBtn {
+  padding: 4px 10px;
+  // Bright cream fill so it reads clearly against the dark panel.
+  background: var(--ink);
+  color: var(--paper-2);
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
 }
 
 .panelGroup {
@@ -374,6 +443,21 @@
   text-align: right;
   font-weight: 700;
   opacity: 0.65;
+}
+
+// Editable numeric readout — type a value directly or use the slider.
+.panelNum {
+  margin-left: auto;
+  width: 52px;
+  text-align: right;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 3px;
 }
 
 .panelCheck {
