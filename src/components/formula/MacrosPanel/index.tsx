@@ -47,8 +47,6 @@ interface MacrosPanelProps {
   // The live workspace, for the worker-solved mid-drag preview (cup+siblings).
   ws?: LiveWorkspace;
   onRecalibrate?: () => void;
-  // Debug-only (#55 bisection): skip rendering the PintCup entirely.
-  hideCup?: boolean;
 }
 
 // Right workspace panel: the composition as a live cup + draggable macro sliders.
@@ -64,7 +62,6 @@ export function MacrosPanel({
   onMacroTarget,
   ws,
   onRecalibrate,
-  hideCup = false,
 }: MacrosPanelProps) {
   // #55 ROOT CAUSE: ANY React commit while desktop Safari's slider gesture is
   // active suppresses its input-event delivery (~100Hz → ~10Hz measured) and
@@ -503,11 +500,9 @@ export function MacrosPanel({
         </span>
       </div>
 
-      {!hideCup && (
-        <div className={styles.cupStage}>
-          <PintCup ref={cupRef} ratios={ratios} size="full" width={210} />
-        </div>
-      )}
+      <div className={styles.cupStage}>
+        <PintCup ref={cupRef} ratios={ratios} size="full" width={210} />
+      </div>
 
       <SectionHeader role="composition" label="Composition" />
 

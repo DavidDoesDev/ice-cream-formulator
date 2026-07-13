@@ -16,10 +16,6 @@ interface PintCupProps {
   ratios: MacroRatios;
   size?: "full" | "mini";
   width?: number;
-  // Freeze the waterline bob (e.g. during a slider drag) — the per-frame SVG
-  // path mutation is cheap in Chromium but a real paint cost in Safari, where
-  // it competes with the drag for the main thread.
-  waveParked?: boolean;
   ref?: Ref<PintCupHandle>;
 }
 
@@ -137,7 +133,7 @@ function computeLayers(ratios: MacroRatios): {
   return { layers, waterMeanY };
 }
 
-function PintCupImpl({ ratios, size = "full", width, waveParked = false, ref }: PintCupProps) {
+function PintCupImpl({ ratios, size = "full", width, ref }: PintCupProps) {
   const uid = useId().replace(/:/g, "-");
   const clipId = `pint-cup-clip${uid}`;
 
@@ -164,7 +160,7 @@ function PintCupImpl({ ratios, size = "full", width, waveParked = false, ref }: 
     const el = waterRef.current;
     if (!hasWave || !el) return;
 
-    if (waveParked || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       el.setAttribute("d", waterPath(waterMeanYRef.current, 0));
       return;
     }
@@ -180,10 +176,10 @@ function PintCupImpl({ ratios, size = "full", width, waveParked = false, ref }: 
       waveLoopRef.current = false;
       cancelAnimationFrame(raf);
     };
-    // waterMeanY: the parked/reduced-motion branch must rewrite its static
-    // path when a solve commit moves the waterline (loop restarts are cheap —
-    // commits only happen on pointer pauses now).
-  }, [hasWave, waveParked, waterMeanY]);
+    // waterMeanY: the reduced-motion branch must rewrite its static path when
+    // a solve commit moves the waterline (loop restarts are cheap — commits
+    // only happen on drag release now).
+  }, [hasWave, waterMeanY]);
 
   // #55 imperative preview: retarget the existing polygons + waterline from
   // fresh ratios with zero React involvement. Layers that appear/disappear

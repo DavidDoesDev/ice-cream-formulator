@@ -93,16 +93,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [selector, setSelector] = useState<SelectorState | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Debug-only (#55): `?hide=cup,recipe,header` strips heavy co-renderers so a
-  // human check can bisect what strangles Safari's slider event rate. Read once
-  // at mount; the server renders everything (a one-off hydration mismatch on a
-  // debug flag is acceptable). Remove with the rest of the #55 instrumentation.
-  const [debugHide] = useState<ReadonlySet<string>>(() =>
-    typeof window === "undefined"
-      ? new Set()
-      : new Set((new URLSearchParams(window.location.search).get("hide") ?? "").split(",").filter(Boolean)),
-  );
-
   const ratios = workspaceRatios(ws, deps);
   const derived = derive(ws.recipe);
   const conflict = workspaceConflict(ws, deps);
@@ -322,9 +312,8 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               onMacroTarget={onMacroTarget}
               ws={ws}
               onRecalibrate={onRecalibrate}
-              hideCup={debugHide.has("cup")}
             />
-            {!debugHide.has("recipe") && <RecipePanel
+            <RecipePanel
               recipe={ws.recipe}
               style={meta.style}
               yieldGrams={ws.yieldGrams}
@@ -340,7 +329,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
               onQuickAdd={onQuickAdd}
               onYield={onYield}
               onNotes={setNotes}
-            />}
+            />
           </div>
         </div>
 

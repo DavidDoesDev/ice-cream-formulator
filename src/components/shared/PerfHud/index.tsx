@@ -2,19 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
-// Debug-only HUD for the Safari slider investigation (#55). Mounted
-// unconditionally but inert (hidden, no rAF loop) unless the page is loaded
-// with `?perf=1` — checked here, not by the parent, so enabling never touches
-// React state (the flag isn't part of the route, and reading it must not force
-// a hydration mismatch). Shows live frame cadence plus the slider counters
-// below, so a human check reports numbers, not vibes.
+// Opt-in perf HUD (`?perf=1` on the formula page), kept from the #55 Safari
+// slider investigation as a permanent diagnostic: a manual check reports
+// numbers, not vibes. Mounted unconditionally but inert (hidden, no rAF loop)
+// without the flag — checked here, not by the parent, so enabling never
+// touches React state (the flag isn't part of the route, and reading it must
+// not force a hydration mismatch). Healthy drag on desktop Safari: `nat`/`in`
+// in the hundreds over a few seconds, `solve` ≈ one per release, `blur!` 0.
+// See docs/known-issues/trace-macro-sliders.md for what the numbers mean.
 //
 // Counters (window.__icPerf, bumped via perfCount from event handlers):
-//   inputs      — range-input `input` events seen (trackpad event rate)
-//   commits     — throttled solve dispatches (~11/s expected during a drag)
-//   blurMidDrag — the input blurred while a pointer was still down: desktop
-//                 Safari's mid-drag blur (sibling of its pointercancel quirk).
-//                 Any nonzero value here confirms hypothesis #1 of issue #55.
+//   native      — range-input `input` events at the window capture phase
+//   inputs      — the same events as seen by React onChange (should match)
+//   commits     — solve commits (release / keyboard debounce)
+//   blurMidDrag — input blurred while a pointer was held (Safari quirk guard)
 
 type Counters = { inputs?: number; commits?: number; blurMidDrag?: number; native?: number };
 
@@ -38,16 +39,7 @@ export function PerfHud() {
   const flashRef = useRef({ until: 0, label: "" });
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    // #55 bisection: strip compositing-heavy GLOBAL layers by direct DOM.
-    // (`?hide=cup,recipe` are handled by the page; these two live in layout.)
-    const hide = new Set((params.get("hide") ?? "").split(","));
-    if (hide.has("grain")) document.querySelector(".grain")?.remove();
-    if (hide.has("header")) {
-      const h = document.querySelector("header");
-      if (h) h.style.display = "none";
-    }
-    if (!params.has("perf") || !ref.current) return;
+    if (!new URLSearchParams(window.location.search).has("perf") || !ref.current) return;
     ref.current.style.display = "block";
     // Count NATIVE input events from range sliders at the capture phase —
     // before React's event system sees them. `nat` vs `in` splits "Safari
@@ -75,9 +67,8 @@ export function PerfHud() {
         const worst = Math.round(Math.max(0, ...gaps));
         const c = window.__icPerf ?? {};
         const flash = t < flashRef.current.until ? ` · ${flashRef.current.label}` : "";
-        // HUD_TAG: bump when iterating on #55 so a pasted readout identifies its bundle.
         ref.current.textContent =
-          `v25 ${fps}fps worst ${worst}ms · nat ${c.native ?? 0} · in ${c.inputs ?? 0} · solve ${c.commits ?? 0} · blur! ${c.blurMidDrag ?? 0}${flash}`;
+          `${fps}fps worst ${worst}ms · nat ${c.native ?? 0} · in ${c.inputs ?? 0} · solve ${c.commits ?? 0} · blur! ${c.blurMidDrag ?? 0}${flash}`;
       }
       raf = requestAnimationFrame(tick);
     };

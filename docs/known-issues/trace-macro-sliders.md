@@ -1,8 +1,19 @@
 # Known issue: macro sliders lag in desktop Safari (#55)
 
-Status: **mechanism fully understood (research + v9); smooth-but-not-live fix
-works (v11/v14); every attempt to add mid-drag liveness back has re-triggered
-suppression (v10, v12, v13, v15, v16). Current deployed: v16.** See
+Status: **RESOLVED (2026-07-13), pending #55 close.** Final architecture: a
+drag runs zero main-thread work beyond direct DOM writes — the dragged fill/%
+follow the pointer per event; the recipe solve runs in a Web Worker
+(`MacrosPanel/preview.worker.ts`); replies build a sampled curve of the drag's
+solve function which is interpolated (and slope-extrapolated at the leading
+edge) AT THE POINTER VALUE every rAF frame to paint cup + sibling sliders;
+React commits land on release only. Measured end state: ~350–390 input events
+per drag vs ~20 before, smooth thumb, live cup/siblings/fill-colors. Residual:
+Chromium remains somewhat smoother — it receives ~3× the input samples through
+a pipeline without the stop-and-wait gate; that gap is upstream (a WebKit bug
+report is warranted; none exists). The investigation also flushed out three
+trace-dosing bugs, fixed in `live-workspace.ts` (alcohol as direct-dosed
+choice; kind-matched trace sources; contribution-aware dosing) and page
+auto-activate (capability-based carrier swap). See
 `docs/research/webkit-range-slider-event-throttling.md` for the WebKit
 internals (primary-sourced).
 
@@ -32,30 +43,21 @@ neither has the failure mode. No matching WebKit bug exists (worth filing).
 | v13 | v12's preview moved to a drag-scoped 80ms `setInterval` | 35 (7 mid-drag commits) | jerky |
 | v15 | preview moved into a rAF loop (research-informed) | 38 (10 mid-drag commits) | jerky |
 | v16 | rAF preview, CUP ONLY (no sibling `el.value` writes) | 17 (7 mid-drag commits) | jerky |
+| v17 | cup preview + commits hard-disabled until release (T1 test) | 34, solve 1 | amplifier acquitted — the preview itself was guilty |
+| v18 | preview WITHOUT solve — O(1) approximation (T2 test) | **353** | **convicted: the ~12ms solve JS on the main thread** |
+| v19–v21 | solve moved to a Web Worker; siblings re-enabled; per-frame easing | 342–389 | drag smooth; siblings stepped (bursty reply delivery) |
+| v22–v24 | display = f(pointer): reply-calibrated line → sampled polyline | ~350 | wrong-way darts fixed by local bracketing interpolation |
+| v25 | leading-edge slope extrapolation (anchored, capped) | ~350 | shipped |
 
-Key confound discovered in the ladder: **v13/v15/v16 all show mid-drag quiet
-commits firing** (`solve` 7–10) — once any disturbance gaps events past the
-140ms quiet window, a commit fires, its ~100ms blackout guarantees the next
-gap, and the loop locks at commit cadence. The preview's own cost and the
-commit amplifier have never been separated experimentally.
-
-## Open theories (ranked) — next experiments
-
-1. **Quiet-commit feedback amplifier (T1, primary).** The preview only needs
-   to cause ONE ≥140ms event gap; the mid-drag commit it triggers guarantees
-   the next. Predicts: cup preview with mid-drag commits DISABLED (commit on
-   release only) recovers high `nat`. Cheapest, strongest-evidence experiment.
-2. **The ~12ms solve JS itself (T2).** Even inside rAF it stretches the
-   rendering update the ACK rides on; if the ack slips runloop cycles
-   non-linearly this could dominate. Predicts: cup preview WITHOUT solve
-   (e.g. geometric interpolation, or solve every 300ms+) recovers `nat`.
-3. **SVG polygon invalidation class (T3).** Polygon `points` changes on 5–7
-   clipped polygons may trigger a heavier repaint/commit than the wave's
-   single path-`d` mutation (which is proven free at 60fps). Predicts:
-   water-path-only preview is free; polygons alone suppress.
-4. **Native form-control repaint (T4, weakened).** Was the rationale for v16
-   (dropping sibling `el.value` writes) — v16 still suppressed, so siblings
-   were not the (only) cost. Possibly a contributor.
+Two lessons the ladder distilled: the 140ms quiet-commit debounce was an
+**amplifier** (any event gap triggered a commit whose ~100ms blackout
+guaranteed the next gap — v13/v15/v16 all show `solve` 7–10 mid-drag), and
+the true suppressor was **any nontrivial main-thread JS during the gesture**,
+regardless of scheduling (in-handler, setInterval, or rAF): it stretches the
+stop-and-wait round trip that both event delivery and the native thumb ride.
+Bursty worker-reply delivery (macrotasks are deferred mid-gesture too) was
+then hidden by making the display a pure function of pointer position over a
+sampled curve, rather than of reply arrival times.
 
 ## Current symptom (sharpened 2026-07-11)
 
@@ -65,23 +67,26 @@ commit amplifier have never been separated experimentally.
   invisible there; the mechanism is the same.
 - **macOS Safari only.** iOS Safari and Chromium are smooth.
 
-## Instrumentation (all still in the tree; remove when closed)
+## Instrumentation
+
+Kept permanently:
 
 - **PerfHud** (`src/components/shared/PerfHud`): `?perf=1` on the formula page.
-  Readout: `vN fps · worst frame · nat (native input events, capture phase) ·
-  in (React onChange) · solve (throttled commits) · blur! (mid-drag blurs)`.
-  Click-to-copy (legacy execCommand fallback — Safari has no async clipboard on
-  plain-http localhost).
-- **`public/slider-probe.html`**: React-free sliders with toggles for every
-  eliminated hypothesis (write-back modes, app CSS, grain, backdrop-blur, heavy
-  handlers, pointermove listener, sibling writes, rAF churn).
-- **Debug flags on the formula page**: `?hide=cup,recipe,grain,header`
-  (cup/recipe in page.tsx; grain/header stripped by PerfHud via direct DOM),
-  `?freeze=1` (drag does zero React work; solve on release).
-- **`cache/`** (gitignored): `safari-drag-probe.mjs` (drives REAL Safari via
-  safaridriver — WARNING: never call WebDriver `window/fullscreen`, it wedges
-  Safari's session pairing until Safari restarts), `drag-smoke.mjs` (Playwright
-  functional drag check), `solve-bench-entry.ts` (V8-vs-JSC solve benchmark).
+  Readout: `fps · worst frame · nat (native input events, capture phase) ·
+  in (React onChange) · solve (commits) · blur! (mid-drag blurs)`. Healthy
+  Safari drag: nat/in in the hundreds over a few seconds, solve ≈ 1 per
+  release, blur! 0. Click-to-copy (legacy execCommand fallback — Safari has no
+  async clipboard on plain-http localhost).
+- **`e2e/slider-drag.spec.ts`**: regression guard — drag moves/lands/holds,
+  and siblings + cup update mid-drag via the worker preview.
+- **`docs/research/slider-probe.html`** (moved out of `public/`): React-free
+  sliders with toggles for every eliminated hypothesis; open via `file://`.
+
+Removed at close: `?hide=…` and `?freeze=1` debug flags, the HUD version tag.
+Local gitignored tools that existed during the hunt (`cache/`): a safaridriver
+driver for REAL Safari (WARNING: never call WebDriver `window/fullscreen`, it
+wedges Safari's session pairing until Safari restarts), a Playwright drag
+smoke, a V8-vs-JSC solve benchmark, solver sweep/repro scripts.
 
 ## Fact table (measured in real Safari 18.3, trackpad, 2026-07-11/12)
 
