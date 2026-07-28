@@ -11,7 +11,6 @@ import { equipmentInfo, normalizeEquipment } from "@/lib/equipment";
 import { Icon } from "@/components/shared/Icon";
 import { Pill } from "@/components/shared/Pill";
 import { Header } from "@/components/shared/Header";
-import { Logo } from "@/components/shared/Logo";
 import { SparkleCone } from "@/components/home/SparkleCone";
 import { ScienceSection } from "@/components/home/ScienceSection";
 import styles from "./page.module.scss";
@@ -89,10 +88,6 @@ export default function Home() {
     <main className={styles.main}>
       <Header />
       <section className={styles.hero}>
-        <div className={styles.brandLockup}>
-          <Logo className={styles.brandMark} />
-          <span className={styles.brandWord}>Ice Cream Lab</span>
-        </div>
         <h1 className={styles.title}>
           <span className={styles.titleRow}>Cold</span>
           <span className={`${styles.titleRow} ${styles.titleShift}`}>Hard</span>
