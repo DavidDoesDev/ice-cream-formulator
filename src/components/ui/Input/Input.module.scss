@@ -1,9 +1,10 @@
+// Editable-field convention: raised surface + border signals editability.
 .field {
-  --field-accent: var(--accent);
+  --field-accent: var(--field-border-focus);
   font-family: var(--font-body);
   color: var(--ink);
-  background: var(--paper);
-  border: 2px solid var(--line);
+  background: var(--field-surface);
+  border: 2px solid var(--field-border);
   border-radius: var(--radius-sm);
   width: 100%;
   transition: border-color 0.2s;

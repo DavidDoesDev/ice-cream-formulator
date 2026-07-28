@@ -1,66 +1,21 @@
+// Border-on-base card (raised fill reserved for fields). Title + sections + rows
+// come from the ui primitives; this holds only the recipe-specific bits.
 .panel {
-  background: var(--paper-2);
-  border: 2.5px solid var(--ink);
+  border: 2px solid color-mix(in oklab, var(--ink) 30%, transparent);
   border-radius: var(--radius-lg);
-  padding: calc(22px * var(--u));
-  box-shadow: var(--sh);
-}
-
-.bar {
+  padding: calc(20px * var(--u));
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .kind {
-  font-family: var(--font-poster);
-  text-transform: uppercase;
-  font-size: clamp(24px, 3vw, 38px);
-  line-height: 0.9;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.01em;
   color: var(--ink);
-}
-
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.mixEntry {
-  border-bottom: 1.5px dashed var(--line);
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 0;
-  flex-wrap: wrap;
-  row-gap: 8px;
-}
-
-.subList {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 0 0 10px 14px;
-  margin-top: -2px;
-}
-
-.subRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.subName {
-  font-size: 13px;
-  color: var(--muted);
+  margin: 0 0 var(--space-2);
 }
 
 .subGrams {
@@ -70,31 +25,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.main {
-  flex: 1 1 150px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16.5px;
-  color: var(--ink);
-}
-
 .remove {
   border: 0;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
   padding: 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
 }
-
 .remove:hover {
   color: var(--ink);
 }
@@ -102,72 +41,17 @@
 .addRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  margin-top: 18px;
-}
-
-.eggBanner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-  padding: 9px 12px;
-  border-radius: var(--radius-md);
-  // Tint + border track the theme-aware foreground (--ink is blue in light,
-  // cream in dark) — the page bg is the accent blue in dark mode, so an
-  // accent-based tint/icon would be invisible blue-on-blue.
-  background: color-mix(in oklab, var(--ink) 12%, transparent);
-  border: 1px solid var(--line);
-}
-
-.eggIcon {
-  flex-shrink: 0;
-  color: var(--ink);
-}
-
-.eggBannerText {
-  flex: 1;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--muted);
-}
-
-.eggDismiss {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px;
-  color: var(--muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: color var(--duration-fast);
-}
-
-.eggDismiss:hover {
-  color: var(--ink);
-}
-
-.tryLabel {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-left: 2px;
 }
 
 .yieldRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
-
 .yieldNote {
   font-size: 15px;
   line-height: 1.4;
@@ -177,13 +61,11 @@
 
 .totalRow {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 2.5px solid var(--ink);
+  padding-top: var(--space-4);
+  border-top: 2px solid var(--line);
 }
-
 .totalKey {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -191,31 +73,19 @@
   text-transform: uppercase;
   color: var(--muted);
 }
-
 .totalVal {
-  font-family: var(--font-poster);
-  font-size: 34px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 32px;
   color: var(--ink);
 }
-
-.notes {
-  width: 100%;
-  margin-top: 4px;
-  background: var(--paper);
-  border: 2px solid var(--line);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  color: var(--text);
-  resize: vertical;
-  outline: none;
-}
-
-.notes::placeholder {
+.totalUnit {
+  font-size: 18px;
   color: var(--muted);
 }
 
-.notes:focus {
-  border-color: var(--ink);
+// The notes box wears the editable-field surface so it reads as editable on the
+// border-on-base card.
+.notesField {
+  background: var(--field-surface);
 }
