@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <section className={styles.section}>
-        <p className={styles.label}>Bricolage Grotesque</p>
+        <p className={styles.label}>Space Grotesk</p>
         <div className={styles.typeStack}>
           {WEIGHTS.map((w) => (
             <p key={w} className={styles.typeSample} style={{ fontWeight: w }}>

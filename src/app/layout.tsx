@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Anton, Space_Mono } from "next/font/google";
+import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.scss";
 import { DevTools } from "@/devtools/DevTools";
 
-const bricolage = Bricolage_Grotesque({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-bricolage",
-});
-
-const anton = Anton({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-anton",
+  variable: "--font-space-grotesk",
 });
 
 const spaceMono = Space_Mono({
@@ -33,7 +27,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bricolage.variable} ${anton.variable} ${spaceMono.variable}`}
+      className={`${spaceGrotesk.variable} ${spaceMono.variable}`}
       suppressHydrationWarning
     >
       <head>

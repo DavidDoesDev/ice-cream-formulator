@@ -1,35 +1,39 @@
-// Canonical press palette. Source of truth for the color tokens mirrored into
+// Canonical palette. Source of truth for the color tokens mirrored into
 // globals.scss as CSS custom properties. Kept here (typed, importable) so
 // legibility is guarded by tests; globals.scss must use these same values.
 
-// Six-candy macro palette (shared across themes).
+// Six-candy macro palette (shared across themes) — tuned to the redesign swatches.
 export const CANDY = {
-  pink: "#FF9BB4",
-  mint: "#79E4B4",
-  yellow: "#FFCF43",
-  sky: "#6FCBF2",
-  peach: "#FFAD63",
+  pink: "#F596AF", // sugar
+  mint: "#76DDAF", // stabilizer (+ the "ok" state)
+  yellow: "#F7C541", // fat
+  sky: "#6CC5EB", // non-fat solids
+  peach: "#F5A860", // alcohol
   lilac: "#C1ADFF",
 } as const;
 
-// Blue-violet ink — the accent that carries headings, outlines, and links.
-// EXPERIMENT: OKLCh chroma ×0.15, perceptual lightness ×0.3 (muted + much darker). Was #4b39f2.
-export const ACCENT = "#07091b";
+// Yellow accent — the action color (links, primary buttons, highlights).
+// Replaces the old blue-violet ink-accent; ink is now its own token below.
+export const ACCENT = "#F2C043";
+// Secondary indigo.
+export const ACCENT_INDIGO = "#525780";
+// Critical / danger — its own crimson, distinct from candy pink.
+export const ALERT = "#D01244";
 
-// Press · light: warm paper ground, ink drawn in the accent.
+// Cold Hard Science · light: cool near-white ground, near-black ink.
 export const pressLight = {
-  paper: "#F0E6D3",
-  paper2: "#FBF5E9",
-  panel: "#ECE0CB",
-  ink: ACCENT,
-  text: ACCENT,
+  paper: "#FCFBF9",
+  paper2: "#F1EFEB",
+  panel: "#F1EFEB",
+  ink: "#0F1018",
+  text: "#0F1018",
 } as const;
 
-// Press · dark: indigo field, paper-tone ink.
+// Cold Hard Science · dark: cool near-black field, warm cream ink.
 export const pressDark = {
-  paper: ACCENT,
-  paper2: "#0a0c1d", // EXPERIMENT: OKLCh chroma ×0.15, L ×0.3. Was #5b4bf4.
-  panel: "#050615", // EXPERIMENT: OKLCh chroma ×0.15, L ×0.3. Was #3f2fc9.
+  paper: "#0F1018",
+  paper2: "#1E202C",
+  panel: "#1E202C",
   ink: "#F7EFDD",
   text: "#F7EFDD",
 } as const;

@@ -1,21 +1,21 @@
-// Press design tokens. Color values mirror src/styles/palette.ts (the tested
-// source of truth) — keep them in sync. Flat, class-targeted rules only.
+// Cold Hard Science design tokens. Color values mirror src/styles/palette.ts
+// (the tested source of truth) — keep them in sync. Flat, class-targeted rules.
 
 :root {
-  // type
-  --font-poster: var(--font-anton), "Arial Narrow", system-ui, sans-serif;
-  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  // type — Space Grotesk for hero + body, Space Mono for numbers/labels.
+  --font-poster: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
   --font-mono: var(--font-space-mono), ui-monospace, monospace;
-  --font-body: var(--font-bricolage), system-ui, sans-serif;
+  --font-body: var(--font-space-grotesk), system-ui, sans-serif;
 
   // candy constants (shared by every theme)
-  --c-pink: #ff9bb4;
-  --c-mint: #79e4b4;
-  --c-yellow: #ffcf43;
-  --c-sky: #6fcbf2;
-  --c-peach: #ffad63;
+  --c-pink: #f596af;
+  --c-mint: #76ddaf;
+  --c-yellow: #f7c541;
+  --c-sky: #6cc5eb;
+  --c-peach: #f5a860;
   --c-lilac: #c1adff;
-  --c-grape: #9d4edd;
+  --c-grape: #994cd5;
 
   // macro → candy
   --color-macro-fat: var(--c-yellow);
@@ -25,8 +25,14 @@
   --color-macro-emulsifier: var(--c-grape);
   --color-macro-alcohol: var(--c-peach);
 
-  // blue-violet ink / accent — EXPERIMENT: OKLCh chroma ×0.15, L ×0.3 (muted + much darker). Was #4b39f2.
-  --accent: #07091b;
+  // Yellow accent — the action color (links, primary buttons, highlights).
+  --accent: #f2c043;
+  --accent-indigo: #525780;
+
+  // Semantic state layer — decoupled from the domain palette so it can diverge.
+  --color-link: var(--accent);
+  --color-alert: #d01244;
+  --color-ok: var(--c-mint);
 
   // shape
   --radius: 22px;
@@ -57,20 +63,20 @@
   --space-24: 96px;
 }
 
-// press · light (default) — mirrors palette.ts pressLight
+// light (default) — mirrors palette.ts pressLight. Ink is its own color now,
+// no longer derived from the accent (which became yellow).
 :root {
-  --paper: #f0e6d3;
-  --paper-2: #fbf5e9;
-  --panel: #ece0cb;
-  --ink: var(--accent);
-  --text: var(--accent);
-  --muted: color-mix(in oklab, var(--accent) 42%, #9c8f78);
-  --line: color-mix(in oklab, var(--accent) 20%, transparent);
-  // Blue offset shadow in light (the press "ink registration" look).
+  --paper: #fcfbf9;
+  --paper-2: #f1efeb;
+  --panel: #f1efeb;
+  --ink: #0f1018;
+  --text: #0f1018;
+  --muted: color-mix(in oklab, var(--ink) 50%, var(--paper));
+  --line: color-mix(in oklab, var(--ink) 18%, transparent);
   --shadow-color: var(--ink);
   --sh: 6px 6px 0 var(--shadow-color);
   --sh-h: 10px 10px 0 var(--shadow-color);
-  --grain: 0.55;
+  --grain: 0.5;
 
   // back-compat aliases for not-yet-restyled components
   --color-bg: var(--paper);
@@ -78,29 +84,28 @@
   --color-text: var(--text);
   --color-text-secondary: var(--muted);
   --color-accent: var(--accent);
-  --color-on-accent: #fff;
+  --color-on-accent: #0f1018; // dark text on the yellow accent
   --color-border: var(--line);
 }
 
 @mixin dark-theme {
-  // press · dark — mirrors palette.ts pressDark
-  --paper: var(--accent);
-  --paper-2: #0a0c1d; // EXPERIMENT: OKLCh chroma ×0.15, L ×0.3. Was #5b4bf4.
-  --panel: #050615; // EXPERIMENT: OKLCh chroma ×0.15, L ×0.3. Was #3f2fc9.
+  // dark — mirrors palette.ts pressDark
+  --paper: #0f1018;
+  --paper-2: #1e202c;
+  --panel: #1e202c;
   --ink: #f7efdd;
   --text: #f7efdd;
-  --muted: color-mix(in oklab, #f7efdd 55%, var(--accent));
-  --line: rgba(247, 239, 221, 0.26);
-  // Dark navy in dark mode — a real shadow on the indigo surfaces, not a glow.
-  --shadow-color: rgba(6, 2, 28, 0.5);
-  --grain: 0.4;
+  --muted: color-mix(in oklab, #f7efdd 55%, var(--paper));
+  --line: rgba(247, 239, 221, 0.22);
+  --shadow-color: rgba(6, 8, 16, 0.5);
+  --grain: 0.35;
 
   --color-bg: var(--paper);
   --color-surface: var(--paper-2);
   --color-text: var(--text);
   --color-text-secondary: var(--muted);
-  --color-accent: #f7efdd;
-  --color-on-accent: #1a1024;
+  --color-accent: var(--accent);
+  --color-on-accent: #0f1018; // dark text on the yellow accent
   --color-border: var(--line);
 }
 

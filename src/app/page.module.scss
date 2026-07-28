@@ -175,58 +175,6 @@
   cursor: not-allowed;
 }
 
-/* ---- caution-tape marquee ---- */
-.marquee {
-  // Full-bleed + tilted like caution tape. Over-wide and pulled left so the
-  // -2deg rotation doesn't reveal paper triangles at the edges; body's
-  // overflow-x: clip trims the overhang. Vertical margins give the tilt room.
-  width: 108vw;
-  margin: calc(30px * var(--u)) 0 calc(44px * var(--u)) calc(50% - 54vw);
-  overflow: hidden;
-  background: var(--c-yellow);
-  transform: rotate(-2deg);
-  // Above the SparkleCone, which pokes down from the hero; if they meet, the
-  // tape crosses over the cone.
-  position: relative;
-  z-index: 2;
-}
-
-.marqueeTrack {
-  display: flex;
-  width: max-content;
-  animation: marqmove 107s linear infinite;
-}
-
-.marqueeRun {
-  display: flex;
-}
-
-.marqueeItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 22px;
-  padding: 18px 26px;
-  color: var(--accent);
-}
-
-.marqueeText {
-  font-family: var(--font-poster);
-  font-size: clamp(26px, 3.4vw, 42px);
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-.marqueeItem :global(svg) {
-  color: var(--accent);
-}
-
-@keyframes marqmove {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 /* ---- library ---- */
 .lib {
   margin-top: calc(76px * var(--u));
@@ -264,7 +212,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--ink);
   text-decoration: none;
 }
 
@@ -328,7 +276,7 @@
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--ink);
   text-decoration: none;
 }
 
@@ -447,9 +395,9 @@
 }
 
 .specimenDel:hover {
-  background: var(--accent);
+  background: var(--ink);
   color: #fff;
-  border-color: var(--accent);
+  border-color: var(--ink);
 }
 
 @media (max-width: 900px) {
@@ -467,10 +415,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marqueeTrack {
-    animation: none;
-  }
-
   .specimen {
     transition: none;
   }
