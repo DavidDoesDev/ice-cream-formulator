@@ -53,6 +53,12 @@ lives in the types, not the identifiers.
   can diverge later): `--color-link: var(--accent)` (actions), `--color-alert:
   #D01244` (critical — its own crimson, *not* candy pink), `--color-ok:
   var(--c-mint)` (BALANCED), `--color-text` (neutral).
+- **Editable-field convention** (`--field-surface` / `--field-border` /
+  `--field-border-focus`): a raised surface + border + bold Space Mono ink signals
+  editable/interactive content — gram inputs, the notes box, and the
+  Scoopability/Sweetness readouts (the latter not yet interactive but dressed to
+  become so). Corollary: containers stay border-delineated on the base surface so
+  fields read as raised.
 - **Grain kept** — retune `--grain` opacity for the cooler ground.
 - **Marquee killed** — the caution-tape element is removed entirely; the static
   "COLD HARD SCIENCE" poster headline replaces it. No motif carryover.

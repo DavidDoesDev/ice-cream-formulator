@@ -1,13 +1,15 @@
+// Uses the editable-field convention (--field-* tokens): the raised surface +
+// border reads as "interactive", anticipating making these readouts adjustable.
 .stat {
   --stat-color: var(--ink);
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
-  border: 2px solid var(--line);
+  border: 2px solid var(--field-border);
   border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
-  background: var(--paper);
+  background: var(--field-surface);
 }
 
 .stat[data-tone="ok"] {

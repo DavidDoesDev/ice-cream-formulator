@@ -34,6 +34,14 @@
   --color-alert: #d01244;
   --color-ok: var(--c-mint);
 
+  // Editable-field affordance. A raised surface + border + bold mono ink text
+  // signals "this content is editable/interactive" — used on gram inputs, the
+  // notes box, and the balance readouts (Scoopability/Sweetness, interactive
+  // later). See docs/prds/redesign.md.
+  --field-surface: var(--panel);
+  --field-border: var(--line);
+  --field-border-focus: var(--accent);
+
   // shape
   --radius: 22px;
   --radius-lg: 34px;

@@ -231,9 +231,8 @@ export default function Gallery() {
       </h1>
 
       <Section manifest={sectionHeaderManifest}>
-        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+        <div style={{ width: "100%" }}>
           <SectionHeader label="Ingredients" />
-          <SectionHeader label="Composition" icon={<FlaskConical size={15} />} />
         </div>
       </Section>
 
