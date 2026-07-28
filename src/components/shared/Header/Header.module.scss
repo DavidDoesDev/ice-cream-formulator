@@ -1,8 +1,9 @@
+// Anchored to the top on the page background — no bar fill, no border. Any
+// fixed/sticky behavior is deferred (the .reveal class below is kept for later).
 .topbar {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 40;
-  // Break out of the centered .main column so the bar spans the full viewport.
+  // Break out of the centered .main column so brand + nav span the full width.
   width: 100vw;
   margin-left: calc(50% - 50vw);
   display: flex;
@@ -11,11 +12,6 @@
   gap: 16px;
   // Match the page body's gutter so brand + nav align with the content below.
   padding: calc(14px * var(--u)) calc((100vw - min(1240px, 92vw)) / 2);
-  background: color-mix(in oklab, var(--paper) 86%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border-bottom: 2px solid var(--line);
-  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 // Reveal-on-scroll (homepage): fixed so it reserves no space, animate slide-in.

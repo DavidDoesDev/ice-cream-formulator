@@ -87,7 +87,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <Header revealOnScroll />
+      <Header />
       <section className={styles.hero}>
         <div className={styles.brandLockup}>
           <Logo className={styles.brandMark} />
