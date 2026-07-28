@@ -1,0 +1,123 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: transform 0.15s var(--ease-jelly), background 0.2s, color 0.2s,
+    border-color 0.2s, filter 0.2s;
+
+  // The tone drives one color; hierarchy decides fill vs outline vs text.
+  // --btn-on is the readable text color when the tone color is a fill.
+  --btn-color: var(--color-link);
+  --btn-on: var(--color-on-accent);
+}
+
+.btn[data-tone="critical"] {
+  --btn-color: var(--color-alert);
+  --btn-on: #fff;
+}
+.btn[data-tone="neutral"] {
+  --btn-color: var(--ink);
+  --btn-on: var(--paper);
+}
+
+// sizes
+.btn[data-size="sm"] {
+  padding: 7px 13px;
+  font-size: 12.5px;
+}
+.btn[data-size="md"] {
+  padding: 10px 17px;
+  font-size: 14.5px;
+}
+.btn[data-size="lg"] {
+  padding: 14px 22px;
+  font-size: 16px;
+}
+
+// hierarchy
+.btn[data-hierarchy="primary"] {
+  background: var(--btn-color);
+  color: var(--btn-on);
+  border-color: var(--btn-color);
+}
+.btn[data-hierarchy="secondary"] {
+  background: transparent;
+  color: var(--btn-color);
+  border-color: var(--btn-color);
+}
+.btn[data-hierarchy="tertiary"] {
+  background: transparent;
+  color: var(--btn-color);
+  border-color: transparent;
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+}
+.btn[data-hierarchy="inverse"] {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}
+
+// icon-only: square it up
+.btn[data-icon-position="only"] {
+  padding: 0;
+  aspect-ratio: 1;
+}
+.btn[data-size="sm"][data-icon-position="only"] {
+  width: 30px;
+}
+.btn[data-size="md"][data-icon-position="only"] {
+  width: 38px;
+}
+.btn[data-size="lg"][data-icon-position="only"] {
+  width: 48px;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.btn[data-loading] {
+  cursor: progress;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+}
+.icon :global(svg) {
+  display: block;
+}
+.label {
+  display: inline-flex;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+  .btn:hover {
+    transform: none;
+  }
+}

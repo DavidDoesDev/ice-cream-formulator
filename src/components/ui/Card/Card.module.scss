@@ -1,0 +1,67 @@
+.card {
+  --card-accent: color-mix(in oklab, var(--ink) 30%, transparent);
+  display: block;
+  border: 2px solid var(--card-accent);
+  border-radius: var(--radius-md);
+  background: var(--paper-2);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.15s var(--ease-jelly), background 0.2s;
+}
+
+.card[data-tone="critical"] {
+  --card-accent: var(--color-alert);
+}
+.card[data-tone="ok"] {
+  --card-accent: var(--color-ok);
+}
+.card[data-tone="neutral"] {
+  --card-accent: var(--line);
+}
+
+.card[data-elevation="flat"] {
+  background: transparent;
+  border-color: transparent;
+}
+.card[data-elevation="raised"] {
+  box-shadow: var(--sh);
+  border-color: transparent;
+}
+
+.card[data-padding="none"] {
+  padding: 0;
+}
+.card[data-padding="sm"] {
+  padding: var(--space-4);
+}
+.card[data-padding="md"] {
+  padding: var(--space-6);
+}
+.card[data-padding="lg"] {
+  padding: var(--space-8);
+}
+
+.card[data-selected] {
+  border-color: var(--accent);
+}
+
+.card[data-interactive] {
+  cursor: pointer;
+}
+.card[data-interactive]:hover {
+  transform: translateY(-2px);
+  border-color: var(--ink);
+}
+.card[data-interactive]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .card[data-interactive]:hover {
+    transform: none;
+  }
+}
