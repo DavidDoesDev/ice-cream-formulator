@@ -1,0 +1,45 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+  flex-shrink: 0;
+}
+.icon {
+  display: inline-flex;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.header[data-size="sm"] .label {
+  font-size: 11px;
+}
+.header[data-size="md"] .label {
+  font-size: 13px;
+}
+
+.rule {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+}
+
+.actions {
+  display: inline-flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}

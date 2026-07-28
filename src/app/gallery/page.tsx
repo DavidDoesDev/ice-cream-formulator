@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Trash2, Milk } from "lucide-react";
+import { Plus, Search, Trash2, Milk, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { manifest as buttonManifest } from "@/components/ui/Button/Button.manifest";
 import { Card } from "@/components/ui/Card";
@@ -18,6 +18,16 @@ import { Stat } from "@/components/ui/Stat";
 import { manifest as statManifest } from "@/components/ui/Stat/Stat.manifest";
 import { Callout } from "@/components/ui/Callout";
 import { manifest as calloutManifest } from "@/components/ui/Callout/Callout.manifest";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { manifest as sectionHeaderManifest } from "@/components/ui/SectionHeader/SectionHeader.manifest";
+import { InlineNote } from "@/components/ui/InlineNote";
+import { manifest as inlineNoteManifest } from "@/components/ui/InlineNote/InlineNote.manifest";
+import { LineItem } from "@/components/ui/LineItem";
+import { manifest as lineItemManifest } from "@/components/ui/LineItem/LineItem.manifest";
+import { FeatureCard } from "@/components/ui/FeatureCard";
+import { manifest as featureCardManifest } from "@/components/ui/FeatureCard/FeatureCard.manifest";
+import { SelectableTile } from "@/components/ui/SelectableTile";
+import { manifest as selectableTileManifest } from "@/components/ui/SelectableTile/SelectableTile.manifest";
 import type { ComponentManifest } from "@/components/ui/manifest";
 import styles from "./page.module.scss";
 
@@ -54,6 +64,8 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 export default function Gallery() {
   const [modalOpen, setModalOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [tile, setTile] = useState("phila");
+  const [note, setNote] = useState("");
 
   return (
     <main className={styles.main}>
@@ -209,6 +221,72 @@ export default function Gallery() {
           <Callout icon={<Milk size={16} />}>Select ingredients for your milk base</Callout>
           <p className={styles.tabDemo}>Drawer body.</p>
         </Modal>
+      </Section>
+
+      <h1 className={styles.title} style={{ marginTop: "var(--space-16)" }}>
+        Molecules
+      </h1>
+
+      <Section manifest={sectionHeaderManifest}>
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+          <SectionHeader label="Ingredients" />
+          <SectionHeader
+            label="Composition"
+            icon={<FlaskConical size={15} />}
+            actions={
+              <Button size="sm" hierarchy="tertiary" icon={<Plus size={14} />}>
+                Add
+              </Button>
+            }
+          />
+        </div>
+      </Section>
+
+      <Section manifest={lineItemManifest}>
+        <div style={{ width: "100%" }}>
+          <LineItem
+            label="Whole milk (3.6% fat)"
+            note={<InlineNote value={note} onChange={setNote} />}
+            trailing={<Input size="sm" defaultValue="635.5" style={{ width: 90 }} />}
+          />
+          <LineItem label="Sugar blend" trailing={<Input size="sm" defaultValue="150" style={{ width: 90 }} />} />
+          <LineItem label="Sucrose" indent size="sm" trailing={<span className={styles.tabDemo}>120 g</span>} />
+          <LineItem label="Glucose syrup" indent size="sm" trailing={<span className={styles.tabDemo}>30 g</span>} />
+        </div>
+      </Section>
+
+      <Section manifest={inlineNoteManifest}>
+        <InlineNote value={note} onChange={setNote} />
+      </Section>
+
+      <Section manifest={featureCardManifest}>
+        <div className={styles.featureGrid}>
+          <FeatureCard eyebrow="The Lab" title="Six sliders, one live recipe" icon={<FlaskConical size={20} />}>
+            <p>Drag a macro and the grams re-solve underneath, in real time.</p>
+          </FeatureCard>
+          <FeatureCard eyebrow="Stocked Pantry" title="Every ingredient, weighed" href="#gallery">
+            <p>Build a base from a searchable, category-filtered pantry.</p>
+          </FeatureCard>
+        </div>
+      </Section>
+
+      <Section manifest={selectableTileManifest}>
+        <div className={styles.featureGrid}>
+          <SelectableTile
+            name="Philadelphia"
+            blurb="Egg-free, clean and milky."
+            icon={<Milk size={18} />}
+            selected={tile === "phila"}
+            onClick={() => setTile("phila")}
+          />
+          <SelectableTile
+            name="French Custard"
+            blurb="Egg-yolk rich, dense and smooth."
+            icon={<FlaskConical size={18} />}
+            selected={tile === "custard"}
+            onClick={() => setTile("custard")}
+          />
+        </div>
       </Section>
     </main>
   );
