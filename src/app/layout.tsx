@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Anton, Space_Mono } from "next/font/google";
 import "./globals.scss";
+import { DevTools } from "@/devtools/DevTools";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -50,6 +51,7 @@ export default function RootLayout({
       <body>
         {children}
         <div className="grain" aria-hidden />
+        <DevTools />
       </body>
     </html>
   );

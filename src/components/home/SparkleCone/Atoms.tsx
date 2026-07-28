@@ -1,6 +1,7 @@
 import { useEffect, useRef, type RefObject } from "react";
 import styles from "./SparkleCone.module.scss";
 import { SCOOP_X, SCOOP_Y, SPREAD_X, SPREAD_Y, gauss, domeZ, centerFade } from "./scatter";
+import { devSeam } from "@/dev-seam";
 
 type Satellite = { dist: number; ang: number; spd: number; r: number };
 
@@ -25,7 +26,8 @@ const DAMPING = 0.998;
 // Extra per-atom parallax travel at the dome's apex, in px, on top of the
 // plane's uniform drift. Each atom's slice is scaled by its dome-z, so crown
 // atoms swing past rim atoms and the cloud reads as wrapped over a sphere.
-const DEPTH_SHIFT = 30;
+// The baked default lives in the app-owned dev seam (devSeam.atoms.depthShift)
+// so a dev tool can overlay it live; read per-frame in the draw loop below.
 
 // The back plane is the far side of that sphere: its swing runs opposite the
 // front (so the ball reads as rotating, not sliding) and gentler, and its
@@ -141,15 +143,29 @@ export function Atoms({
       ctx.strokeStyle = inkRef.current;
       ctx.lineWidth = 1;
       const level = opacityRef.current;
-      const p = pointer.current;
+      // Dev seam: read the parallax swing live (per frame, no cache) so the
+      // tool's slider takes effect immediately. auto-orbit is a dev-only
+      // perception aid — it synthesizes a circling pointer so the otherwise
+      // motion-only effect is visible without waving the mouse. Neither is baked.
+      let p = pointer.current;
+      if (devSeam.atoms.frozen) {
+        p = { x: devSeam.atoms.holdX, y: 0 };
+      } else if (devSeam.atoms.autoOrbit) {
+        const t = (performance.now() / 1000) * 2.5; // ~2.5s orbit — clear motion
+        p = { x: Math.cos(t) * 0.5, y: Math.sin(t) * 0.5 };
+      }
+      const depthShift = devSeam.atoms.depthShift;
+      const frozen = devSeam.atoms.frozen;
       // Front swings against the pointer; the back plane swings with it (and
       // gentler), so the near and far faces counter-rotate like one sphere.
-      const swing = back ? -DEPTH_SHIFT * BACK_SWING : DEPTH_SHIFT;
+      const swing = back ? -depthShift * BACK_SWING : depthShift;
       for (const a of atoms) {
-        a.vx = (a.vx + (a.hx - a.x) * SPRING) * DAMPING;
-        a.vy = (a.vy + (a.hy - a.y) * SPRING) * DAMPING;
-        a.x += a.vx;
-        a.y += a.vy;
+        if (!frozen) {
+          a.vx = (a.vx + (a.hx - a.x) * SPRING) * DAMPING;
+          a.vy = (a.vy + (a.hy - a.y) * SPRING) * DAMPING;
+          a.x += a.vx;
+          a.y += a.vy;
+        }
         // Dome parallax: crown atoms (z→1) swing further than rim atoms (z→0),
         // on top of the plane's uniform drift.
         const bx = a.x - p.x * a.z * swing;
@@ -159,7 +175,7 @@ export function Atoms({
         ctx.arc(bx, by, a.r, 0, Math.PI * 2);
         ctx.fill();
         for (const s of a.sats) {
-          s.ang += s.spd;
+          if (!frozen) s.ang += s.spd;
           const sx = bx + Math.cos(s.ang) * s.dist;
           const sy = by + Math.sin(s.ang) * s.dist;
           ctx.globalAlpha = Math.min(1, a.alpha * level * 0.7);
