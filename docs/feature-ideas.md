@@ -52,6 +52,9 @@ every change vs. save-on-blur. This underlies two related features:
 - **History panel** — a durable, per-formula timeline of versions you can browse
   and restore. Basically "save logic" made visible: if every meaningful edit
   produces a version, the panel is just the UI over that log.
+  _Blocks a UI slot:_ the `theme/redesign` EditorToolbar deliberately omits the
+  `History` action until this is grilled and built — it needs its own design pass
+  (see the "what is a version" question above) before a button goes in.
 - **Undo** — reversible steps on the current working state.
 
 The pivotal design choice is what a "version" is. If undo and history share one
@@ -60,6 +63,27 @@ the list, and other ideas (unique batch numbers, audit) fall out of it too. That
 log wants **coalescing** so rapid slider drags group into one entry instead of
 flooding the timeline. The alternative is explicit saves + a separate in-memory
 undo for unsaved state — two systems instead of one.
+
+## Nondescript "plain base" starter option
+
+A neutral new-batch starting point alongside the archetype picker — not a
+characterful style, just a plain **French vanilla base** — for users who'd rather
+start from a clean, balanced base and build up than pick a named archetype.
+
+- Sits next to the archetypes as a "start plain / from scratch" option.
+- Open question (punt): on choosing it, do we **auto-open the Config modal** so the
+  user configures base systems right away, or drop them straight into the editor?
+- Config still never *creates* the batch — the picker flow does; Config would just
+  be auto-opened as a convenience. (Context: `theme/redesign` grill, why the Config
+  "creation vs settings" chrome from `ui-mockup-alignment.md` was set aside.)
+
+**Needs its own grill** before building — open design questions:
+- What *is* the plain base? Is "French vanilla" literally an existing seed
+  (philadelphia/custard) reused, or a new neutral archetype?
+- Where does it sit in the picker and what's it called ("Plain" / "From scratch" /
+  "Blank base")?
+- On select: auto-open Config, or straight into the editor?
+- Does it seed smart ingredients (milk/sugar/stabilizer defaults) or start minimal?
 
 ## Individual measurements for ingredient mixes
 
