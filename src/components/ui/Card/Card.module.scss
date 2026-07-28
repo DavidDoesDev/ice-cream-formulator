@@ -6,7 +6,7 @@
   background: var(--paper-2);
   color: var(--ink);
   text-decoration: none;
-  transition: border-color 0.2s, transform 0.15s var(--ease-jelly), background 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .card[data-tone="critical"] {
@@ -49,7 +49,6 @@
   cursor: pointer;
 }
 .card[data-interactive]:hover {
-  transform: translateY(-2px);
   border-color: var(--ink);
 }
 .card[data-interactive]:focus-visible {

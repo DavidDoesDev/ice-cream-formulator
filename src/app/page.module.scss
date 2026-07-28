@@ -122,7 +122,6 @@
 }
 
 .ctaPrimary:hover {
-  transform: translate(-2px, -2px);
   box-shadow: var(--sh-h);
   color: var(--ink);
 }
@@ -145,7 +144,6 @@
 }
 
 .ctaGhost:hover {
-  transform: translate(-2px, -2px);
   box-shadow: var(--sh-h);
   color: var(--ink);
 }
@@ -165,7 +163,6 @@
 }
 
 .dice:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
   box-shadow: var(--sh-h);
   color: var(--ink);
 }
@@ -297,7 +294,6 @@
 .specimen:hover {
   // Calm lift + accent edge, no wobble: a restrained "lab-bench" hover rather
   // than the jelly rotate. The soft, tight shadow just sells the lift.
-  transform: translateY(-3px);
   border-color: var(--ink);
   box-shadow: 0 8px 20px -12px var(--shadow-color);
 }

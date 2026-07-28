@@ -11,8 +11,7 @@
   border: 2px solid transparent;
   border-radius: var(--radius-sm);
   text-decoration: none;
-  transition: transform 0.15s var(--ease-jelly), background 0.2s, color 0.2s,
-    border-color 0.2s, filter 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, filter 0.2s;
 
   // The tone drives one color; hierarchy decides fill vs outline vs text.
   // --btn-on is the readable text color when the tone color is a fill.
@@ -83,11 +82,7 @@
 }
 
 .btn:hover {
-  transform: translateY(-1px);
   filter: brightness(1.05);
-}
-.btn:active {
-  transform: translateY(0);
 }
 .btn:focus-visible {
   outline: 2px solid var(--accent);
