@@ -2,17 +2,15 @@
 
 import { useEffect, useRef, useState, useCallback, type ReactNode } from "react";
 import Link from "next/link";
-import { Menu, Home, Plus, Moon, Sun } from "lucide-react";
+import { MoreHorizontal, Plus, Moon, Sun } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
 import styles from "./Header.module.scss";
 
-// The app's top header: a full-bleed sticky bar with a hamburger menu (Home +
-// theme toggle), the "Ice Cream Lab" brand linking home, and an optional slot
-// of page-specific actions (passed as children) pinned to the right. Owns the
-// theme so every page's toggle behaves identically.
-//
-// revealOnScroll: start the bar off-screen (fixed, translated up) and slide it
-// in only once the user scrolls past a small threshold — used on the homepage
-// so it doesn't sit over the hero at the top.
+// The app's top header: logo + wordmark linking home on the left, primary nav
+// (My Batches, Pricing) + a "···" overflow menu on the right. The inline nav
+// collapses into the menu on narrow screens. Owns the theme toggle so every
+// page behaves identically. Optional `children` render as a right-side action
+// slot; `revealOnScroll` slides the bar in past a threshold (homepage hero).
 const REVEAL_AT = 60;
 
 export function Header({ children, revealOnScroll = false }: { children?: ReactNode; revealOnScroll?: boolean }) {
@@ -21,19 +19,14 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
   const [revealed, setRevealed] = useState(false);
   const menuWrap = useRef<HTMLDivElement>(null);
 
-  // Reveal-on-scroll: track whether we're scrolled past the threshold.
   useEffect(() => {
     if (!revealOnScroll) return;
     const onScroll = () => setRevealed(window.scrollY > REVEAL_AT);
-    onScroll(); // sync initial state (e.g. loaded already scrolled)
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [revealOnScroll]);
 
-  // Close the menu on any click/tap outside it, or on Escape. A backdrop div
-  // can't be used here: the header's backdrop-filter makes it the containing
-  // block for position:fixed children, so a full-screen backdrop would only
-  // cover the header bar, not the page below.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
@@ -50,7 +43,6 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
     };
   }, [open]);
 
-  // Reflect stored/system choice on mount, applying any explicit override.
   useEffect(() => {
     const stored = localStorage.getItem("theme");
     const next =
@@ -83,40 +75,56 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
 
   return (
     <header className={className}>
-      <div className={styles.menuWrap} ref={menuWrap}>
-        <button
-          className={styles.iconBtn}
-          type="button"
-          aria-label="Menu"
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-        >
-          <Menu size={20} strokeWidth={2} />
-        </button>
-        {open && (
-          <div className={styles.menu}>
-            <Link href="/" className={styles.menuItem} onClick={() => setOpen(false)}>
-              <Home size={16} strokeWidth={2} /> Home
-            </Link>
-            <Link href="/new" className={styles.menuItem} onClick={() => setOpen(false)}>
-              <Plus size={16} strokeWidth={2} /> New formula
-            </Link>
-            <button
-              className={styles.menuItem}
-              type="button"
-              onClick={() => {
-                toggleTheme();
-                setOpen(false);
-              }}
-            >
-              {theme === "dark" ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
-              {theme === "dark" ? "Light mode" : "Dark mode"}
-            </button>
-          </div>
-        )}
-      </div>
-      <Link href="/" className={styles.brand}>Ice Cream Lab</Link>
-      {children && <div className={styles.actions}>{children}</div>}
+      <Link href="/" className={styles.brand}>
+        <Logo className={styles.logo} />
+        <span className={styles.word}>Ice Cream Lab</span>
+      </Link>
+
+      <nav className={styles.nav}>
+        <Link href="/#batches" className={styles.navLink}>
+          My Batches
+        </Link>
+        {/* Pricing page is TBD — placeholder link for now. */}
+        <Link href="#" className={styles.navLink}>
+          Pricing
+        </Link>
+        {children && <div className={styles.actions}>{children}</div>}
+        <div className={styles.menuWrap} ref={menuWrap}>
+          <button
+            className={styles.iconBtn}
+            type="button"
+            aria-label="Menu"
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
+          >
+            <MoreHorizontal size={20} strokeWidth={2} />
+          </button>
+          {open && (
+            <div className={styles.menu}>
+              <Link href="/#batches" className={styles.menuItem} onClick={() => setOpen(false)}>
+                My batches
+              </Link>
+              <Link href="#" className={styles.menuItem} onClick={() => setOpen(false)}>
+                Pricing
+              </Link>
+              <Link href="/new" className={styles.menuItem} onClick={() => setOpen(false)}>
+                <Plus size={16} strokeWidth={2} /> New batch
+              </Link>
+              <button
+                className={styles.menuItem}
+                type="button"
+                onClick={() => {
+                  toggleTheme();
+                  setOpen(false);
+                }}
+              >
+                {theme === "dark" ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+                {theme === "dark" ? "Light mode" : "Dark mode"}
+              </button>
+            </div>
+          )}
+        </div>
+      </nav>
     </header>
   );
 }
