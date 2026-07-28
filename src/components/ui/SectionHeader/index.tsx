@@ -6,14 +6,12 @@ export type SectionHeaderSize = "sm" | "md";
 interface SectionHeaderProps {
   label: ReactNode;
   icon?: ReactNode; // defaults to a solid ink dot
-  actions?: ReactNode; // right-aligned slot (buttons)
   size?: SectionHeaderSize;
 }
 
-// Section divider: a marker (dot or icon) + uppercase mono label + a rule, with
-// an optional actions slot. Standardizes the header treatment across every panel
-// and modal.
-export function SectionHeader({ label, icon, actions, size = "md" }: SectionHeaderProps) {
+// Section divider: a marker (dot or icon) + uppercase mono label + a rule.
+// Standardizes the header treatment across every panel and modal.
+export function SectionHeader({ label, icon, size = "md" }: SectionHeaderProps) {
   return (
     <div className={styles.header} data-size={size}>
       {icon ? (
@@ -25,7 +23,6 @@ export function SectionHeader({ label, icon, actions, size = "md" }: SectionHead
       )}
       <span className={styles.label}>{label}</span>
       <span className={styles.rule} aria-hidden />
-      {actions && <span className={styles.actions}>{actions}</span>}
     </div>
   );
 }

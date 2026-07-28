@@ -28,6 +28,7 @@ import { FeatureCard } from "@/components/ui/FeatureCard";
 import { manifest as featureCardManifest } from "@/components/ui/FeatureCard/FeatureCard.manifest";
 import { SelectableTile } from "@/components/ui/SelectableTile";
 import { manifest as selectableTileManifest } from "@/components/ui/SelectableTile/SelectableTile.manifest";
+import { GramScrubField } from "@/components/shared/GramScrubField";
 import type { ComponentManifest } from "@/components/ui/manifest";
 import styles from "./page.module.scss";
 
@@ -66,6 +67,8 @@ export default function Gallery() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [tile, setTile] = useState("phila");
   const [note, setNote] = useState("");
+  const [g1, setG1] = useState(635.5);
+  const [g2, setG2] = useState(150);
 
   return (
     <main className={styles.main}>
@@ -230,15 +233,7 @@ export default function Gallery() {
       <Section manifest={sectionHeaderManifest}>
         <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
           <SectionHeader label="Ingredients" />
-          <SectionHeader
-            label="Composition"
-            icon={<FlaskConical size={15} />}
-            actions={
-              <Button size="sm" hierarchy="tertiary" icon={<Plus size={14} />}>
-                Add
-              </Button>
-            }
-          />
+          <SectionHeader label="Composition" icon={<FlaskConical size={15} />} />
         </div>
       </Section>
 
@@ -247,9 +242,9 @@ export default function Gallery() {
           <LineItem
             label="Whole milk (3.6% fat)"
             note={<InlineNote value={note} onChange={setNote} />}
-            trailing={<Input size="sm" defaultValue="635.5" style={{ width: 90 }} />}
+            trailing={<GramScrubField grams={g1} onChange={setG1} />}
           />
-          <LineItem label="Sugar blend" trailing={<Input size="sm" defaultValue="150" style={{ width: 90 }} />} />
+          <LineItem label="Sugar blend" trailing={<GramScrubField grams={g2} onChange={setG2} />} />
           <LineItem label="Sucrose" indent size="sm" trailing={<span className={styles.tabDemo}>120 g</span>} />
           <LineItem label="Glucose syrup" indent size="sm" trailing={<span className={styles.tabDemo}>30 g</span>} />
         </div>
