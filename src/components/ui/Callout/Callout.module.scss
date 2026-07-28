@@ -1,0 +1,56 @@
+.callout {
+  --callout-color: var(--color-link);
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  border: 2px solid var(--callout-color);
+  background: color-mix(in oklab, var(--callout-color) 12%, var(--paper));
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  color: var(--ink);
+}
+
+.callout[data-tone="critical"] {
+  --callout-color: var(--color-alert);
+}
+.callout[data-tone="ok"] {
+  --callout-color: var(--color-ok);
+}
+.callout[data-tone="neutral"] {
+  --callout-color: var(--muted);
+}
+
+.callout[data-size="sm"] {
+  padding: var(--space-2) var(--space-3);
+  font-size: 13px;
+}
+.callout[data-size="lg"] {
+  padding: var(--space-4) var(--space-5);
+}
+
+.icon {
+  display: inline-flex;
+  color: var(--callout-color);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.icon :global(svg) {
+  display: block;
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink);
+}
+.body {
+  color: var(--muted);
+}
+.body :global(p) {
+  margin: 0;
+}

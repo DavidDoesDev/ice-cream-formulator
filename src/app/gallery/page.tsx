@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Search, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Plus, Search, Trash2, Milk } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { manifest as buttonManifest } from "@/components/ui/Button/Button.manifest";
 import { Card } from "@/components/ui/Card";
@@ -9,6 +10,14 @@ import { Tag } from "@/components/ui/Tag";
 import { manifest as tagManifest } from "@/components/ui/Tag/Tag.manifest";
 import { Input } from "@/components/ui/Input";
 import { manifest as inputManifest } from "@/components/ui/Input/Input.manifest";
+import { Modal } from "@/components/ui/Modal";
+import { manifest as modalManifest } from "@/components/ui/Modal/Modal.manifest";
+import { Tabs } from "@/components/ui/Tabs";
+import { manifest as tabsManifest } from "@/components/ui/Tabs/Tabs.manifest";
+import { Stat } from "@/components/ui/Stat";
+import { manifest as statManifest } from "@/components/ui/Stat/Stat.manifest";
+import { Callout } from "@/components/ui/Callout";
+import { manifest as calloutManifest } from "@/components/ui/Callout/Callout.manifest";
 import type { ComponentManifest } from "@/components/ui/manifest";
 import styles from "./page.module.scss";
 
@@ -43,6 +52,9 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export default function Gallery() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
   return (
     <main className={styles.main}>
       <h1 className={styles.title}>UI primitives</h1>
@@ -137,6 +149,66 @@ export default function Gallery() {
         <Row label="multiline">
           <Input multiline placeholder="Notes…" />
         </Row>
+      </Section>
+
+      <Section manifest={tabsManifest}>
+        <Tabs
+          tabs={[
+            { id: "recipe", label: "Recipe", content: <p className={styles.tabDemo}>Recipe panel content stacks here.</p> },
+            { id: "macros", label: "Macros", content: <p className={styles.tabDemo}>Macros panel content stacks here.</p> },
+          ]}
+        />
+      </Section>
+
+      <Section manifest={statManifest}>
+        <Row label="tone">
+          <Stat label="Scoopability" value="21" />
+          <Stat label="Sweetness" value="21" tone="ok" />
+          <Stat label="Overrun" value="18%" tone="critical" delta="−4" direction="down" />
+        </Row>
+      </Section>
+
+      <Section manifest={calloutManifest}>
+        <Row label="tone">
+          <Callout icon={<Milk size={16} />}>Select ingredients for your milk base</Callout>
+          <Callout tone="ok" title="Balanced">4 of 4 macros in range.</Callout>
+          <Callout tone="critical" title="Can't hit that target">Lower the fat or raise the yield.</Callout>
+        </Row>
+      </Section>
+
+      <Section manifest={modalManifest}>
+        <Row label="placement">
+          <Button hierarchy="secondary" onClick={() => setModalOpen(true)}>
+            Open dialog
+          </Button>
+          <Button hierarchy="secondary" onClick={() => setSheetOpen(true)}>
+            Open sheet
+          </Button>
+        </Row>
+        <Modal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title="Config"
+          footer={
+            <>
+              <Button hierarchy="tertiary" onClick={() => setModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => setModalOpen(false)}>Done</Button>
+            </>
+          }
+        >
+          <p className={styles.tabDemo}>Centered dialog body. Content stacks and scrolls.</p>
+        </Modal>
+        <Modal
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          placement="sheet"
+          title="Pantry"
+        >
+          <Callout icon={<Milk size={16} />}>Select ingredients for your milk base</Callout>
+          <p className={styles.tabDemo}>Drawer body.</p>
+        </Modal>
       </Section>
     </main>
   );

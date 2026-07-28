@@ -1,0 +1,118 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+}
+.root[data-placement="center"] {
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+.root[data-placement="sheet"] {
+  align-items: stretch;
+  justify-content: flex-end;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 16, 24, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 90vh;
+  background: var(--paper-2);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sh-h);
+  overflow: hidden;
+}
+.root[data-placement="center"] .sheet[data-size="sm"] {
+  max-width: 440px;
+}
+.root[data-placement="center"] .sheet[data-size="md"] {
+  max-width: 680px;
+}
+.root[data-placement="center"] .sheet[data-size="lg"] {
+  max-width: 920px;
+}
+.root[data-placement="sheet"] .sheet {
+  max-width: 560px;
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 2px solid var(--line);
+  flex-shrink: 0;
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--ink);
+}
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.close:hover {
+  background: var(--panel);
+}
+.close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.body {
+  padding: var(--space-6);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.footer {
+  padding: var(--space-5) var(--space-6);
+  border-top: 2px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .root[data-placement="center"] {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .root[data-placement="center"] .sheet {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .root[data-placement="sheet"] .sheet {
+    max-width: 100%;
+  }
+}

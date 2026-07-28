@@ -85,6 +85,11 @@
   min-width: 0;
 }
 
+.tabDemo {
+  color: var(--muted);
+  margin: 0;
+}
+
 // Inverse buttons need a dark bed to read against.
 .inverseBed {
   background: var(--ink);
