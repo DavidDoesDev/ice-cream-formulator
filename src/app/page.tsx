@@ -5,10 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { listFormulas, deleteFormula, saveFormula, assignBatchNo, backfillBatchNumbers, type SavedFormula } from "@/lib/persistence";
-import { computeRatios } from "@/lib/formula-engine";
 import { ARCHETYPES } from "@/data/archetypes";
 import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
-import { PintCup } from "@/components/shared/PintCup";
+import { equipmentInfo, normalizeEquipment } from "@/lib/equipment";
 import { Icon } from "@/components/shared/Icon";
 import { Pill } from "@/components/shared/Pill";
 import { Header } from "@/components/shared/Header";
@@ -25,6 +24,20 @@ const MARQUEE_RUN = Array.from({ length: 4 }, () => MARQUEE_ITEMS).flat();
 
 // Sentence case for filter labels: "philadelphia" -> "Philadelphia".
 const sentenceCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
+// Coarse relative time for the batch card's "updated …" line. Client-only (the
+// grid renders after mount), so a live Date.now() is safe — no hydration skew.
+function relTime(ts: number): string {
+  const diff = Date.now() - ts;
+  const min = 60_000, hr = 60 * min, day = 24 * hr;
+  if (diff < min) return "just now";
+  if (diff < hr) return `${Math.floor(diff / min)} min ago`;
+  if (diff < day) return `${Math.floor(diff / hr)} hr ago`;
+  const days = Math.floor(diff / day);
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 export default function Home() {
   const router = useRouter();
@@ -188,10 +201,8 @@ export default function Home() {
         ) : (
           <div className={styles.grid}>
             {filtered.map((formula, idx) => {
-              const ratios = computeRatios(formula.state);
-              const fatPct = Math.round(ratios.fat * 100);
-              const sugarPct = Math.round(ratios.sugar * 100);
               const no = String(formula.batchNo ?? idx + 1).padStart(3, "0");
+              const rig = equipmentInfo(normalizeEquipment(formula.equipment)).label;
               return (
                 <div key={formula.id} className={styles.specimen}>
                   <button
@@ -203,22 +214,15 @@ export default function Home() {
                     <Icon name="close" size={16} />
                   </button>
                   <Link href={`/formula/${formula.id}`} className={styles.specimenLink}>
-                    <div className={styles.specimenTop}>
+                    <div className={styles.specimenMeta}>
                       <span className={styles.specimenNo}>№ {no}</span>
+                      <span className={styles.metaDot} aria-hidden>·</span>
                       <span className={styles.specimenStyle}>{formula.style}</span>
-                    </div>
-                    <div className={styles.specimenCup}>
-                      <PintCup width={120} ratios={ratios} />
+                      <span className={styles.metaDot} aria-hidden>·</span>
+                      <span className={styles.specimenRig}>{rig}</span>
                     </div>
                     <p className={styles.specimenName}>{formula.name}</p>
-                    <div className={styles.specimenStats}>
-                      <span className={styles.chip}>
-                        <b>{fatPct}%</b> fat
-                      </span>
-                      <span className={styles.chip}>
-                        <b>{sugarPct}%</b> sugar
-                      </span>
-                    </div>
+                    <p className={styles.specimenWhen}>updated {relTime(formula.updatedAt)}</p>
                   </Link>
                 </div>
               );
