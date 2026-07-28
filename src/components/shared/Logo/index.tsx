@@ -1,7 +1,8 @@
 // The "Ice Cream Lab" mark: a caution-triangle badge (fixed candy yellow) with
-// an ice-cream-cone figure drawn on top. The cone is bound to the accent token
-// via currentColor, so it tracks --accent through theme + palette changes
-// instead of drifting like the old hardcoded /logo.svg did.
+// an ice-cream-cone figure drawn on top. The cone uses currentColor bound to
+// --color-on-accent (dark in both themes) so it stays legible on the yellow
+// badge — the accent token is itself yellow now, so binding the cone to it
+// would make it vanish (yellow-on-yellow).
 export function Logo({ className }: { className?: string }) {
   return (
     <svg
@@ -9,7 +10,7 @@ export function Logo({ className }: { className?: string }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      style={{ color: "var(--accent)" }}
+      style={{ color: "var(--color-on-accent)" }}
       role="img"
       aria-label="Ice Cream Lab logo"
     >
