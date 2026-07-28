@@ -2,15 +2,14 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Settings, RotateCcw, X } from "lucide-react";
+import { X } from "lucide-react";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
 import { RecipePanel } from "@/components/recipe/RecipePanel";
 import { MacrosPanel } from "@/components/formula/MacrosPanel";
 import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
 import { Header } from "@/components/shared/Header";
-import { Pill } from "@/components/shared/Pill";
-import { Toast } from "@/components/shared/Toast";
+import { EditorToolbar } from "@/components/formula/EditorToolbar";
 import { PerfHud } from "@/components/shared/PerfHud";
 import { seedRecipe } from "@/lib/recipe-seeder";
 import { computeRatiosFromRecipe, solveRecipe } from "@/lib/recipe-solver";
@@ -91,7 +90,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const [showConfig, setShowConfig] = useState(false);
   const [editName, setEditName] = useState(false);
   const [selector, setSelector] = useState<SelectorState | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
 
   const ratios = workspaceRatios(ws, deps);
   const derived = derive(ws.recipe);
@@ -257,47 +255,21 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
     });
   }, [resolveSolve]);
 
-  // --- Reset / save ---
-  const onReset = useCallback(() => {
-    setWs(initialWs);
-    setMeta({ name: saved.name, style: saved.style, equipment: normalizeEquipment(saved.equipment) });
-  }, [initialWs, saved]);
-  const onSave = useCallback(() => {
-    persist(ws, meta.name, meta.style, meta.equipment);
-    setToast("Saved to your batches");
-  }, [persist, ws, meta]);
-
   return (
     <>
       {/* Inert unless the page is loaded with ?perf=1 (see PerfHud). */}
       <PerfHud />
-      <Header>
-        <Pill tone="ghost" size="sm" onClick={() => setShowConfig(true)}>
-          <Settings size={15} strokeWidth={2} /> Config
-        </Pill>
-        <Pill tone="ghost" size="sm" onClick={onReset}>
-          <RotateCcw size={15} strokeWidth={2} /> Reset
-        </Pill>
-        <Pill tone="ink" size="sm" onClick={onSave}>
-          Save batch
-        </Pill>
-      </Header>
+      <Header />
 
       <div className={styles.content}>
-          {editName ? (
-            <input
-              autoFocus
-              className={styles.nameInput}
-              value={meta.name}
-              onChange={(e) => setMeta((m) => ({ ...m, name: e.target.value }))}
-              onBlur={() => setEditName(false)}
-              onKeyDown={(e) => e.key === "Enter" && setEditName(false)}
-            />
-          ) : (
-            <h1 className={styles.name} onClick={() => setEditName(true)} title="Click to rename">
-              {meta.name}
-            </h1>
-          )}
+          <EditorToolbar
+            name={meta.name}
+            editing={editName}
+            onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
+            onStartEdit={() => setEditName(true)}
+            onEndEdit={() => setEditName(false)}
+            onConfig={() => setShowConfig(true)}
+          />
 
           <div className={styles.work}>
             {/* Macros first in the DOM so it stacks on top on narrow screens
@@ -375,7 +347,6 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
           onDismiss={() => setSelector(null)}
         />
       )}
-      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </>
   );
 }
