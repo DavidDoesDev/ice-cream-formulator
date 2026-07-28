@@ -6,7 +6,7 @@
   width: 100%;
   text-align: left;
   cursor: pointer;
-  background: var(--paper-2);
+  background: transparent;
   color: var(--ink);
   border: 2px solid color-mix(in oklab, var(--ink) 30%, transparent);
   border-radius: var(--radius-md);
@@ -19,7 +19,7 @@
 }
 .tile[data-selected] {
   border-color: var(--accent);
-  background: color-mix(in oklab, var(--accent) 10%, var(--paper-2));
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
 }
 .tile:focus-visible {
   outline: 2px solid var(--accent);

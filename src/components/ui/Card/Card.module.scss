@@ -1,9 +1,12 @@
+// Default is border-delineated on the base surface (containers read as outlines,
+// not fills) — raised fill is reserved for fields and selected states. Opt into a
+// filled/elevated card with elevation="raised".
 .card {
   --card-accent: color-mix(in oklab, var(--ink) 30%, transparent);
   display: block;
   border: 2px solid var(--card-accent);
   border-radius: var(--radius-md);
-  background: var(--paper-2);
+  background: transparent;
   color: var(--ink);
   text-decoration: none;
   transition: border-color 0.2s, background 0.2s;
@@ -24,6 +27,7 @@
   border-color: transparent;
 }
 .card[data-elevation="raised"] {
+  background: var(--paper-2);
   box-shadow: var(--sh);
   border-color: transparent;
 }
