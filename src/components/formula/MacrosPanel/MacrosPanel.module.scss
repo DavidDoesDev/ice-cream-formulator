@@ -59,6 +59,9 @@
   border-radius: var(--radius-pill);
   background: color-mix(in oklab, var(--ink) 12%, transparent);
   border: 1.5px solid var(--line);
+  // Container so the fill's sheen can be sized to the full track width (cqw)
+  // and revealed as the fill grows.
+  container-type: inline-size;
 }
 
 .sliderFill {
@@ -68,6 +71,21 @@
   bottom: 0;
   z-index: 1;
   border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate; // contain the sheen's blend to the fill
+}
+
+// Sheen fixed to the track width, revealed by the fill: subtle darker-left,
+// brighter-right overlay across the colored fill.
+.sheen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100cqw;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.2));
+  mix-blend-mode: overlay;
   pointer-events: none;
 }
 
@@ -127,7 +145,7 @@
   font-weight: 700;
   font-size: 15px;
   text-align: right;
-  color: var(--ink);
+  color: var(--muted);
 }
 
 // Full-width balance bar: ok = solid mint, alert = tinted crimson + Rebalance.

@@ -12,7 +12,7 @@ import { DEFAULT_EQUIPMENT, type EquipmentProfile } from "@/data/types";
 import { formatPercent } from "@/lib/measure";
 import { PintCup, type PintCupHandle } from "@/components/shared/PintCup";
 import { perfCount } from "@/components/shared/PerfHud";
-import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
+import { type MacroKey } from "@/components/shared/MacroDot";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
 import { Stat } from "@/components/ui/Stat";
@@ -513,9 +513,7 @@ export function MacrosPanel({
         const fromPos = (p: number) => g.min + (p / SLIDER_SCALE) * span;
         return (
           <div key={key} className={styles.sliderRow}>
-            <span className={styles.sliderKey}>
-              <MacroDot macro={key} /> {label}
-            </span>
+            <span className={styles.sliderKey}>{label}</span>
             <span className={styles.sliderTrack}>
               <span
                 ref={(el) => {
@@ -524,7 +522,9 @@ export function MacrosPanel({
                 }}
                 className={`${styles.sliderFill} ${g.inRange ? "" : styles.fillOut}`}
                 style={{ width: `${g.fillPct}%`, background: g.inRange ? fillVar(key) : undefined }}
-              />
+              >
+                <span className={styles.sheen} aria-hidden />
+              </span>
               <span className={styles.tick} style={{ left: `${g.bandLoPct}%` }} aria-hidden />
               <span className={styles.tick} style={{ left: `${g.bandHiPct}%` }} aria-hidden />
               <input
