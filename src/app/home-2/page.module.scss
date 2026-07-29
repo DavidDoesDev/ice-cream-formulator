@@ -33,10 +33,11 @@
   max-width: 460px;
   // Reserve the cone's full aspect box, then reclaim the faded lower third with
   // a negative bottom margin so the lead text rides up under the faded tip.
-  margin: 0 auto -30vw;
+  margin: 0 auto -32vw;
   aspect-ratio: 720 / 1280;
   --sparkle-cone-w: 66vw;
-  --sparkle-cone-top: 0px;
+  // Nudge the cone down from the title (scoop sits ~3vw below the box top).
+  --sparkle-cone-top: 3vw;
 }
 
 .lead {
@@ -48,6 +49,8 @@
 }
 
 .cta {
+  display: flex;
+  justify-content: center;
   margin-top: clamp(20px, 4vw, 32px);
 }
 
@@ -62,6 +65,7 @@
   .coneBox {
     width: 420px;
     --sparkle-cone-w: 420px;
-    margin-bottom: -190px;
+    --sparkle-cone-top: 20px;
+    margin-bottom: -205px;
   }
 }

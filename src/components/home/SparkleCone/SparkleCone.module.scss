@@ -544,12 +544,7 @@
   // Fade the cone tip into the paper — starting and ending high so a big chunk
   // of the box below is clear paper the lead text can slide up into.
   .scene[data-mobile="hero"] .cone {
-    -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 70%);
-    mask-image: linear-gradient(to bottom, #000 45%, transparent 70%);
-  }
-  // The auto-placed callout labels trail off a full-width centred cone, so they
-  // read half-off-screen — hide them here (the backdrop hides them too).
-  .scene[data-mobile="hero"] .annoPlane {
-    display: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 68%);
+    mask-image: linear-gradient(to bottom, #000 45%, transparent 68%);
   }
 }
