@@ -36,9 +36,10 @@
 
 .sliderRow {
   display: grid;
-  grid-template-columns: 116px 1fr 54px;
+  // Label column hugs the longest label (no arbitrary padding); tracks still align.
+  grid-template-columns: max-content 1fr 54px;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .sliderKey {
