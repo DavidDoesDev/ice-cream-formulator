@@ -69,6 +69,10 @@
   --space-16: 64px;
   --space-20: 80px;
   --space-24: 96px;
+
+  // Page content width — capped at 1240px, with a side gutter that doesn't
+  // collapse on small screens (min ~28px each side, growing to 4vw when wider).
+  --page-w: min(1240px, calc(100vw - max(56px, 8vw)));
 }
 
 // light (default) — mirrors palette.ts pressLight. Ink is its own color now,

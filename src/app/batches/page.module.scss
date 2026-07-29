@@ -1,5 +1,5 @@
 .main {
-  width: min(1240px, 92vw);
+  width: var(--page-w);
   margin: 0 auto;
   padding: 0 0 calc(90px * var(--u));
 }

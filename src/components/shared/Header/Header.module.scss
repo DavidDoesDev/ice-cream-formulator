@@ -11,7 +11,7 @@
   justify-content: space-between;
   gap: 16px;
   // Match the page body's gutter so brand + nav align with the content below.
-  padding: calc(14px * var(--u)) calc((100vw - min(1240px, 92vw)) / 2);
+  padding: calc(14px * var(--u)) calc((100vw - var(--page-w)) / 2);
 }
 
 // Reveal-on-scroll (homepage): fixed so it reserves no space, animate slide-in.

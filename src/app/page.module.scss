@@ -1,5 +1,5 @@
 .main {
-  width: min(1240px, 92vw);
+  width: var(--page-w);
   margin: 0 auto;
   padding: 0 0 calc(90px * var(--u));
 }
@@ -19,10 +19,15 @@
 // observes the page margin (.main edge) — only the entrance runs full-bleed.
 .heroInner {
   position: relative;
-  width: min(1240px, 92vw);
+  width: var(--page-w);
   margin: 0 auto;
-  // Pull the tall cone scene up so the scoop sits at the top of the hero.
-  --sparkle-cone-top: -90px;
+}
+// Pull the tall cone scene up so the scoop sits at the top — desktop only, so
+// the SparkleCone's own phone "backdrop behind the title" mode isn't disturbed.
+@media (min-width: 900px) {
+  .heroInner {
+    --sparkle-cone-top: -90px;
+  }
 }
 
 .heroText {
@@ -38,6 +43,8 @@
 .heroCone {
   display: contents;
 }
+// Hidden on phone — the cone overlaps the lead + CTA there and hurts
+// readability. (Revisit: a dedicated phone treatment, below or faded.)
 @media (max-width: 899px) {
   .heroCone {
     display: none;
