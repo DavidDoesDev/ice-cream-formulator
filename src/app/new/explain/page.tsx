@@ -3,7 +3,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { PintCup } from "@/components/shared/PintCup";
+import { Button } from "@/components/ui/Button";
+import { Tag } from "@/components/ui/Tag";
 import type { MatchResult } from "@/lib/template-matcher";
 import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
 import { saveFormula, assignBatchNo } from "@/lib/persistence";
@@ -60,7 +63,7 @@ export default function ExplainPage() {
     <main className={styles.main}>
       <header className={styles.header}>
         <Link href={`/new?focus=search`} className={styles.back}>← Try again</Link>
-        <span className={styles.confidence}>{confidenceLabel}</span>
+        <Tag size="sm" tone={metadata.confidence === "high" ? "ok" : "normal"}>{confidenceLabel}</Tag>
       </header>
 
       <div className={styles.hero}>
@@ -120,12 +123,19 @@ export default function ExplainPage() {
       )}
 
       <div className={styles.actions}>
-        <Link href="/new?focus=search" className={styles.tryAgain}>
+        <Button hierarchy="secondary" size="lg" href="/new?focus=search" className={styles.tryAgain}>
           Try again
-        </Link>
-        <button className={styles.makeIt} type="button" onClick={handleMakeIt}>
-          Make it →
-        </button>
+        </Button>
+        <Button
+          hierarchy="primary"
+          size="lg"
+          icon={<ArrowRight size={18} />}
+          iconPosition="after"
+          onClick={handleMakeIt}
+          className={styles.makeIt}
+        >
+          Make it
+        </Button>
       </div>
     </main>
   );
