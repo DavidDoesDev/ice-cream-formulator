@@ -1,0 +1,23 @@
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.l1,
+.l2 {
+  font-family: var(--font-poster);
+  font-weight: 700;
+  // SVG user units (viewBox is 100 wide). Sized so COLD HARD sits near its
+  // natural width, and SCIENCE tracks out to match.
+  font-size: 22px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.l1 {
+  fill: var(--ink);
+}
+.l2 {
+  fill: var(--accent-indigo);
+}

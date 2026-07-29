@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { FeatureCard } from "@/components/ui/FeatureCard";
 import { Header } from "@/components/shared/Header";
 import { SparkleCone } from "@/components/home/SparkleCone";
+import { StretchTitle } from "@/components/home/StretchTitle";
 import styles from "./page.module.scss";
 
 const FEATURES = [
@@ -24,10 +25,7 @@ export default function HomeVariant2() {
       <Header />
 
       <section className={styles.hero}>
-        <h1 className={styles.title}>
-          <span className={styles.titleRow}>Cold Hard</span>
-          <span className={`${styles.titleRow} ${styles.sci}`}>Science</span>
-        </h1>
+        <StretchTitle className={styles.title} />
 
         <div className={styles.coneBox} aria-hidden>
           <SparkleCone mobile="hero" />
