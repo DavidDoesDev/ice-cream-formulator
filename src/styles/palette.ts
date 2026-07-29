@@ -12,10 +12,10 @@ export const CANDY = {
   lilac: "#C1ADFF",
 } as const;
 
-// Yellow accent — the action color (links, primary buttons, highlights).
-// Replaces the old blue-violet ink-accent; ink is now its own token below.
+// Two accents. The action color (links, primary buttons, highlights) is the
+// INDIGO in light mode and the YELLOW in dark mode — see globals.scss --accent.
+// The yellow is also the fixed brand color (the logo badge) in both modes.
 export const ACCENT = "#F2C043";
-// Secondary indigo.
 export const ACCENT_INDIGO = "#525780";
 // Critical / danger — its own crimson, distinct from candy pink.
 export const ALERT = "#D01244";

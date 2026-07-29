@@ -90,13 +90,17 @@
   --sh-h: 10px 10px 0 var(--shadow-color);
   --grain: 0.5;
 
+  // Light mode uses the BLUE (the "Science" indigo) as the action accent; dark
+  // keeps the yellow. The yellow lives on as the brand mark (logo) either way.
+  --accent: var(--accent-indigo);
+
   // back-compat aliases for not-yet-restyled components
   --color-bg: var(--paper);
   --color-surface: var(--paper-2);
   --color-text: var(--text);
   --color-text-secondary: var(--muted);
   --color-accent: var(--accent);
-  --color-on-accent: #0f1018; // dark text on the yellow accent
+  --color-on-accent: #fcfbf9; // light ink on the blue accent
   --color-border: var(--line);
 }
 
@@ -111,6 +115,9 @@
   --line: rgba(247, 239, 221, 0.22);
   --shadow-color: rgba(6, 8, 16, 0.5);
   --grain: 0.35;
+
+  // Dark mode keeps the yellow as the action accent (overrides the light default).
+  --accent: #f2c043;
 
   --color-bg: var(--paper);
   --color-surface: var(--paper-2);
