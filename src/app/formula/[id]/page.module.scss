@@ -141,7 +141,9 @@
 .tabBar {
   display: flex;
   gap: var(--space-6);
-  padding: calc(14px * var(--u)) calc(20px * var(--u)) 0;
+  // Inset by the card padding so the underline rule doesn't bleed to the edges.
+  margin: 0 calc(20px * var(--u));
+  padding: calc(14px * var(--u)) 0 0;
   border-bottom: 2px solid var(--line);
 }
 

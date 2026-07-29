@@ -16,18 +16,18 @@
   padding: var(--space-5) 0;
 }
 
+// One shared grid for all rows (via display: contents on each row) so column 1
+// is a single width across every slider — tracks start and end at the same x.
 .sliders {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  display: grid;
+  grid-template-columns: max-content 1fr 54px;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: var(--space-4);
 }
 
 .sliderRow {
-  display: grid;
-  // Label column hugs the longest label (no arbitrary padding); tracks still align.
-  grid-template-columns: max-content 1fr 54px;
-  align-items: center;
-  gap: 10px;
+  display: contents;
 }
 
 .sliderKey {
