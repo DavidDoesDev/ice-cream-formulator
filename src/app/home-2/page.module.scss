@@ -50,8 +50,14 @@
 
 .cta {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   margin-top: clamp(20px, 4vw, 32px);
+}
+// Full-width button, capped so it doesn't stretch absurdly on wide screens.
+.cta > a {
+  width: 100%;
+  max-width: 400px;
 }
 
 .features {
