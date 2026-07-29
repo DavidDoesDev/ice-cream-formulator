@@ -41,12 +41,12 @@ export const defaultFx: FxConfig = {
     color: { on: false, t: 0.67 },
     // Start zone (dot) and end zone (elbow/label), % of the scene box. Defaults
     // span the original hand-tuned positions, so the layout is unchanged.
-    dotXMin: 31,
-    dotXMax: 63,
-    dotYMin: 8,
-    dotYMax: 30,
-    elbowXMin: 10,
-    elbowXMax: 26,
+    dotXMin: 38,
+    dotXMax: 58,
+    dotYMin: 10,
+    dotYMax: 28,
+    elbowXMin: 15,
+    elbowXMax: 25,
     elbowYMin: 1,
     elbowYMax: 9,
   },

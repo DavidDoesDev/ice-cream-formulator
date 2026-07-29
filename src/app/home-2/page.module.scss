@@ -4,9 +4,14 @@
   padding: 0 0 calc(90px * var(--u));
 }
 
+// Flex column so one gap governs the spacing between every hero element.
 .hero {
   position: relative;
-  padding: clamp(16px, 4vw, 40px) 0 clamp(28px, 5vw, 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: clamp(32px, 8vw, 60px);
+  padding: clamp(28px, 6vw, 52px) 0 clamp(36px, 6vw, 64px);
 }
 
 .title {
@@ -17,7 +22,7 @@
   font-size: clamp(44px, 15vw, 120px);
   line-height: 0.9;
   letter-spacing: -0.01em;
-  margin: 0 0 clamp(8px, 2vw, 20px);
+  margin: 0;
 }
 .titleRow {
   display: block;
@@ -26,22 +31,9 @@
   color: var(--accent-indigo);
 }
 
-// Big centred cone — sits at the bottom of the hero, below the text + CTA.
-.coneBox {
-  position: relative;
-  width: 74vw;
-  max-width: 460px;
-  // Top gap from the CTA; the negative bottom margin trims the faded-tip
-  // whitespace so the feature grid doesn't sit miles below the visible cone.
-  margin: clamp(20px, 5vw, 40px) auto -30vw;
-  aspect-ratio: 720 / 1280;
-  --sparkle-cone-w: 74vw;
-  --sparkle-cone-top: 0px;
-}
-
 .lead {
   max-width: 46ch;
-  margin: clamp(8px, 2vw, 20px) 0 0;
+  margin: 0;
   font-size: clamp(15px, 4.2vw, 20px);
   line-height: 1.5;
   color: var(--ink);
@@ -51,7 +43,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: clamp(20px, 4vw, 32px);
 }
 // Full-width button, capped so it doesn't stretch absurdly on wide screens.
 .cta > a {
@@ -59,11 +50,23 @@
   max-width: 400px;
 }
 
+// Big centred cone — sits at the bottom of the hero, below the text + CTA. The
+// negative bottom margin trims the faded-tip whitespace before the feature grid.
+.coneBox {
+  position: relative;
+  width: 74vw;
+  max-width: 460px;
+  margin: 0 auto -30vw;
+  aspect-ratio: 720 / 1280;
+  --sparkle-cone-w: 74vw;
+  --sparkle-cone-top: 0px;
+}
+
 .features {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
-  gap: calc(16px * var(--u));
-  margin-top: calc(20px * var(--u));
+  gap: calc(20px * var(--u));
+  margin-top: calc(36px * var(--u));
 }
 
 @media (min-width: 640px) {
