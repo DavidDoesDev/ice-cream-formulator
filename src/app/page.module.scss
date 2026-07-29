@@ -12,16 +12,17 @@
   position: relative;
   overflow-x: clip;
   overflow-y: visible;
-  padding: 0; // cone stays pinned to the top; text spacing lives on .heroText
+  padding: 0;
+  // Pull the tall cone scene up so the scoop sits at the top of the hero.
+  --sparkle-cone-top: -90px;
 }
 
 .heroText {
   position: relative;
   z-index: 1; // above the cone overlay
   max-width: 620px;
-  // Generous margin above the title and below the CTA; the absolute cone is
-  // unaffected and stays at the very top.
-  margin: calc(56px * var(--u)) 0 calc(64px * var(--u));
+  // The title tucks below the top of the cone; the absolute cone stays put.
+  margin: calc(96px * var(--u)) 0 calc(64px * var(--u));
 }
 
 // display: contents so the cone behaves exactly as a direct child of .hero on
