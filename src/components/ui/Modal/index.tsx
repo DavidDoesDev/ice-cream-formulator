@@ -106,7 +106,7 @@ export function Modal({
             {title != null ? <span className={styles.title}>{title}</span> : <span />}
             {dismissable && (
               <button className={styles.close} type="button" aria-label="Close" onClick={onClose}>
-                <X size={20} strokeWidth={2} />
+                <X size={24} strokeWidth={1.75} />
               </button>
             )}
           </div>

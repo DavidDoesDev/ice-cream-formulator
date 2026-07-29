@@ -105,7 +105,7 @@ export function IngredientSelector({ context, onAdd, onDismiss, onBack, banner }
         </span>
       )}
       <button type="button" className={styles.close} onClick={onDismiss} aria-label="Close">
-        <X size={20} strokeWidth={2} />
+        <X size={24} strokeWidth={1.75} />
       </button>
     </div>
   );

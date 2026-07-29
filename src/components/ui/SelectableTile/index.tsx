@@ -37,8 +37,10 @@ export function SelectableTile({
           {icon}
         </span>
       )}
-      <span className={styles.name}>{name}</span>
-      {blurb != null && <span className={styles.blurb}>{blurb}</span>}
+      <span className={styles.text}>
+        <span className={styles.name}>{name}</span>
+        {blurb != null && <span className={styles.blurb}>{blurb}</span>}
+      </span>
     </button>
   );
 }

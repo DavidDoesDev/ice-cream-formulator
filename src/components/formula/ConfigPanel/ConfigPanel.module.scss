@@ -10,22 +10,11 @@
   gap: var(--space-3);
 }
 
-// "NAME" affordance label above the name field.
-.fieldLabel {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0;
-}
-
-// Descriptive line under a section header ("Select a recipe type…").
+// Descriptive line under a section header ("Select a recipe type…") — full ink.
 .sectionNote {
   font-family: var(--font-body);
   font-size: 14px;
-  color: var(--muted);
+  color: var(--ink);
   margin: calc(-1 * var(--space-1)) 0 var(--space-2);
 }
 

@@ -53,6 +53,9 @@
   justify-content: center;
   width: 34px;
   height: 34px;
+  // Pull the glyph flush to the content's right edge (the button centres it,
+  // which would otherwise inset it ~7px from the cards/search edge).
+  margin-right: -6px;
   border: 0;
   background: transparent;
   color: var(--ink);

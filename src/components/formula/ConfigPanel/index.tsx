@@ -152,10 +152,11 @@ export function ConfigPanel({
   return (
     <div className={styles.root}>
       <div className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="formula-name">Name</label>
+        <SectionHeader label="Name" />
         <Input
           id="formula-name"
           type="text"
+          aria-label="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={handleNameBlur}
@@ -171,7 +172,7 @@ export function ConfigPanel({
               key={opt.value}
               name={opt.label}
               blurb={opt.blurb}
-              icon={<IceCreamCone size={22} strokeWidth={2} />}
+              icon={<IceCreamCone size={40} strokeWidth={1.75} />}
               selected={style === opt.value}
               onClick={() => handleStyleChange(opt.value)}
             />
@@ -191,7 +192,7 @@ export function ConfigPanel({
                 key={profile}
                 name={info.label}
                 blurb={info.blurb}
-                icon={<Icon size={22} strokeWidth={2} />}
+                icon={<Icon size={40} strokeWidth={1.75} />}
                 selected={equipment === profile}
                 onClick={() => handleEquipmentChange(profile)}
               />
