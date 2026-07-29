@@ -6,13 +6,17 @@
 
 /* ---- hero ---- */
 .hero {
-  // Clip only horizontally so the cone's off-screen right extent can't widen
-  // the page (that overflow was expanding the mobile layout viewport), while
-  // leaving vertical visible so the scoop pokes above the hero, uncut.
+  // Full-bleed so the horizontal clip lands at the viewport edge (not .main's
+  // 92vw edge) — the cone overhangs the right and is trimmed at the screen edge,
+  // and slides in from off-screen without a visible cut. overflow-x clips the
+  // overhang (keeping it from widening the page); overflow-y stays visible so
+  // the scoop pokes above the hero.
   position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: 0 calc((100vw - min(1240px, 92vw)) / 2);
   overflow-x: clip;
   overflow-y: visible;
-  padding: 0;
   // Pull the tall cone scene up so the scoop sits at the top of the hero.
   --sparkle-cone-top: -90px;
 }
@@ -21,8 +25,9 @@
   position: relative;
   z-index: 1; // above the cone overlay
   max-width: 620px;
-  // The title tucks below the top of the cone; the absolute cone stays put.
-  margin: calc(96px * var(--u)) 0 calc(64px * var(--u));
+  // vw-based so the margins scale with the title/cone instead of shrinking
+  // relative to them as the window widens; the title tucks below the cone top.
+  margin: clamp(72px, 8vw, 128px) 0 clamp(52px, 5.5vw, 96px);
 }
 
 // display: contents so the cone behaves exactly as a direct child of .hero on
