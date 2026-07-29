@@ -579,7 +579,7 @@ export function MacrosPanel({
       })}
       </div>
 
-      <SectionHeader label="Balance check" />
+      <SectionHeader label="Balance check" className={styles.sectionGap} />
       {conflict ? (
         <div className={styles.statusBar} data-tone="alert">
           <span className={styles.statusMsg}>Can&apos;t hit that target with these ingredients.</span>

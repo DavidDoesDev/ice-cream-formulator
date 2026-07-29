@@ -5,7 +5,12 @@
   padding: calc(20px * var(--u));
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
+}
+
+// Extra separation above a later section (Balance check).
+.sectionGap {
+  margin-top: var(--space-4);
 }
 
 .kind {
@@ -20,7 +25,7 @@
 .cupStage {
   display: grid;
   place-items: center;
-  padding: var(--space-3) 0;
+  padding: var(--space-5) 0;
 }
 
 .sliders {

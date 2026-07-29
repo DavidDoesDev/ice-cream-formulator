@@ -167,7 +167,7 @@ export function RecipePanel({
         </Button>
       </div>
 
-      <SectionHeader label="Batch yield" />
+      <SectionHeader label="Batch yield" className={styles.sectionGap} />
       <div className={styles.yieldRow}>
         <span className={styles.yieldNote}>Scale the whole recipe up or down.</span>
         <GramScrubField grams={yieldGrams} onChange={onYield} />
@@ -180,7 +180,7 @@ export function RecipePanel({
         </span>
       </div>
 
-      <SectionHeader label="Notes" />
+      <SectionHeader label="Notes" className={styles.sectionGap} />
       <Input
         multiline
         className={styles.notesField}

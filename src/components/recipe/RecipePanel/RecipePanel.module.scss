@@ -6,7 +6,12 @@
   padding: calc(20px * var(--u));
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
+}
+
+// Extra separation above a later section (Batch yield, Notes).
+.sectionGap {
+  margin-top: var(--space-4);
 }
 
 .kind {
@@ -68,7 +73,7 @@
   align-items: baseline;
   justify-content: space-between;
   padding-top: var(--space-4);
-  border-top: 2px solid var(--line);
+  border-top: 2px solid var(--ink);
 }
 .totalKey {
   font-family: var(--font-mono);

@@ -7,13 +7,14 @@ interface SectionHeaderProps {
   label: ReactNode;
   icon?: ReactNode; // optional leading icon
   size?: SectionHeaderSize;
+  className?: string;
 }
 
 // Section divider: an optional leading icon + uppercase mono label + a rule.
 // Standardizes the header treatment across every panel and modal.
-export function SectionHeader({ label, icon, size = "md" }: SectionHeaderProps) {
+export function SectionHeader({ label, icon, size = "md", className }: SectionHeaderProps) {
   return (
-    <div className={styles.header} data-size={size}>
+    <div className={[styles.header, className].filter(Boolean).join(" ")} data-size={size}>
       {icon && (
         <span className={styles.icon} aria-hidden>
           {icon}
