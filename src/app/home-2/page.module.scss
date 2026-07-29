@@ -58,7 +58,7 @@
   position: relative;
   width: 74vw;
   max-width: 460px;
-  margin: clamp(28px, 7vw, 52px) auto -14vw;
+  margin: clamp(28px, 7vw, 52px) auto -48vw;
   aspect-ratio: 720 / 1280;
   --sparkle-cone-w: 74vw;
   --sparkle-cone-top: 0px;
@@ -76,6 +76,6 @@
     width: 480px;
     --sparkle-cone-w: 480px;
     --sparkle-cone-top: 0px;
-    margin-bottom: -96px;
+    margin-bottom: -300px;
   }
 }
