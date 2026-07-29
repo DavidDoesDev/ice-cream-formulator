@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 // touch/mobile browsers and ignored on desktop, so it only affects small screens.
 export const viewport: Viewport = {
   width: "device-width",
-  initialScale: 0.9,
+  initialScale: 0.85,
 };
 
 export default function RootLayout({
