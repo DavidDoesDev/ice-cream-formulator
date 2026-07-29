@@ -23,8 +23,9 @@ export default function Home() {
       <Header />
 
       <section className={styles.hero}>
-        <div className={styles.heroText}>
-          <h1 className={styles.title}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroText}>
+            <h1 className={styles.title}>
             <span className={styles.titleRow}>Cold</span>
             <span className={styles.titleRow}>Hard</span>
             <span className={`${styles.titleRow} ${styles.sci}`}>Science</span>
@@ -41,8 +42,9 @@ export default function Home() {
             </Button>
           </div>
         </div>
-        <div className={styles.heroCone} aria-hidden>
-          <SparkleCone />
+          <div className={styles.heroCone} aria-hidden>
+            <SparkleCone />
+          </div>
         </div>
       </section>
 
