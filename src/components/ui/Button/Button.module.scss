@@ -11,6 +11,8 @@
   border: 2px solid transparent;
   border-radius: var(--radius-sm);
   text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   transition: background 0.2s, color 0.2s, border-color 0.2s, filter 0.2s;
 
   // The tone drives one color; hierarchy decides fill vs outline vs text.

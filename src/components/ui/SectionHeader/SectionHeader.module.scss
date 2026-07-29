@@ -4,13 +4,6 @@
   gap: var(--space-3);
 }
 
-.dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ink);
-  flex-shrink: 0;
-}
 .icon {
   display: inline-flex;
   color: var(--ink);

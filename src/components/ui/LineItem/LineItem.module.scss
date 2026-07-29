@@ -8,6 +8,10 @@
 .item[data-indent] {
   padding-left: var(--space-4);
 }
+// Sub-ingredient breakdown rows sit tight under their blend.
+.item[data-size="sm"] {
+  padding: 2px 0;
+}
 
 .main {
   display: flex;
