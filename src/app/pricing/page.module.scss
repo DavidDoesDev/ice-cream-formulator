@@ -134,6 +134,18 @@
   gap: 6px;
   margin-top: var(--space-2);
 }
+// Struck regular price shown beside the beta $0.
+.strike {
+  align-self: flex-end;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
 .priceNum {
   font-family: var(--font-mono);
   font-weight: 700;

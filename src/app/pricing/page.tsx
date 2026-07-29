@@ -17,6 +17,8 @@ interface Tier {
   price: { monthly: number; annual: number }; // per-month in USD
   billedNote: (b: Billing) => string;
   badge?: string;
+  // Free during beta: the regular price shows struck through, marked down to $0.
+  beta?: boolean;
   highlight?: boolean;
   cta: { label: string; href: string; hierarchy: "primary" | "secondary" };
   features: string[];
@@ -45,10 +47,11 @@ const TIERS: Tier[] = [
     name: "Production",
     tagline: "For selling what you make.",
     price: { monthly: 6, annual: 4 },
-    billedNote: (b) => (b === "annual" ? "Billed annually — $48/yr" : "Billed monthly"),
-    badge: "Most popular",
+    billedNote: (b) => (b === "annual" ? "Free while in beta — normally $48/yr" : "Free while in beta — normally $6/mo"),
+    badge: "Free in beta",
+    beta: true,
     highlight: true,
-    cta: { label: "Go Pro", href: "#", hierarchy: "primary" },
+    cta: { label: "Get Pro free", href: "#", hierarchy: "primary" },
     features: [
       "Everything in Home Lab",
       "Unlimited saved batches",
@@ -159,14 +162,17 @@ export default function Pricing() {
             <div className={styles.tierHead}>
               <div className={styles.tierName}>
                 <h2 className={styles.tierTitle}>{tier.name}</h2>
-                {tier.badge && <Tag size="sm" tone="normal">{tier.badge}</Tag>}
+                {tier.badge && <Tag size="sm" tone={tier.beta ? "ok" : "normal"}>{tier.badge}</Tag>}
               </div>
               <p className={styles.tagline}>{tier.tagline}</p>
             </div>
 
             <div className={styles.priceRow}>
-              <span className={styles.priceNum}>{price(tier, billing)}</span>
-              {tier.price[billing] > 0 && <span className={styles.priceUnit}>/mo</span>}
+              {tier.beta && tier.price[billing] > 0 && (
+                <span className={styles.strike}>${tier.price[billing]}</span>
+              )}
+              <span className={styles.priceNum}>{tier.beta ? "$0" : price(tier, billing)}</span>
+              {tier.id !== "free" && <span className={styles.priceUnit}>/mo</span>}
             </div>
             <p className={styles.billedNote}>{tier.billedNote(billing)}</p>
 
