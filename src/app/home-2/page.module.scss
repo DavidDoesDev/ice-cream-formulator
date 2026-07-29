@@ -4,17 +4,18 @@
   padding: 0 0 calc(90px * var(--u));
 }
 
-// Flex column so one gap governs the spacing between hero elements; the cone
-// gets extra top margin (below) for a larger CTA→cone gap.
+// The hero stacks its elements in a column. There is NO shared flex gap — each
+// element below owns the margin that sets the space AFTER it, so every gap can
+// be tuned on its own. (Flex margins don't collapse, so the values are exact.)
 .hero {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: clamp(14px, 3.5vw, 24px);
   padding: clamp(20px, 4vw, 40px) 0 clamp(28px, 5vw, 52px);
 }
 
+// ── Headline: the "COLD HARD / SCIENCE" stretch title ──────────────────────
 .title {
   font-family: var(--font-poster);
   text-transform: uppercase;
@@ -23,7 +24,8 @@
   font-size: clamp(44px, 15vw, 120px);
   line-height: 0.9;
   letter-spacing: -0.01em;
-  margin: 0;
+  // Gap BELOW the headline → the lead paragraph.
+  margin: 0 0 clamp(14px, 3.5vw, 24px);
 }
 .titleRow {
   display: block;
@@ -32,18 +34,23 @@
   color: var(--accent-indigo);
 }
 
+// ── Lead: the descriptive paragraph under the headline ─────────────────────
 .lead {
   max-width: 46ch;
-  margin: 0;
   font-size: clamp(15px, 4.2vw, 20px);
   line-height: 1.5;
   color: var(--ink);
+  // Gap BELOW the lead → the CTA.
+  margin: 0 0 clamp(14px, 3.5vw, 24px);
 }
 
+// ── CTA: the "New batch" call-to-action button ─────────────────────────────
 .cta {
   display: flex;
   flex-direction: column;
   align-items: center;
+  // Gap BELOW the CTA → the cone.
+  margin: 0 0 clamp(40px, 10vw, 72px);
 }
 // Full-width button, capped so it doesn't stretch absurdly on wide screens.
 .cta > a {
@@ -51,23 +58,25 @@
   max-width: 400px;
 }
 
-// Big centred cone — sits at the bottom of the hero, below the text + CTA. Its
-// own top margin (added to the hero gap) opens up the CTA→cone space; the
-// negative bottom margin trims the faded-tip whitespace before the feature grid.
+// ── Cone: the SparkleCone that anchors the bottom of the hero ──────────────
 .coneBox {
   position: relative;
   width: 74vw;
   max-width: 460px;
-  margin: clamp(28px, 7vw, 52px) auto -48vw;
+  // Top gap is owned by the CTA above; the negative bottom margin pulls the
+  // feature grid up to where the cone fades out.
+  margin: 0 auto -48vw;
   aspect-ratio: 720 / 1280;
   --sparkle-cone-w: 74vw;
   --sparkle-cone-top: 0px;
 }
 
+// ── Feature grid (below the hero) ──────────────────────────────────────────
 .features {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
   gap: calc(16px * var(--u));
+  // Gap ABOVE the grid → the cone (works with the cone's negative bottom margin).
   margin-top: calc(24px * var(--u));
 }
 
