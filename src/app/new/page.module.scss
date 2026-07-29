@@ -5,60 +5,34 @@
 }
 
 .title {
-  font-family: var(--font-poster);
+  font-family: var(--font-display);
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--ink);
-  font-size: clamp(48px, 9vw, 120px);
-  line-height: 0.86;
-  letter-spacing: -0.005em;
-  margin: calc(30px * var(--u)) 0 calc(30px * var(--u));
+  font-size: clamp(40px, 7vw, 84px);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  margin: calc(24px * var(--u)) 0 calc(28px * var(--u));
 }
 
 .search {
-  margin-bottom: calc(36px * var(--u));
+  margin-bottom: calc(40px * var(--u));
 }
 
+// Instruction line — full ink, per the redesign.
 .searchLabel {
-  font-family: var(--font-display);
-  font-weight: 600;
+  font-family: var(--font-body);
   font-size: 16px;
-  color: var(--text);
+  color: var(--ink);
   margin: 0 0 var(--space-4);
 }
 
 .pickHead {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   margin: 0 0 calc(22px * var(--u));
-}
-
-.pickHeadDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  border: 1.5px solid var(--ink);
-  background: var(--ink);
-  flex: none;
-}
-
-.pickHeadLabel {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.pickHeadRule {
-  flex: 1;
-  height: 2px;
-  background: var(--line);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: calc(20px * var(--u));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: calc(18px * var(--u));
 }

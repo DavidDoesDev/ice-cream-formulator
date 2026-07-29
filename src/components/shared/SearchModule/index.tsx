@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { ArrowRight } from "lucide-react";
 import styles from "./SearchModule.module.scss";
 
 const SUGGESTIONS = [
@@ -83,7 +84,7 @@ export function SearchModule({ onSubmit, autoFocus = false }: SearchModuleProps)
           onClick={() => handleSubmit(value)}
           aria-label="Search"
         >
-          →
+          <ArrowRight size={18} strokeWidth={2.5} />
         </button>
       </div>
 

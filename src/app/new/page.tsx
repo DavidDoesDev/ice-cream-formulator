@@ -7,6 +7,7 @@ import { ARCHETYPES } from "@/data/archetypes";
 import type { Archetype } from "@/data/types";
 import { ArchetypeTile } from "@/components/shared/ArchetypeTile";
 import { SearchModule } from "@/components/shared/SearchModule";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Header } from "@/components/shared/Header";
 import { matchTemplate, type MatchResult } from "@/lib/template-matcher";
 import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
@@ -42,18 +43,14 @@ function NewFormulaInner() {
     <main className={styles.main}>
       <Header />
 
-      <h1 className={styles.title}>New Formula</h1>
+      <h1 className={styles.title}>New Batch</h1>
 
       <div className={styles.search}>
         <p className={styles.searchLabel}>Describe a flavor — we&apos;ll match a base.</p>
         <SearchModule onSubmit={handleSearch} autoFocus={autoFocus} />
       </div>
 
-      <div className={styles.pickHead}>
-        <span className={styles.pickHeadDot} />
-        <span className={styles.pickHeadLabel}>Or begin from an archetype</span>
-        <span className={styles.pickHeadRule} />
-      </div>
+      <SectionHeader className={styles.pickHead} label="Or begin from an archetype" />
 
       <div className={styles.grid}>
         {ARCHETYPES.map((archetype) => (

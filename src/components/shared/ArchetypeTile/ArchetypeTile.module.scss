@@ -3,34 +3,36 @@
   text-align: left;
   width: 100%;
   overflow: hidden;
-  background: var(--paper-2);
-  border: 2.5px solid var(--ink);
+  // Border-on-base, matching BatchCard / the redesign card language. No fill,
+  // no hard shadow, and no movement on hover — feedback is border colour only.
+  background: transparent;
+  border: 2px solid color-mix(in oklab, var(--ink) 24%, transparent);
   border-radius: var(--radius-lg);
-  padding: calc(22px * var(--u));
+  padding: calc(20px * var(--u));
   color: inherit;
   cursor: pointer;
-  box-shadow: var(--sh);
-  transition: transform 0.22s var(--ease-jelly), box-shadow 0.22s;
+  transition: border-color 0.15s;
 }
 
 .tile:hover {
-  box-shadow: var(--sh-h);
+  border-color: var(--ink);
 }
-
-.tile:active {
-  transform: translateY(-2px);
+.tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .cup {
   display: grid;
   place-items: center;
-  padding: 8px 0 16px;
+  padding: 4px 0 18px;
 }
 
 .body {
   min-width: 0;
 }
 
+// Style eyebrow — yellow mono meta, matching BatchCard.
 .style {
   display: inline-block;
   font-family: var(--font-mono);
@@ -38,17 +40,17 @@
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  // See note in page.module.scss .specimenStyle: --accent is blue-on-blue in
-  // dark mode; --text stays readable (same blue in light, cream in dark).
-  color: var(--text);
+  color: var(--accent);
   margin-bottom: 6px;
 }
 
 .name {
-  font-family: var(--font-poster);
+  font-family: var(--font-display);
+  font-weight: 700;
   text-transform: uppercase;
-  font-size: clamp(26px, 3vw, 38px);
-  line-height: 0.9;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
   color: var(--ink);
   margin: 0;
 }
@@ -57,49 +59,46 @@
   font-size: 14.5px;
   color: var(--muted);
   margin: 8px 0 0;
-  line-height: 1.4;
+  line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+// Clean mono readouts (value ink + unit muted), no pill chrome.
 .stats {
   display: flex;
-  gap: 8px;
+  gap: calc(18px * var(--u));
   margin-top: 16px;
   flex-wrap: wrap;
 }
 
 .stat {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: var(--radius-pill);
-  border: 1.5px solid var(--line);
+  align-items: baseline;
+  gap: 5px;
 }
 
 .statValue {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 .statLabel {
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
-  color: var(--text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .tile {
     transition: none;
-  }
-
-  .tile:hover {
-    transform: none;
   }
 }
