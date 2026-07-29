@@ -1,54 +1,38 @@
+// Border-on-base card (matches RecipePanel).
 .panel {
-  background: var(--paper-2);
-  border: 2.5px solid var(--ink);
+  border: 2px solid color-mix(in oklab, var(--ink) 30%, transparent);
   border-radius: var(--radius-lg);
-  padding: calc(22px * var(--u));
-  box-shadow: var(--sh);
-}
-
-.bar {
+  padding: calc(20px * var(--u));
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
 .kind {
-  font-family: var(--font-poster);
-  text-transform: uppercase;
-  font-size: clamp(24px, 3vw, 38px);
-  line-height: 0.9;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.01em;
   color: var(--ink);
-}
-
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.eyebrowIcon {
-  vertical-align: middle;
-  margin-top: -2px;
+  margin: 0;
 }
 
 .cupStage {
   display: grid;
   place-items: center;
-  gap: 10px;
-  padding: calc(28px * var(--u)) 0 18px;
 }
 
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
 
 .sliderRow {
   display: grid;
-  grid-template-columns: 96px 1fr 54px;
+  grid-template-columns: 108px 1fr 54px;
   align-items: center;
   gap: 12px;
-  padding: 9px 0;
 }
 
 .sliderKey {
@@ -67,7 +51,7 @@
   position: relative;
   height: 22px;
   border-radius: var(--radius-pill);
-  background: color-mix(in oklab, var(--ink) 9%, transparent);
+  background: color-mix(in oklab, var(--ink) 12%, transparent);
   border: 1.5px solid var(--line);
 }
 
@@ -87,8 +71,7 @@
   background: color-mix(in oklab, var(--ink) 28%, transparent);
 }
 
-// Healthy-window edge ticks — above the fill but below the thumb, so a handle
-// parked on a boundary sits on top of the tick rather than being clipped by it.
+// Healthy-window edge ticks — above the fill but below the thumb.
 .tick {
   position: absolute;
   top: -3px;
@@ -119,9 +102,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--paper-2);
-  border: 2.5px solid var(--ink);
-  box-shadow: 2px 2px 0 var(--shadow-color);
+  background: var(--paper);
+  border: 2px solid var(--ink);
   cursor: pointer;
 }
 
@@ -129,9 +111,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--paper-2);
-  border: 2.5px solid var(--ink);
-  box-shadow: 2px 2px 0 var(--shadow-color);
+  background: var(--paper);
+  border: 2px solid var(--ink);
   cursor: pointer;
 }
 
@@ -143,81 +124,53 @@
   color: var(--ink);
 }
 
-// Full-width balance status: "Balanced" (green) or "Out of range" (accent + a
-// Rebalance action). Replaces the old N-in-range fraction.
-.statusOk {
+// Full-width balance bar: ok = solid mint, alert = tinted crimson + Rebalance.
+.statusBar {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  border: 2px solid #0d3324;
-  background: var(--c-mint);
-  color: #0d3324;
+  gap: var(--space-2);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 14px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.statusOff {
-  display: flex;
-  align-items: center;
+.statusBar[data-tone="ok"] {
+  background: var(--color-ok);
+  border-color: color-mix(in oklab, var(--color-ok) 60%, #000);
+  color: #0d3324;
+}
+
+.statusBar[data-tone="alert"] {
   justify-content: space-between;
-  gap: 14px;
-  padding: 9px 10px 9px 14px;
-  border-radius: var(--radius-md);
-  border: 2px solid var(--ink);
-  background: color-mix(in oklab, var(--ink) 10%, transparent);
+  background: color-mix(in oklab, var(--color-alert) 14%, transparent);
+  border-color: var(--color-alert);
+  color: var(--color-alert);
 }
 
 .statusMsg {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--text);
-}
-
-.scoreNote {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  line-height: 1.45;
-  color: var(--muted);
-  margin: 0 0 16px;
 }
 
 .readoutRow {
-  display: flex;
-  gap: 18px;
-  margin-top: 10px;
-}
-
-.readout {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.readout b {
-  font-size: 15px;
-  color: var(--ink);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
 }
 
 .advice {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 10px;
 }
 
 .adviceRow {
@@ -229,4 +182,3 @@
 .adviceRow b {
   font-family: var(--font-display);
 }
-

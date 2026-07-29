@@ -9,14 +9,13 @@ import { balanceReport } from "@/lib/balance";
 import { relationshipHints } from "@/lib/relationships";
 import type { DerivedIndices } from "@/lib/derive";
 import { DEFAULT_EQUIPMENT, type EquipmentProfile } from "@/data/types";
-import { equipmentInfo } from "@/lib/equipment";
 import { formatPercent } from "@/lib/measure";
 import { PintCup, type PintCupHandle } from "@/components/shared/PintCup";
 import { perfCount } from "@/components/shared/PerfHud";
 import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
-import { SectionHeader } from "@/components/shared/SectionHeader";
-import { Pill } from "@/components/shared/Pill";
-import { Icon } from "@/components/shared/Icon";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { Button } from "@/components/ui/Button";
+import { Stat } from "@/components/ui/Stat";
 import styles from "./MacrosPanel.module.scss";
 
 const SLIDER_SCALE = 1000;
@@ -24,7 +23,7 @@ const SLIDER_SCALE = 1000;
 const SLIDERS: { key: MacroKey; label: string }[] = [
   { key: "fat", label: "Fat" },
   { key: "sugar", label: "Sugar" },
-  { key: "nonfatSolids", label: "Non-fat solids" },
+  { key: "nonfatSolids", label: "NFS" },
   { key: "stabilizer", label: "Stabilizer" },
   { key: "emulsifier", label: "Emulsifier" },
   { key: "alcohol", label: "Alcohol" },
@@ -492,20 +491,15 @@ export function MacrosPanel({
   noteHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
   return (
     <section className={styles.panel}>
-      <div className={styles.bar}>
-        <span className={styles.kind}>Macros</span>
-        {/* The (style × equipment) that define every target window (D8). */}
-        <span className={styles.eyebrow}>
-          {style} · <Icon name="snow" size={11} className={styles.eyebrowIcon} /> {equipmentInfo(equipment).label}
-        </span>
-      </div>
+      <h2 className={styles.kind}>Macros</h2>
 
       <div className={styles.cupStage}>
         <PintCup ref={cupRef} ratios={ratios} size="full" width={210} />
       </div>
 
-      <SectionHeader role="composition" label="Composition" />
+      <SectionHeader label="Composition" />
 
+      <div className={styles.sliders}>
       {SLIDERS.map(({ key, label }) => {
         // Render always shows solved ratios; during a drag the layout effect
         // above immediately re-applies the pointer's fill/readout on top.
@@ -583,37 +577,30 @@ export function MacrosPanel({
           </div>
         );
       })}
+      </div>
 
-      <SectionHeader role="balance" label="Balance check" />
-      <p className={styles.scoreNote}>
-        Each macro checked against its window for a {style.toLowerCase()} on a{" "}
-        {equipmentInfo(equipment).label.toLowerCase()}
-      </p>
+      <SectionHeader label="Balance check" />
       {conflict ? (
-        <div className={styles.statusOff}>
-          <span className={styles.statusMsg}>
-            <Icon name="bolt" size={16} /> Can&apos;t hit that target with these ingredients.
-          </span>
+        <div className={styles.statusBar} data-tone="alert">
+          <span className={styles.statusMsg}>Can&apos;t hit that target with these ingredients.</span>
           {onRecalibrate && (
-            <Pill tone="accent" size="sm" onClick={onRecalibrate}>Rebalance</Pill>
+            <Button tone="critical" size="sm" onClick={onRecalibrate}>Rebalance</Button>
           )}
         </div>
       ) : balanced ? (
-        <div className={styles.statusOk}>
-          <Icon name="check" size={15} /> Balanced
-        </div>
+        <div className={styles.statusBar} data-tone="ok">Balanced</div>
       ) : (
-        <div className={styles.statusOff}>
+        <div className={styles.statusBar} data-tone="alert">
           <span className={styles.statusMsg}>Out of range</span>
           {onRecalibrate && (
-            <Pill tone="accent" size="sm" onClick={onRecalibrate}>Rebalance</Pill>
+            <Button tone="critical" size="sm" onClick={onRecalibrate}>Rebalance</Button>
           )}
         </div>
       )}
 
       <div className={styles.readoutRow}>
-        <span className={styles.readout}>Scoopability <b>{Math.round(derived.pac * 100)}</b></span>
-        <span className={styles.readout}>Sweetness <b>{Math.round(derived.pod * 100)}</b></span>
+        <Stat label="Scoopability" value={Math.round(derived.pac * 100)} />
+        <Stat label="Sweetness" value={Math.round(derived.pod * 100)} />
       </div>
 
       {adviceRows.length > 0 && (
