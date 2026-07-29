@@ -104,7 +104,7 @@ export function MacrosPanel({
         applyFillColor(fill, d.key, g.inRange);
       }
       const val = valRefs.current.get(d.key);
-      if (val) val.textContent = `${formatPercent(d.value * 100)}%`;
+      if (val) val.textContent = formatPercent(d.value * 100);
     },
     [style, equipment, applyFillColor],
   );
@@ -122,7 +122,7 @@ export function MacrosPanel({
         applyFillColor(fill, key, g.inRange);
       }
       const val = valRefs.current.get(key);
-      if (val) val.textContent = `${formatPercent(g.value * 100)}%`;
+      if (val) val.textContent = formatPercent(g.value * 100);
     },
     [style, equipment, applyFillColor],
   );
@@ -567,13 +567,17 @@ export function MacrosPanel({
                 }}
               />
             </span>
-            <span
-              ref={(el) => {
-                if (el) valRefs.current.set(key, el);
-                else valRefs.current.delete(key);
-              }}
-              className={styles.sliderVal}
-            >{formatPercent(shown * 100)}%</span>
+            <span className={styles.sliderVal}>
+              <span
+                ref={(el) => {
+                  if (el) valRefs.current.set(key, el);
+                  else valRefs.current.delete(key);
+                }}
+              >
+                {formatPercent(shown * 100)}
+              </span>
+              <span className={styles.sliderUnit}>%</span>
+            </span>
           </div>
         );
       })}
