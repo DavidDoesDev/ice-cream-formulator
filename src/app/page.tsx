@@ -1,25 +1,32 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
-import { listFormulas, deleteFormula, saveFormula, assignBatchNo, backfillBatchNumbers, type SavedFormula } from "@/lib/persistence";
-import { ARCHETYPES } from "@/data/archetypes";
-import { bootstrapFromArchetype, generateFormulaId } from "@/lib/bootstrap";
+import { Search, Plus } from "lucide-react";
+import { listFormulas, deleteFormula, backfillBatchNumbers, type SavedFormula } from "@/lib/persistence";
 import { equipmentInfo, normalizeEquipment } from "@/lib/equipment";
 import { Icon } from "@/components/shared/Icon";
 import { Pill } from "@/components/shared/Pill";
+import { Button } from "@/components/ui/Button";
+import { FeatureCard } from "@/components/ui/FeatureCard";
 import { Header } from "@/components/shared/Header";
 import { SparkleCone } from "@/components/home/SparkleCone";
-import { ScienceSection } from "@/components/home/ScienceSection";
 import styles from "./page.module.scss";
+
+const FEATURES = [
+  { eyebrow: "The Lab", title: "Six sliders, one live recipe", body: "Drag fat, sugar, and milk solids and the grams re-solve underneath in real time." },
+  { eyebrow: "Stocked Pantry", title: "Every ingredient, weighed", body: "Build a base from a searchable, category-filtered pantry of dairy, sugars, and stabilizers." },
+  { eyebrow: "Equipment Optimized", title: "Tuned to your machine", body: "Targets shift for a home churn, a Creami, or a compressor — so it scoops the way you expect." },
+  { eyebrow: "Batch Scaling", title: "Scale to any yield", body: "Set a batch size and every ingredient moves together, to the gram." },
+  { eyebrow: "Recipe Library", title: "Start from an archetype", body: "Philadelphia, custard, gelato, sorbet — begin from a sensible base, not a blank page." },
+  { eyebrow: "Balance Check", title: "Know before you churn", body: "Scoopability and sweetness readouts flag an out-of-range mix before it hits the freezer." },
+  { eyebrow: "Label Maker", title: "Print the pint", body: "Generate a press-styled label with the batch number, macros, and process notes." },
+];
 
 // Sentence case for filter labels: "philadelphia" -> "Philadelphia".
 const sentenceCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
-// Coarse relative time for the batch card's "updated …" line. Client-only (the
-// grid renders after mount), so a live Date.now() is safe — no hydration skew.
+// Coarse relative time for the batch card's "updated …" line.
 function relTime(ts: number): string {
   const diff = Date.now() - ts;
   const min = 60_000, hr = 60 * min, day = 24 * hr;
@@ -33,29 +40,12 @@ function relTime(ts: number): string {
 }
 
 export default function Home() {
-  const router = useRouter();
   const [formulas, setFormulas] = useState<SavedFormula[] | null>(null);
 
   useEffect(() => {
-    backfillBatchNumbers(); // give any pre-existing formulas a stable number
+    backfillBatchNumbers();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormulas(listFormulas());
-  }, []);
-
-  // Surprise me: generate a fresh formula from a random archetype and drop into
-  // it. Always available — no saved batches required (same bootstrap path as /new).
-  const surpriseMe = useCallback(() => {
-    const archetype = ARCHETYPES[Math.floor(Math.random() * ARCHETYPES.length)];
-    const id = generateFormulaId();
-    const { state, recipe } = bootstrapFromArchetype(archetype);
-    const now = Date.now();
-    saveFormula({ id, name: archetype.name, style: archetype.style, batchNo: assignBatchNo(), createdAt: now, updatedAt: now, state, recipe });
-    router.push(`/formula/${id}`);
-  }, [router]);
-
-  const scrollToBatches = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    document.getElementById("batches")?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   const handleDelete = useCallback((id: string, name: string) => {
@@ -87,38 +77,35 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <Header />
+
       <section className={styles.hero}>
-        <h1 className={styles.title}>
-          <span className={styles.titleRow}>Cold</span>
-          <span className={`${styles.titleRow} ${styles.titleShift}`}>Hard</span>
-          <span className={`${styles.titleRow} ${styles.titleShift2}`}>
-            <em className={styles.titleHollow}>Science</em>
-          </span>
-        </h1>
-        <p className={styles.lead}>
-          Invent frozen formulas from the <b>macros up</b>. Steer fat, sugar and
-          milk solids in real time and design the scoop you can&apos;t buy anywhere.
-        </p>
-        <div className={styles.cta}>
-          <a href="#batches" className={styles.ctaGhost} onClick={scrollToBatches}>
-            <Icon name="pint" size={18} />
-            See my batches
-          </a>
-          <Link href="/new" className={styles.ctaPrimary}>
-            <Icon name="plus" size={18} />
-            New formula
-          </Link>
-          <button
-            className={styles.dice}
-            type="button"
-            onClick={surpriseMe}
-            title="Surprise me — random archetype"
-            aria-label="Generate a formula from a random archetype"
-          >
-            <Icon name="dice" size={22} />
-          </button>
+        <div className={styles.heroText}>
+          <h1 className={styles.title}>
+            <span className={styles.titleRow}>Cold</span>
+            <span className={styles.titleRow}>Hard</span>
+            <span className={`${styles.titleRow} ${styles.sci}`}>Science</span>
+          </h1>
+          <p className={styles.lead}>
+            Ice Cream Lab is a recipe designer for frozen desserts. Set how rich,
+            how sweet, and how firm you want a batch to be, and it works out the
+            exact ingredients — to the gram — and shows you how it&apos;ll scoop
+            before you churn a thing.
+          </p>
+          <div className={styles.cta}>
+            <Button hierarchy="primary" size="lg" icon={<Plus size={18} />} href="/new">
+              New batch
+            </Button>
+          </div>
         </div>
         <SparkleCone />
+      </section>
+
+      <section className={styles.features}>
+        {FEATURES.map((f) => (
+          <FeatureCard key={f.eyebrow} eyebrow={f.eyebrow} title={f.title}>
+            <p>{f.body}</p>
+          </FeatureCard>
+        ))}
       </section>
 
       <section className={styles.lib} id="batches">
@@ -156,7 +143,7 @@ export default function Home() {
 
         {!hasFormulas ? (
           <div className={styles.empty}>
-            <p className={styles.emptyText}>No formulas yet.</p>
+            <p className={styles.emptyText}>No batches yet.</p>
             <Link href="/new" className={styles.emptyLink}>
               Start your first one
               <Icon name="arrow" size={16} />
@@ -164,7 +151,7 @@ export default function Home() {
           </div>
         ) : filtered.length === 0 ? (
           <div className={styles.empty}>
-            <p className={styles.emptyText}>No formulas match.</p>
+            <p className={styles.emptyText}>No batches match.</p>
           </div>
         ) : (
           <div className={styles.grid}>
@@ -198,8 +185,6 @@ export default function Home() {
           </div>
         )}
       </section>
-
-      <ScienceSection />
     </main>
   );
 }
