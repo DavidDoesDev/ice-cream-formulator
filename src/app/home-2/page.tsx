@@ -27,10 +27,6 @@ export default function HomeVariant2() {
       <section className={styles.hero}>
         <StretchTitle className={styles.title} />
 
-        <div className={styles.coneBox} aria-hidden>
-          <SparkleCone mobile="hero" />
-        </div>
-
         <p className={styles.lead}>
           Ice Cream Lab is a recipe designer for frozen desserts. Set how rich, how
           sweet, and how firm you want a batch to be, and it works out the exact
@@ -42,6 +38,10 @@ export default function HomeVariant2() {
           <Button hierarchy="primary" size="lg" icon={<Plus size={18} />} href="/new">
             New batch
           </Button>
+        </div>
+
+        <div className={styles.coneBox} aria-hidden>
+          <SparkleCone mobile="hero" />
         </div>
       </section>
 

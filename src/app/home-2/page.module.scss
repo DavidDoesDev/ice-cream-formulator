@@ -26,18 +26,17 @@
   color: var(--accent-indigo);
 }
 
-// Big centred cone hero — reserves its own space in the flow.
+// Big centred cone — sits at the bottom of the hero, below the text + CTA.
 .coneBox {
   position: relative;
-  width: 53vw;
-  max-width: 368px;
-  // Reserve the cone's full aspect box, then reclaim the faded lower third with
-  // a negative bottom margin so the lead text rides up under the faded tip.
-  margin: 0 auto -32vw;
+  width: 74vw;
+  max-width: 460px;
+  // Top gap from the CTA; the negative bottom margin trims the faded-tip
+  // whitespace so the feature grid doesn't sit miles below the visible cone.
+  margin: clamp(20px, 5vw, 40px) auto -30vw;
   aspect-ratio: 720 / 1280;
-  --sparkle-cone-w: 53vw;
-  // Nudge the cone down from the title (scoop sits ~2vw below the box top).
-  --sparkle-cone-top: 2.4vw;
+  --sparkle-cone-w: 74vw;
+  --sparkle-cone-top: 0px;
 }
 
 .lead {
@@ -69,9 +68,9 @@
 
 @media (min-width: 640px) {
   .coneBox {
-    width: 336px;
-    --sparkle-cone-w: 336px;
-    --sparkle-cone-top: 16px;
-    margin-bottom: -200px;
+    width: 480px;
+    --sparkle-cone-w: 480px;
+    --sparkle-cone-top: 0px;
+    margin-bottom: -190px;
   }
 }

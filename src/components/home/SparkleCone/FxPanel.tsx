@@ -47,8 +47,8 @@ export const defaultFx: FxConfig = {
     dotYMax: 30,
     elbowXMin: 10,
     elbowXMax: 26,
-    elbowYMin: 3,
-    elbowYMax: 12,
+    elbowYMin: 1,
+    elbowYMax: 9,
   },
 };
 

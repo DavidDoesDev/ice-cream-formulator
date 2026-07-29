@@ -17,7 +17,7 @@ const RING_GAP = 10;
 // figure (leader line + underlined label) shifts down together. Sized to cover
 // the label's own height (~20px) plus air, with headroom for the annotation
 // plane's parallax lifting it up to ~5px more.
-const MIN_ELBOW_PX = 52;
+const MIN_ELBOW_PX = 44;
 
 // The placement zones each endpoint maps into, as [min, max] % of the scene box.
 // The dot (start) and elbow/label (end) of every annotation are positioned
