@@ -10,7 +10,20 @@ export type FxConfig = {
   atoms: { on: boolean; density: number; size: number; opacity: number; color: LayerColor };
   notation: { on: boolean; density: number; opacity: number; color: LayerColor };
   structures: { on: boolean; density: number; opacity: number; color: LayerColor };
-  callouts: { on: boolean; color: LayerColor };
+  // Placement zones (% of the scene box): each annotation's dot (start) and
+  // elbow/label (end) is positioned within these ranges — see Callouts.tsx.
+  callouts: {
+    on: boolean;
+    color: LayerColor;
+    dotXMin: number;
+    dotXMax: number;
+    dotYMin: number;
+    dotYMax: number;
+    elbowXMin: number;
+    elbowXMax: number;
+    elbowYMin: number;
+    elbowYMax: number;
+  };
 };
 
 type LayerKey = keyof FxConfig;
@@ -23,7 +36,20 @@ export const defaultFx: FxConfig = {
   atoms: { on: false, density: 1, size: 1, opacity: 0.6, color: { on: false, t: 0.67 } },
   notation: { on: false, density: 1, opacity: 0.5, color: { on: false, t: 0.67 } },
   structures: { on: false, density: 1, opacity: 0.2, color: { on: false, t: 0.67 } },
-  callouts: { on: true, color: { on: false, t: 0.67 } },
+  callouts: {
+    on: true,
+    color: { on: false, t: 0.67 },
+    // Start zone (dot) and end zone (elbow/label), % of the scene box. Defaults
+    // span the original hand-tuned positions, so the layout is unchanged.
+    dotXMin: 31,
+    dotXMax: 63,
+    dotYMin: 8,
+    dotYMax: 30,
+    elbowXMin: 10,
+    elbowXMax: 26,
+    elbowYMin: 3,
+    elbowYMax: 12,
+  },
 };
 
 // Layers that expose a colour picker (sparkles is a sprite sheet — no tint).
@@ -84,15 +110,29 @@ export function subscribeFx(cb: () => void) {
 
 const LAYERS: LayerKey[] = ["sparkles", "atoms", "notation", "structures", "callouts"];
 
-type SliderDef = { key: "density" | "size" | "opacity"; min: number; max: number; step: number };
+type SliderDef = { key: string; min: number; max: number; step: number };
 
 const DENSITY: SliderDef = { key: "density", min: 0.5, max: 2, step: 0.25 };
 const OPACITY: SliderDef = { key: "opacity", min: 0.05, max: 1, step: 0.05 };
+
+// Callout placement-zone bounds (% of the scene box): start zone (dot) then end
+// zone (elbow/label). Each pair is a [min, max] range the annotations map into.
+const PCT = (key: string): SliderDef => ({ key, min: 0, max: 100, step: 1 });
 
 const DRAWERS: Partial<Record<LayerKey, SliderDef[]>> = {
   atoms: [DENSITY, { key: "size", min: 0.5, max: 3, step: 0.25 }, OPACITY],
   notation: [DENSITY, OPACITY],
   structures: [DENSITY, OPACITY],
+  callouts: [
+    PCT("dotXMin"),
+    PCT("dotXMax"),
+    PCT("dotYMin"),
+    PCT("dotYMax"),
+    PCT("elbowXMin"),
+    PCT("elbowXMax"),
+    PCT("elbowYMin"),
+    PCT("elbowYMax"),
+  ],
 };
 
 // One layer's colour control: an ink swatch (theme default), the named preset

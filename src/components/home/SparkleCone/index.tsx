@@ -307,7 +307,17 @@ export function SparkleCone({ mobile = "backdrop" }: { mobile?: SparkleConeMobil
         )}
       </div>
       <div ref={annoRef} className={styles.annoPlane}>
-        {motionOK && entered && fx.callouts.on && <Callouts color={calloutsColor} />}
+        {motionOK && entered && fx.callouts.on && (
+          <Callouts
+            color={calloutsColor}
+            zones={{
+              dotX: [fx.callouts.dotXMin, fx.callouts.dotXMax],
+              dotY: [fx.callouts.dotYMin, fx.callouts.dotYMax],
+              elbowX: [fx.callouts.elbowXMin, fx.callouts.elbowXMax],
+              elbowY: [fx.callouts.elbowYMin, fx.callouts.elbowYMax],
+            }}
+          />
+        )}
       </div>
       {devPanel && <FxPanel value={fx} onChange={setFx} />}
       {devPanel && <ConeFitPanel value={coneFit} onChange={setConeFit} />}

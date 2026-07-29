@@ -19,21 +19,29 @@ const RING_GAP = 10;
 // plane's parallax lifting it up to ~5px more.
 const MIN_ELBOW_PX = 52;
 
-// Textbook figure labels. Coordinates are % of the scene box: `dot` marks the
-// feature on the footage, `elbow` is where the leader line turns into the
-// horizontal rule the label sits on. All labels trail left, into the paper
-// margin between the title ink and the cone.
-// Dots sit on the ice cream itself (never the waffle cone); elbows all live
-// in the top paper band (y ≲ 12%) — measured across desktop widths, it's the
-// only zone where a label extending ~150px left of its elbow clears the
-// title ink (labels overhang the scene box, so HARD/SCIENCE can bite them
-// lower down).
+// The placement zones each endpoint maps into, as [min, max] % of the scene box.
+// The dot (start) and elbow/label (end) of every annotation are positioned
+// within these ranges — tune them live in the ?dev panel (callouts drawer).
+export interface CalloutZones {
+  dotX: [number, number];
+  dotY: [number, number];
+  elbowX: [number, number];
+  elbowY: [number, number];
+}
+
+// Textbook figure labels. `dot` marks the feature it points at, `elbow` is where
+// the leader line turns into the label's underline. Both are stored NORMALIZED
+// (0–1 within their zone) so the zones above can move/scale every annotation
+// together; the defaults reproduce the original hand-tuned positions.
 const ENTRIES = [
-  { text: "18.5% sugar", dot: [31, 17], elbow: [10, 12] },
-  { text: "14.0% butterfat", dot: [57, 8], elbow: [26, 3] },
-  { text: "62.4% water", dot: [50, 30], elbow: [13, 9] },
-  { text: "11.2% milk solids", dot: [63, 26], elbow: [17, 6] },
+  { text: "18.5% sugar", dot: [0, 0.409], elbow: [0, 1] },
+  { text: "14.0% butterfat", dot: [0.8125, 0], elbow: [1, 0] },
+  { text: "62.4% water", dot: [0.594, 1], elbow: [0.1875, 0.667] },
+  { text: "11.2% milk solids", dot: [1, 0.818], elbow: [0.4375, 0.333] },
 ];
+
+// Map a normalized (0–1) coordinate into its [min, max] zone.
+const lerp = (range: [number, number], t: number) => range[0] + t * (range[1] - range[0]);
 
 // One label at a time: the ring pops onto the subject, the leader line draws
 // itself out to the rule, the label fades in, holds, and the whole figure
@@ -42,7 +50,7 @@ const ENTRIES = [
 // with preserveAspectRatio="none" needs non-scaling-stroke, which breaks
 // pathLength normalization in Chrome and turns the draw-on dash into a
 // dotted line.
-export function Callouts({ color }: { color: string }) {
+export function Callouts({ color, zones }: { color: string; zones: CalloutZones }) {
   const [idx, setIdx] = useState(0);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -63,8 +71,11 @@ export function Callouts({ color }: { color: string }) {
   }, []);
 
   const { text, dot, elbow } = ENTRIES[idx];
-  const [dx, dy] = dot;
-  const [ex, ey] = elbow;
+  // Resolve the normalized entry into actual scene-box % via the placement zones.
+  const dx = lerp(zones.dotX, dot[0]);
+  const dy = lerp(zones.dotY, dot[1]);
+  const ex = lerp(zones.elbowX, elbow[0]);
+  const ey = lerp(zones.elbowY, elbow[1]);
 
   let points = "";
   // Falls back to the raw % until the box is measured; once measured we drive
