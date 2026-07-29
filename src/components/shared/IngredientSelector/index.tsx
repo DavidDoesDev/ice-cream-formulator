@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
+import { Search, ChevronLeft, Milk, X } from "lucide-react";
 import { INGREDIENTS } from "@/data/ingredients";
 import type { CatalogIngredient, IngredientCategory } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
-import { Pill } from "@/components/shared/Pill";
-import { Icon } from "@/components/shared/Icon";
-import { MacroDot, type MacroKey } from "@/components/shared/MacroDot";
+import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Tag } from "@/components/ui/Tag";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { PantryItem } from "@/components/shared/PantryItem";
 import styles from "./IngredientSelector.module.scss";
 
 const CONTEXT_CATEGORIES: Record<string, IngredientCategory[]> = {
@@ -35,13 +38,30 @@ const CATEGORY_LABEL: Record<IngredientCategory, string> = {
   misc: "Misc",
 };
 
+// The mono section-header label above the grid, derived from context/filter.
+const CONTEXT_TITLE: Record<string, string> = {
+  "milk-custom": "Milk ingredients",
+  "sugar-custom": "Sweeteners",
+  "sugar-mix": "Sweeteners",
+  "stabilizer-custom": "Stabilizers",
+  "stabilizer-mix": "Stabilizers",
+  "eggs-custom": "Emulsifiers",
+  "emulsifier-custom": "Emulsifiers",
+  "alcohol-custom": "Alcohol",
+  general: "All ingredients",
+};
+
 interface IngredientSelectorProps {
   context: string;
   onAdd: (ingredient: Ingredient) => void;
   onDismiss: () => void;
+  // When opened as a drill-down from Config, shows a "< Config" back control.
+  onBack?: () => void;
+  // Optional constraint banner (e.g. "Select ingredients for your milk base").
+  banner?: string;
 }
 
-export function IngredientSelector({ context, onAdd, onDismiss }: IngredientSelectorProps) {
+export function IngredientSelector({ context, onAdd, onDismiss, onBack, banner }: IngredientSelectorProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<IngredientCategory | "all">("all");
   const allowedCategories = CONTEXT_CATEGORIES[context] ?? CONTEXT_CATEGORIES.general;
@@ -54,109 +74,82 @@ export function IngredientSelector({ context, onAdd, onDismiss }: IngredientSele
     return ing.name.toLowerCase().includes(q) || ing.description.toLowerCase().includes(q);
   });
 
-  const handleAdd = useCallback(
-    (catalog: CatalogIngredient) => {
-      const ingredient: Ingredient = {
-        id: catalog.id,
-        name: catalog.name,
-        state: "normal",
-        grams: 50,
-        macros: catalog.macros,
-      };
-      onAdd(ingredient);
-      onDismiss();
-    },
-    [onAdd, onDismiss]
+  const handleAdd = (catalog: CatalogIngredient) => {
+    onAdd({
+      id: catalog.id,
+      name: catalog.name,
+      state: "normal",
+      grams: 50,
+      macros: catalog.macros,
+    });
+    onDismiss();
+  };
+
+  const sectionTitle =
+    category !== "all" ? CATEGORY_LABEL[category] + " ingredients" : CONTEXT_TITLE[context] ?? "Ingredients";
+
+  const header = (
+    <div className={styles.bar}>
+      <span className={styles.barStart}>
+        {onBack && (
+          <button type="button" className={styles.back} onClick={onBack}>
+            <ChevronLeft size={16} strokeWidth={2.5} aria-hidden />
+            Config
+          </button>
+        )}
+      </span>
+      {banner && (
+        <span className={styles.banner}>
+          <Milk size={15} strokeWidth={2} aria-hidden />
+          {banner}
+        </span>
+      )}
+      <button type="button" className={styles.close} onClick={onDismiss} aria-label="Close">
+        <X size={20} strokeWidth={2} />
+      </button>
+    </div>
   );
 
-  // Close on Escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onDismiss();
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onDismiss]);
-
   return (
-    <div className={styles.drawer}>
-      <div className={styles.scrim} onClick={onDismiss} />
-      <div className={styles.sheet}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>Pantry</h2>
-          <button className={styles.closeBtn} type="button" onClick={onDismiss} aria-label="Close">
-            <Icon name="close" size={20} />
-          </button>
-        </div>
-
-        <div className={styles.searchBar}>
-          <input
-            className={styles.searchInput}
+    <Modal open onClose={onDismiss} placement="center" size="xl" ariaLabel="Pantry" header={header}>
+      <div className={styles.head}>
+        <h2 className={styles.title}>Pantry</h2>
+        <span className={styles.searchWrap}>
+          <Input
             type="text"
             placeholder="Search ingredients…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            icon={<Search size={16} strokeWidth={2} />}
             autoFocus
           />
-        </div>
-
-        {allowedCategories.length > 1 && (
-          <div className={styles.filters}>
-            <Pill
-              size="sm"
-              tone={category === "all" ? "ink" : "ghost"}
-              active={category === "all"}
-              onClick={() => setCategory("all")}
-            >
-              All
-            </Pill>
-            {allowedCategories.map((cat) => (
-              <Pill
-                key={cat}
-                size="sm"
-                tone={category === cat ? "ink" : "ghost"}
-                active={category === cat}
-                onClick={() => setCategory(cat)}
-              >
-                {CATEGORY_LABEL[cat]}
-              </Pill>
-            ))}
-          </div>
-        )}
-
-        <div className={styles.list}>
-          {filtered.length === 0 && (
-            <p className={styles.empty}>No ingredients match your search.</p>
-          )}
-          {filtered.map((ing) => {
-            const macroKeys = Object.keys(ing.macros).filter(
-              (k) => k !== "water" && ing.macros[k as keyof typeof ing.macros] > 0
-            ) as MacroKey[];
-            return (
-              <button
-                key={ing.id}
-                className={styles.card}
-                type="button"
-                onClick={() => handleAdd(ing)}
-              >
-                <div className={styles.cardBody}>
-                  <p className={styles.ingName}>{ing.name}</p>
-                  <p className={styles.ingCat}>{CATEGORY_LABEL[ing.category]}</p>
-                  <p className={styles.ingDesc}>{ing.description}</p>
-                  <div className={styles.macros}>
-                    {macroKeys.map((k) => (
-                      <MacroDot key={k} macro={k} size={9} />
-                    ))}
-                  </div>
-                </div>
-                <span className={styles.addBtn} aria-hidden>
-                  <Icon name="plus" size={18} />
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        </span>
       </div>
-    </div>
+
+      {allowedCategories.length > 1 && (
+        <div className={styles.filters}>
+          <Tag size="sm" selected={category === "all"} onClick={() => setCategory("all")}>
+            All
+          </Tag>
+          {allowedCategories.map((cat) => (
+            <Tag key={cat} size="sm" selected={category === cat} onClick={() => setCategory(cat)}>
+              {CATEGORY_LABEL[cat]}
+            </Tag>
+          ))}
+        </div>
+      )}
+
+      <SectionHeader label={sectionTitle} />
+
+      {filtered.length === 0 ? (
+        <p className={styles.empty}>No ingredients match your search.</p>
+      ) : (
+        <div className={styles.grid}>
+          {filtered.map((ing) => (
+            <PantryItem key={ing.id} ingredient={ing} onClick={() => handleAdd(ing)} />
+          ))}
+        </div>
+      )}
+    </Modal>
   );
 }

@@ -10,7 +10,7 @@ import { equipmentInfo, EQUIPMENT_ORDER } from "@/lib/equipment";
 import { getPresetsByKind, getPresetById, buildCustomPreset, seedCustomItems, isDegenerateBlend, type CustomBlendItem } from "@/data/mix-presets";
 import { getIngredientById } from "@/data/ingredients";
 import { formatPercent } from "@/lib/measure";
-import { SectionHeader } from "@/components/shared/SectionHeader";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Input } from "@/components/ui/Input";
 import { SelectableTile } from "@/components/ui/SelectableTile";
 import { SmartIngredientPanel, SmartRow } from "@/components/formula/SmartIngredientPanel";
@@ -169,7 +169,7 @@ export function ConfigPanel({
       </div>
 
       <div className={styles.section}>
-        <SectionHeader role="specific" label="Recipe type" />
+        <SectionHeader label="Recipe type" />
         <p className={styles.sectionNote}>Select a recipe type to set the target composition.</p>
         <div className={styles.tileGrid}>
           {STYLE_OPTIONS.map((opt) => (
@@ -186,7 +186,7 @@ export function ConfigPanel({
       </div>
 
       <div className={styles.section}>
-        <SectionHeader role="specific" label="Equipment" />
+        <SectionHeader label="Equipment" />
         <p className={styles.sectionNote}>Select your equipment to further refine the target composition.</p>
         <div className={styles.tileGrid}>
           {EQUIPMENT_ORDER.map((profile) => {
@@ -207,7 +207,7 @@ export function ConfigPanel({
       </div>
 
       <div className={styles.section}>
-        <SectionHeader role="specific" label="Smart Ingredients" />
+        <SectionHeader label="Smart Ingredients" />
         <p className={styles.sectionNote}>Smart ingredients will adjust automatically to achieve the target composition.</p>
         <div className={styles.mixGrid}>
           {mixRows.map(({ kind, label, addLabel, icon: Icon }) => {

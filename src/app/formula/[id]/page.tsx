@@ -64,6 +64,12 @@ interface SelectorState {
   onAdd: (ingredient: Ingredient) => void;
 }
 
+// Constraint banners shown when the Pantry is a Config drill-down. Only contexts
+// with a real constraint get one (the milk base, for now).
+const SELECTOR_BANNER: Record<string, string> = {
+  "milk-custom": "Select ingredients for your milk base",
+};
+
 function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   const deps: WorkspaceDeps = useMemo(
     () => ({ getPreset: getPresetById, resolveIngredient: (id) => getIngredientById(id)?.macros }),
@@ -358,6 +364,10 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
           context={selector.context}
           onAdd={selector.onAdd}
           onDismiss={() => setSelector(null)}
+          // Opened from Config → a drill-down: show "< Config" back + the
+          // constraint banner. From the Recipe panel it's standalone (neither).
+          onBack={showConfig ? () => setSelector(null) : undefined}
+          banner={showConfig ? SELECTOR_BANNER[selector.context] : undefined}
         />
       )}
     </>
