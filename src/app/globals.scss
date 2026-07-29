@@ -42,11 +42,11 @@
   --field-border: var(--line);
   --field-border-focus: var(--accent);
 
-  // shape
-  --radius: 22px;
-  --radius-lg: 34px;
-  --radius-sm: 12px;
-  --radius-md: 20px;
+  // shape — tighter corners than the old press look
+  --radius: 14px;
+  --radius-lg: 18px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius-pill: 999px;
 
   // density (roomy baseline)
