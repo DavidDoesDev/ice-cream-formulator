@@ -31,7 +31,9 @@
   position: relative;
   width: 66vw;
   max-width: 460px;
-  margin: 0 auto;
+  // Reserve the cone's full aspect box, then reclaim the faded lower third with
+  // a negative bottom margin so the lead text rides up under the faded tip.
+  margin: 0 auto -30vw;
   aspect-ratio: 720 / 1280;
   --sparkle-cone-w: 66vw;
   --sparkle-cone-top: 0px;
@@ -60,5 +62,6 @@
   .coneBox {
     width: 420px;
     --sparkle-cone-w: 420px;
+    margin-bottom: -190px;
   }
 }

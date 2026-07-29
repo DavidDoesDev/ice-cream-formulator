@@ -541,10 +541,11 @@
     margin-right: auto;
     animation: none;
   }
-  // Fade the cone tip into the paper so the text below sits on clean ground.
+  // Fade the cone tip into the paper — starting and ending high so a big chunk
+  // of the box below is clear paper the lead text can slide up into.
   .scene[data-mobile="hero"] .cone {
-    -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 92%);
-    mask-image: linear-gradient(to bottom, #000 62%, transparent 92%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 70%);
+    mask-image: linear-gradient(to bottom, #000 45%, transparent 70%);
   }
   // The auto-placed callout labels trail off a full-width centred cone, so they
   // read half-off-screen — hide them here (the backdrop hides them too).
