@@ -101,12 +101,14 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
           </button>
           {open && (
             <div className={styles.menu}>
-              <Link href="/#batches" className={styles.menuItem} onClick={() => setOpen(false)}>
+              {/* Splayable links — only appear here once they no longer fit inline. */}
+              <Link href="/#batches" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>
                 My batches
               </Link>
-              <Link href="#" className={styles.menuItem} onClick={() => setOpen(false)}>
+              <Link href="#" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>
                 Pricing
               </Link>
+              {/* Always in the menu — never splayed out. */}
               <Link href="/new" className={styles.menuItem} onClick={() => setOpen(false)}>
                 <Plus size={16} strokeWidth={2} /> New batch
               </Link>

@@ -82,11 +82,14 @@
   width: 52px;
   height: 36px;
   border-radius: var(--radius-sm);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   background: transparent;
   color: var(--ink);
   cursor: pointer;
   transition: background 0.15s, border-color 0.4s ease, color 0.4s ease;
+}
+.iconBtn:hover {
+  border-color: var(--ink);
 }
 .iconBtn:hover {
   background: color-mix(in oklab, var(--ink) 8%, transparent);
@@ -135,7 +138,14 @@
   align-items: center;
 }
 
-// On narrow screens the inline nav links collapse into the overflow menu.
+// Splayable links live inline above the breakpoint and collapse into the "…"
+// menu below it; the menu copies (.overflowItem) are hidden above it so they're
+// never shown twice. Theme + New batch are always in the menu (no inline copy).
+@media (min-width: 641px) {
+  .overflowItem {
+    display: none;
+  }
+}
 @media (max-width: 640px) {
   .navLink {
     display: none;
