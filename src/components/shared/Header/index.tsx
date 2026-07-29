@@ -81,7 +81,7 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
       </Link>
 
       <nav className={styles.nav}>
-        <Link href="/#batches" className={styles.navLink}>
+        <Link href="/batches" className={styles.navLink}>
           My Batches
         </Link>
         {/* Pricing page is TBD — placeholder link for now. */}
@@ -102,7 +102,7 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
           {open && (
             <div className={styles.menu}>
               {/* Splayable links — only appear here once they no longer fit inline. */}
-              <Link href="/#batches" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>
+              <Link href="/batches" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>
                 My batches
               </Link>
               <Link href="#" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>

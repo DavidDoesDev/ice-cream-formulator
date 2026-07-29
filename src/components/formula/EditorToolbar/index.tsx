@@ -27,8 +27,7 @@ export function EditorToolbar({
 }: EditorToolbarProps) {
   return (
     <div className={styles.toolbar}>
-      {/* Batches currently live on the homepage; becomes /batches in #120. */}
-      <Link href="/#batches" className={styles.crumb}>
+      <Link href="/batches" className={styles.crumb}>
         <ChevronLeft size={14} strokeWidth={2.5} />
         My Batches
       </Link>

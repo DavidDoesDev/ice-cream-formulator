@@ -1,0 +1,91 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border: 2px solid color-mix(in oklab, var(--ink) 30%, transparent);
+  border-radius: var(--radius-lg);
+  padding: calc(24px * var(--u));
+  transition: border-color 0.18s;
+}
+.card:hover {
+  border-color: var(--ink);
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.no {
+  white-space: nowrap;
+}
+.dot {
+  opacity: 0.55;
+}
+.rig {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 30px);
+  line-height: 1.05;
+  color: var(--ink);
+  margin: 0;
+}
+
+.ingredients {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+.action {
+  margin-top: var(--space-2);
+}
+
+.del {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+.card:hover .del {
+  opacity: 1;
+}
+.del:hover {
+  background: var(--color-alert);
+  color: #fff;
+  border-color: var(--color-alert);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .del {
+    transition: none;
+  }
+}
