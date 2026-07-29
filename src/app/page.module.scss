@@ -21,13 +21,9 @@
   position: relative;
   width: var(--page-w);
   margin: 0 auto;
-}
-// Pull the tall cone scene up so the scoop sits at the top — desktop only, so
-// the SparkleCone's own phone "backdrop behind the title" mode isn't disturbed.
-@media (min-width: 900px) {
-  .heroInner {
-    --sparkle-cone-top: -90px;
-  }
+  // Block formatting context so the title's margin-top doesn't collapse through
+  // here and drag the absolutely-positioned cone down the page with it.
+  display: flow-root;
 }
 
 .heroText {
@@ -42,13 +38,6 @@
 // desktop; hidden (not clipped) on narrow screens where it would overflow.
 .heroCone {
   display: contents;
-}
-// Hidden on phone — the cone overlaps the lead + CTA there and hurts
-// readability. (Revisit: a dedicated phone treatment, below or faded.)
-@media (max-width: 899px) {
-  .heroCone {
-    display: none;
-  }
 }
 
 .title {
