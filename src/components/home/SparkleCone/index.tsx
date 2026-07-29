@@ -80,7 +80,13 @@ const getServerDevPanel = () => false;
 // panel toggles the effect layers; the mix persists in localStorage. Sizing
 // and placement ride on --sparkle-cone-w / --sparkle-cone-top; the parent
 // section must be position: relative.
-export function SparkleCone() {
+// `mobile` selects the phone (<900px) treatment: "backdrop" (default — faded
+// cone behind the title, callouts hidden), "beside" (full cone beside the lead
+// text, callouts shown), or "hero" (big centred cone, callouts shown). Desktop
+// is unaffected. Used to trial home-page mobile layouts.
+export type SparkleConeMobile = "backdrop" | "beside" | "hero";
+
+export function SparkleCone({ mobile = "backdrop" }: { mobile?: SparkleConeMobile } = {}) {
   const sceneRef = useRef<HTMLDivElement>(null);
   const coneRef = useRef<HTMLVideoElement>(null);
   const sparkRef = useRef<HTMLDivElement>(null);
@@ -234,6 +240,7 @@ export function SparkleCone() {
     <div
       ref={sceneRef}
       className={styles.scene}
+      data-mobile={mobile}
       aria-hidden
       // Dev bounds outline (?dev + border toggle) so the component box is visible.
       style={devPanel && coneFit.border ? { outline: "2px solid #ff2d9b" } : undefined}

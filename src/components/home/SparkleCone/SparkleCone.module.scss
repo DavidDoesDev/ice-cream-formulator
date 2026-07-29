@@ -501,7 +501,8 @@
 // via left/right/margin — never a transform, which would give .scene a
 // stacking context and isolate the multiply blend from the paper.
 @media (max-width: 900px) {
-  .scene {
+  // --- backdrop (default): faded cone behind the title, callouts hidden ---
+  .scene[data-mobile="backdrop"] {
     --sparkle-cone-w: 62vw;
     // Right-aligned (left stays auto) with a deeper overhang than desktop, so
     // the cone pushes off the right edge behind the left-aligned title.
@@ -510,18 +511,34 @@
     // page layout); the base .scene `top` formula already maps that var to the
     // scoop ink. No phone override here — layout owns positioning.
   }
-
   // Dissolve the lower cone into the paper: the scoop reads as a full cone
   // behind the title, then melts away so the body text below sits on clean
   // ground. -webkit- prefix for iOS Safari. Masking the already-blended video
   // keeps the visible pixels multiplying against the paper.
-  .cone {
+  .scene[data-mobile="backdrop"] .cone {
     -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 72%);
     mask-image: linear-gradient(to bottom, #000 40%, transparent 72%);
   }
-
   // Callout labels trail left into a paper margin that doesn't exist here.
-  .annoPlane {
+  .scene[data-mobile="backdrop"] .annoPlane {
     display: none;
+  }
+
+  // --- beside: full cone beside the lead text. No mask, callouts stay on;
+  // size (--sparkle-cone-w) and top (--sparkle-cone-top) come from the page. The
+  // right-anchored entrance is dropped so it just settles in its reserved box. ---
+  .scene[data-mobile="beside"] {
+    right: calc(-0.03 * var(--w));
+    animation: none;
+  }
+
+  // --- hero: big centred cone. Auto side-margins centre an absolutely
+  // positioned box (width is set) without a transform, so the blend survives. ---
+  .scene[data-mobile="hero"] {
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    animation: none;
   }
 }
