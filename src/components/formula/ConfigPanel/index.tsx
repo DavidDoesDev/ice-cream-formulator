@@ -136,21 +136,15 @@ export function ConfigPanel({
     return mix?.presetId ?? "";
   };
 
-  const showAlcohol = recipe.smartMixes.some(
-    (m) => m.kind === "alcohol" && m.presetId !== "alcohol-empty",
-  );
-  const showEmulsifier = recipe.smartMixes.some(
-    (m) => m.kind === "emulsifier" && m.presetId !== "emulsifier-empty",
-  );
-
   // A mix that's actually present in the recipe is always editable, even if it's
   // unusual for the current style (D4: changing style never orphans a mix). Only
   // hide a style-specific row when its mix is absent.
   const present = (kind: SmartMixKind) => recipe.smartMixes.some((m) => m.kind === kind);
   const mixRows = MIX_CONFIG_KINDS.filter(({ kind, custardGelato }) => {
+    // Alcohol / emulsifier stay visible even when empty ("None") so the module
+    // never disappears and its "+ …" add is always reachable — only the
+    // style-specific egg base is gated (an egg-free base shouldn't show it).
     if (custardGelato && style !== "custard" && style !== "gelato" && !present(kind)) return false;
-    if (kind === "alcohol" && !showAlcohol) return false;
-    if (kind === "emulsifier" && !showEmulsifier) return false;
     if (kind === "liquid") return false;
     return getPresetsByKind(kind).length > 0;
   });
