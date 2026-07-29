@@ -111,6 +111,13 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
               <Link href="/new" className={styles.menuItem} onClick={() => setOpen(false)}>
                 <Plus size={16} strokeWidth={2} /> New batch
               </Link>
+              {/* TEMPORARY — mobile home variants for review; remove once chosen. */}
+              <Link href="/home-1" className={styles.menuItem} onClick={() => setOpen(false)}>
+                Home variant 1
+              </Link>
+              <Link href="/home-2" className={styles.menuItem} onClick={() => setOpen(false)}>
+                Home variant 2
+              </Link>
               <button
                 className={styles.menuItem}
                 type="button"
