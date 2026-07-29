@@ -544,7 +544,7 @@
   // Fade the cone tip into the paper — starting and ending high so a big chunk
   // of the box below is clear paper the lead text can slide up into.
   .scene[data-mobile="hero"] .cone {
-    -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 68%);
-    mask-image: linear-gradient(to bottom, #000 45%, transparent 68%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 84%);
+    mask-image: linear-gradient(to bottom, #000 58%, transparent 84%);
   }
 }
