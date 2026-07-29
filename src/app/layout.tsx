@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.scss";
 import { DevTools } from "@/devtools/DevTools";
@@ -17,6 +17,14 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   title: "Ice Cream Lab",
   description: "A test kitchen for frozen formulas",
+};
+
+// Zoom the mobile viewport out ~10% app-wide, so dense layouts (cone callouts,
+// wide readouts) have room on small screens. initial-scale is honoured on
+// touch/mobile browsers and ignored on desktop, so it only affects small screens.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 0.9,
 };
 
 export default function RootLayout({
