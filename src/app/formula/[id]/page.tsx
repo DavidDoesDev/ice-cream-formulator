@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { X } from "lucide-react";
 import { loadFormula, saveFormula, type SavedFormula } from "@/lib/persistence";
 import { RecipePanel } from "@/components/recipe/RecipePanel";
 import { MacrosPanel } from "@/components/formula/MacrosPanel";
 import { IngredientSelector } from "@/components/shared/IngredientSelector";
 import { ConfigPanel } from "@/components/formula/ConfigPanel";
 import { Header } from "@/components/shared/Header";
+import { Modal } from "@/components/ui/Modal";
 import { EditorToolbar } from "@/components/formula/EditorToolbar";
 import { PerfHud } from "@/components/shared/PerfHud";
 import { seedRecipe } from "@/lib/recipe-seeder";
@@ -336,40 +336,22 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
           </div>
         </div>
 
-      {showConfig && (
-        <div className={styles.configModal} role="dialog" aria-modal="true">
-          <div className={styles.configScrim} onClick={() => setShowConfig(false)} />
-          <div className={styles.configSheet}>
-            <div className={styles.configHead}>
-              <span className={styles.configTitle}>Config</span>
-              <button
-                className={styles.iconBtn}
-                type="button"
-                aria-label="Close config"
-                onClick={() => setShowConfig(false)}
-              >
-                <X size={20} strokeWidth={2} />
-              </button>
-            </div>
-            <div className={styles.configBody}>
-              <ConfigPanel
-                formulaName={meta.name}
-                formulaStyle={meta.style}
-                formulaEquipment={meta.equipment}
-                recipe={ws.recipe}
-                onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
-                onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
-                onEquipmentChange={(equipment) => setMeta((m) => ({ ...m, equipment }))}
-                onPresetChange={handlePresetChange}
-                onCustomPreset={handleCustomPreset}
-                onAddMilkIngredient={handleAddMilkIngredient}
-                onRemoveMilkIngredient={handleRemoveMilkIngredient}
-                onOpenIngredientSelector={openSelector}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal open={showConfig} onClose={() => setShowConfig(false)} placement="center" size="xl" title="Config">
+        <ConfigPanel
+          formulaName={meta.name}
+          formulaStyle={meta.style}
+          formulaEquipment={meta.equipment}
+          recipe={ws.recipe}
+          onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
+          onStyleChange={(style) => setMeta((m) => ({ ...m, style }))}
+          onEquipmentChange={(equipment) => setMeta((m) => ({ ...m, equipment }))}
+          onPresetChange={handlePresetChange}
+          onCustomPreset={handleCustomPreset}
+          onAddMilkIngredient={handleAddMilkIngredient}
+          onRemoveMilkIngredient={handleRemoveMilkIngredient}
+          onOpenIngredientSelector={openSelector}
+        />
+      </Modal>
 
       {selector && (
         <IngredientSelector

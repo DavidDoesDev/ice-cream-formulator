@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import styles from "./Modal.module.scss";
 
 export type ModalPlacement = "center" | "sheet";
-export type ModalSize = "sm" | "md" | "lg";
+export type ModalSize = "sm" | "md" | "lg" | "xl";
 
 interface ModalProps {
   open: boolean;
