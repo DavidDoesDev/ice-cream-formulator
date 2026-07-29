@@ -30,14 +30,15 @@
   text-transform: uppercase;
 }
 
-// Constraint banner ("Select ingredients for your milk base") — periwinkle.
+// Constraint banner ("Select ingredients for your milk base"): a solid indigo
+// pill with light lavender text + icon (per the mock — same in both themes).
 .banner {
   justify-self: center;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: color-mix(in oklab, var(--accent-indigo) 24%, var(--paper));
-  color: color-mix(in oklab, var(--accent-indigo) 70%, var(--ink));
+  background: var(--accent-indigo);
+  color: color-mix(in oklab, #ffffff 82%, var(--accent-indigo));
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   font-family: var(--font-display);

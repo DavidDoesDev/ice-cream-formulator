@@ -18,8 +18,9 @@
   position: fixed;
   inset: 0;
   background: rgba(15, 16, 24, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  // Light touch — the background stays legible behind the modal, not smeared.
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .sheet {
@@ -46,6 +47,13 @@
 .root[data-placement="center"] .sheet[data-size="xl"] {
   max-width: 1120px;
 }
+// Large modals (Config, Pantry) fill the window minus the root's margin, so
+// their height is stable regardless of how much content they hold.
+.root[data-placement="center"] .sheet[data-size="lg"],
+.root[data-placement="center"] .sheet[data-size="xl"] {
+  height: calc(100dvh - 2 * var(--space-6));
+  max-height: calc(100dvh - 2 * var(--space-6));
+}
 .root[data-placement="sheet"] .sheet {
   max-width: 560px;
   height: 100vh;
@@ -59,7 +67,6 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-5) var(--space-6);
-  border-bottom: 2px solid var(--line);
   flex-shrink: 0;
 }
 .title {

@@ -7,6 +7,40 @@ import styles from "./Modal.module.scss";
 export type ModalPlacement = "center" | "sheet";
 export type ModalSize = "sm" | "md" | "lg" | "xl";
 
+// Ref-counted body scroll lock, shared across stacked modals (Config → Pantry):
+// only the first open captures the scroll position, only the last close restores
+// it. Fixing the body freezes the page behind the scrim in place; padding-right
+// backfills the vanished scrollbar so the frozen content doesn't shift.
+let scrollLockCount = 0;
+let lockedScrollY = 0;
+function lockScroll() {
+  if (scrollLockCount === 0) {
+    lockedScrollY = window.scrollY;
+    const gap = window.innerWidth - document.documentElement.clientWidth;
+    const b = document.body;
+    b.style.position = "fixed";
+    b.style.top = `-${lockedScrollY}px`;
+    b.style.left = "0";
+    b.style.right = "0";
+    b.style.width = "100%";
+    if (gap > 0) b.style.paddingRight = `${gap}px`;
+  }
+  scrollLockCount += 1;
+}
+function unlockScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) {
+    const b = document.body;
+    b.style.position = "";
+    b.style.top = "";
+    b.style.left = "";
+    b.style.right = "";
+    b.style.width = "";
+    b.style.paddingRight = "";
+    window.scrollTo(0, lockedScrollY);
+  }
+}
+
 interface ModalProps {
   open: boolean;
   onClose: () => void;
@@ -45,6 +79,13 @@ export function Modal({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, dismissable, onClose]);
+
+  // Freeze the background scroll position while the modal is open.
+  useEffect(() => {
+    if (!open) return;
+    lockScroll();
+    return unlockScroll;
+  }, [open]);
 
   if (!open) return null;
   const showDefaultHead = !header && (title != null || dismissable);
