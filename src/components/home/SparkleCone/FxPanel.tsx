@@ -18,7 +18,8 @@ type LayerKey = keyof FxConfig;
 // Opacity values are the actual target level (each layer jitters ±30% around
 // it per element), so the slider reading is meaningful on its own.
 export const defaultFx: FxConfig = {
-  sparkles: { on: true },
+  // Off everywhere by default (dev panel can still toggle per-session).
+  sparkles: { on: false },
   atoms: { on: false, density: 1, size: 1, opacity: 0.6, color: { on: false, t: 0.67 } },
   notation: { on: false, density: 1, opacity: 0.5, color: { on: false, t: 0.67 } },
   structures: { on: false, density: 1, opacity: 0.2, color: { on: false, t: 0.67 } },
@@ -52,6 +53,10 @@ export function getFx(): FxConfig {
     } catch {
       // Bad/unavailable storage; defaults stand.
     }
+    // Sparkles are off universally — force it on load so a previously-saved
+    // config can't bring them back. The dev panel can still flip them on for
+    // the current session.
+    cache = { ...cache, sparkles: { on: false } };
   }
   return cache;
 }
