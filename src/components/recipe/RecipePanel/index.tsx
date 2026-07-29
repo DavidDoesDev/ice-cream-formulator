@@ -114,7 +114,12 @@ export function RecipePanel({
                 indent
                 size="sm"
                 label={getIngredientById(s.ingredientId)?.name ?? s.ingredientId}
-                trailing={<span className={styles.subGrams}>{formatGrams(mix.grams * s.proportion)} g</span>}
+                trailing={
+                  <span className={styles.subGrams}>
+                    {formatGrams(mix.grams * s.proportion)}
+                    <span className={styles.subUnit}> g</span>
+                  </span>
+                }
               />
             ))}
           </div>
