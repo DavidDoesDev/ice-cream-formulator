@@ -493,11 +493,11 @@ export function MacrosPanel({
     <section className={styles.panel}>
       <h2 className={styles.kind}>Macros</h2>
 
+      <SectionHeader label="Composition" />
+
       <div className={styles.cupStage}>
         <PintCup ref={cupRef} ratios={ratios} size="full" width={210} />
       </div>
-
-      <SectionHeader label="Composition" />
 
       <div className={styles.sliders}>
       {SLIDERS.map(({ key, label }) => {
