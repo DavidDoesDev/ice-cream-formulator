@@ -9,9 +9,9 @@
   gap: var(--space-4);
 }
 
-// Extra separation above a later section (Batch yield, Notes).
+// Section break: clear separation above a later section header (Batch yield, Notes).
 .sectionGap {
-  margin-top: var(--space-4);
+  margin-top: var(--space-8);
 }
 
 .kind {
@@ -72,7 +72,8 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding-top: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
   border-top: 2px solid var(--ink);
 }
 .totalKey {

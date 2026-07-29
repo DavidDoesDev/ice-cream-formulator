@@ -8,9 +8,9 @@
   gap: var(--space-5);
 }
 
-// Extra separation above a later section (Balance check).
+// Section break: clear separation above a later section header (Balance check).
 .sectionGap {
-  margin-top: var(--space-4);
+  margin-top: var(--space-8);
 }
 
 .kind {
