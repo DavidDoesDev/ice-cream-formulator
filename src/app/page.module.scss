@@ -26,6 +26,15 @@
   display: flow-root;
 }
 
+// Phone: top-align the cone scoop to the hero top with a slight margin. This
+// drives the cone's --sparkle-cone-top seam (the value maps directly to the
+// scoop-ink Y) — positioning lives here in the layout, not in the component.
+@media (max-width: 900px) {
+  .heroInner {
+    --sparkle-cone-top: 14px;
+  }
+}
+
 .heroText {
   position: relative;
   z-index: 1; // above the cone overlay
