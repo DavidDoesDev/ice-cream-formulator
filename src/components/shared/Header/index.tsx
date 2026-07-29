@@ -84,8 +84,7 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
         <Link href="/batches" className={styles.navLink}>
           My Batches
         </Link>
-        {/* Pricing page is TBD — placeholder link for now. */}
-        <Link href="#" className={styles.navLink}>
+        <Link href="/pricing" className={styles.navLink}>
           Pricing
         </Link>
         {children && <div className={styles.actions}>{children}</div>}
@@ -105,7 +104,7 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
               <Link href="/batches" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>
                 My batches
               </Link>
-              <Link href="#" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>
+              <Link href="/pricing" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>
                 Pricing
               </Link>
               {/* Always in the menu — never splayed out. */}
