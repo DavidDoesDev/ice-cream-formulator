@@ -88,6 +88,7 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
   });
   const [notes, setNotes] = useState("");
   const [showConfig, setShowConfig] = useState(false);
+  const [tab, setTab] = useState<"recipe" | "macros">("recipe");
   const [editName, setEditName] = useState(false);
   const [selector, setSelector] = useState<SelectorState | null>(null);
 
@@ -271,37 +272,67 @@ function WorkspaceContent({ saved }: { saved: SavedFormula }) {
             onConfig={() => setShowConfig(true)}
           />
 
-          <div className={styles.work}>
-            {/* Macros first in the DOM so it stacks on top on narrow screens
-                (macros-first matches the product thesis); on desktop the .work
-                grid uses `order` to restore recipe-left / macros-right. */}
-            <MacrosPanel
-              ratios={ratios}
-              derived={derived}
-              style={meta.style}
-              equipment={meta.equipment}
-              conflict={conflict}
-              onMacroTarget={onMacroTarget}
-              ws={ws}
-              onRecalibrate={onRecalibrate}
-            />
-            <RecipePanel
-              recipe={ws.recipe}
-              style={meta.style}
-              yieldGrams={ws.yieldGrams}
-              total={total}
-              notes={notes}
-              onMixGrams={onMixGrams}
-              onAdditionalGrams={onAdditionalGrams}
-              onMixNote={onMixNote}
-              onAdditionalNote={onAdditionalNote}
-              onRemoveAdditional={onRemoveAdditional}
-              onAddIngredient={onAddIngredient}
-              onAddEggMix={() => handleAddMix("eggs", "eggs-yolks")}
-              onQuickAdd={onQuickAdd}
-              onYield={onYield}
-              onNotes={setNotes}
-            />
+          {/* Two cards side by side on desktop; on mobile they merge into one
+              card with Recipe|Macros tabs (the tab bar shows, inactive card
+              hides). Panel titles double as the tab labels. */}
+          <div className={styles.work} data-tab={tab}>
+            <div className={styles.tabBar} role="tablist">
+              <button
+                className={styles.tab}
+                type="button"
+                role="tab"
+                aria-selected={tab === "recipe"}
+                data-active={tab === "recipe" ? "" : undefined}
+                onClick={() => setTab("recipe")}
+              >
+                Recipe
+              </button>
+              <button
+                className={styles.tab}
+                type="button"
+                role="tab"
+                aria-selected={tab === "macros"}
+                data-active={tab === "macros" ? "" : undefined}
+                onClick={() => setTab("macros")}
+              >
+                Macros
+              </button>
+            </div>
+
+            <section className={styles.card} data-panel="recipe">
+              <h2 className={styles.cardTitle}>Recipe</h2>
+              <RecipePanel
+                recipe={ws.recipe}
+                style={meta.style}
+                yieldGrams={ws.yieldGrams}
+                total={total}
+                notes={notes}
+                onMixGrams={onMixGrams}
+                onAdditionalGrams={onAdditionalGrams}
+                onMixNote={onMixNote}
+                onAdditionalNote={onAdditionalNote}
+                onRemoveAdditional={onRemoveAdditional}
+                onAddIngredient={onAddIngredient}
+                onAddEggMix={() => handleAddMix("eggs", "eggs-yolks")}
+                onQuickAdd={onQuickAdd}
+                onYield={onYield}
+                onNotes={setNotes}
+              />
+            </section>
+
+            <section className={styles.card} data-panel="macros">
+              <h2 className={styles.cardTitle}>Macros</h2>
+              <MacrosPanel
+                ratios={ratios}
+                derived={derived}
+                style={meta.style}
+                equipment={meta.equipment}
+                conflict={conflict}
+                onMacroTarget={onMacroTarget}
+                ws={ws}
+                onRecalibrate={onRecalibrate}
+              />
+            </section>
           </div>
         </div>
 

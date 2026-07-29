@@ -93,9 +93,7 @@ export function RecipePanel({
   const shownRecs = recommendations.slice(0, 3);
 
   return (
-    <section className={styles.panel}>
-      <h2 className={styles.kind}>Recipe</h2>
-
+    <div className={styles.panel}>
       <SectionHeader label="Ingredients" />
 
       {activeMixes.map((mix) => {
@@ -189,6 +187,6 @@ export function RecipePanel({
         placeholder="Process notes, variations, tips…"
         rows={4}
       />
-    </section>
+    </div>
   );
 }

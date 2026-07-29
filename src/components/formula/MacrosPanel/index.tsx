@@ -490,9 +490,7 @@ export function MacrosPanel({
   }
   noteHints.forEach((h) => adviceRows.push({ key: h.key, label: h.label, text: h.message }));
   return (
-    <section className={styles.panel}>
-      <h2 className={styles.kind}>Macros</h2>
-
+    <div className={styles.panel}>
       <SectionHeader label="Composition" />
 
       <div className={styles.cupStage}>
@@ -617,6 +615,6 @@ export function MacrosPanel({
         </div>
       )}
 
-    </section>
+    </div>
   );
 }

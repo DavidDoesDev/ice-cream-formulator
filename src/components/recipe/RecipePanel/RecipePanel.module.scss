@@ -1,9 +1,5 @@
-// Border-on-base card (raised fill reserved for fields). Title + sections + rows
-// come from the ui primitives; this holds only the recipe-specific bits.
+// Content only — the editor shell provides the card + "Recipe" title.
 .panel {
-  border: 2px solid color-mix(in oklab, var(--ink) 30%, transparent);
-  border-radius: var(--radius-lg);
-  padding: calc(20px * var(--u));
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -12,15 +8,6 @@
 // Section break: clear separation above a later section header (Batch yield, Notes).
 .sectionGap {
   margin-top: var(--space-8);
-}
-
-.kind {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 28px;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  margin: 0 0 var(--space-2);
 }
 
 // Same colors as the gram input: ink number, muted "g".
