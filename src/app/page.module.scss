@@ -128,6 +128,8 @@
   letter-spacing: -0.01em;
   color: var(--ink);
   max-width: 20ch;
+  // Balance the lines so the last one is never a single-word orphan.
+  text-wrap: balance;
   // Gap BELOW → the lead. (Gap ABOVE comes from the cone.)
   margin: 0 0 clamp(8px, 2vw, 14px);
 }
@@ -161,28 +163,30 @@
   .leadSection {
     grid-template-columns: 1fr auto;
     column-gap: var(--space-6);
-    align-items: center;
+    align-items: start;
   }
+  // Text column (subhead over lead) on the left; button opposite, on the right.
   .leadTitle {
     grid-column: 1;
     grid-row: 1;
     max-width: none;
     margin-bottom: 0;
   }
+  .mLead {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: clamp(10px, 2vw, 16px);
+  }
   .mCta {
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
+    align-self: center; // centred opposite the subhead
     margin: 0;
   }
   .mCta > a {
     width: auto;
     max-width: none;
-  }
-  .mLead {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    margin-top: clamp(12px, 2vw, 20px);
   }
 }
 
