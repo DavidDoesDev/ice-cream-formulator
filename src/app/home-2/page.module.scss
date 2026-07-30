@@ -24,14 +24,10 @@
   font-size: clamp(44px, 15vw, 120px);
   line-height: 0.9;
   letter-spacing: -0.01em;
-  // Gap BELOW the headline → the lead paragraph.
-  margin: 0 0 clamp(14px, 3.5vw, 24px);
-}
-.titleRow {
-  display: block;
-}
-.sci {
-  color: var(--accent-indigo);
+  // Gap ABOVE the headline (→ header) and BELOW (→ lead). Mobile values are the
+  // clamp floors, so mobile stays as tuned and only scales up on wider screens.
+  margin-top: clamp(16px, 3.2vw, 26px);
+  margin-bottom: clamp(14px, 3.5vw, 24px);
 }
 
 // ── Lead: the descriptive paragraph under the headline ─────────────────────
@@ -40,8 +36,8 @@
   font-size: clamp(15px, 4.2vw, 20px);
   line-height: 1.5;
   color: var(--ink);
-  // Gap BELOW the lead → the CTA.
-  margin: 0 0 clamp(14px, 3.5vw, 24px);
+  // Gap above & below the lead. Mobile floor 14px; scales up on wider screens.
+  margin: clamp(14px, 2.8vw, 22px) 0;
 }
 
 // ── CTA: the "New batch" call-to-action button ─────────────────────────────
@@ -49,8 +45,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  // Gap BELOW the CTA → the cone.
-  margin: 0 0 clamp(40px, 10vw, 72px);
+  // Gap above & below the CTA. Mobile floor 18px; scales up on wider screens.
+  margin: clamp(18px, 3.6vw, 28px) 0;
 }
 // Full-width button, capped so it doesn't stretch absurdly on wide screens.
 .cta > a {
@@ -63,9 +59,10 @@
   position: relative;
   width: 74vw;
   max-width: 460px;
-  // Top gap is owned by the CTA above; the negative bottom margin pulls the
-  // feature grid up to where the cone fades out.
-  margin: 0 auto -48vw;
+  // Top gap above the cone (mobile floor 44px, scales up); centred; negative
+  // bottom margin pulls the lead up to just below where the cone fades out
+  // (enough to close the transparent-tip gap, not so much that they overlap).
+  margin: clamp(44px, 8.8vw, 66px) auto -12vw;
   aspect-ratio: 720 / 1280;
   --sparkle-cone-w: 74vw;
   --sparkle-cone-top: 0px;
@@ -85,6 +82,6 @@
     width: 480px;
     --sparkle-cone-w: 480px;
     --sparkle-cone-top: 0px;
-    margin-bottom: -300px;
+    margin-bottom: -70px;
   }
 }
