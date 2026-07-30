@@ -82,15 +82,19 @@ function MobileHero() {
         <SparkleCone mobile="hero" calloutOverride={{ trailAuto: true }} />
       </div>
 
-      <h2 className={styles.leadTitle}>A recipe designer for frozen desserts</h2>
+      {/* On tablet/phablet these reflow to a grid: subhead + CTA share the top
+          row (button right, natural width), lead spans below. */}
+      <div className={styles.leadSection}>
+        <h2 className={styles.leadTitle}>A recipe designer for frozen desserts</h2>
 
-      <p className={styles.mLead}>
-        Set how rich, how sweet, and how firm you want a batch to be, and it works
-        out the exact ingredients — to the gram — and shows you how it&apos;ll scoop
-        before you churn a thing.
-      </p>
+        <p className={styles.mLead}>
+          Set how rich, how sweet, and how firm you want a batch to be, and it works
+          out the exact ingredients — to the gram — and shows you how it&apos;ll scoop
+          before you churn a thing.
+        </p>
 
-      <div className={styles.mCta}>{CTA}</div>
+        <div className={styles.mCta}>{CTA}</div>
+      </div>
     </section>
   );
 }

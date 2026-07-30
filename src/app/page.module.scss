@@ -113,6 +113,12 @@
   --sparkle-cone-top: 0px;
 }
 
+// Subhead + lead + CTA group. On phones it's a plain column (items stack in DOM
+// order via their own margins); the tablet/phablet reflow lives at the bottom.
+.leadSection {
+  display: grid;
+}
+
 // Lead title: the subheadline that says what the app is.
 .leadTitle {
   font-family: var(--font-display);
@@ -146,6 +152,38 @@
 .mCta > a {
   width: 100%;
   max-width: 400px;
+}
+
+// Tablet / phablet (the mobile hero only renders < 900px, so this range is
+// ~560–899px): the New batch button sits opposite the subhead at its natural
+// size — subhead in the left column, button top-right, lead spanning below.
+@media (min-width: 560px) {
+  .leadSection {
+    grid-template-columns: 1fr auto;
+    column-gap: var(--space-6);
+    align-items: center;
+  }
+  .leadTitle {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: none;
+    margin-bottom: 0;
+  }
+  .mCta {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    margin: 0;
+  }
+  .mCta > a {
+    width: auto;
+    max-width: none;
+  }
+  .mLead {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: clamp(12px, 2vw, 20px);
+  }
 }
 
 @media (min-width: 640px) {
