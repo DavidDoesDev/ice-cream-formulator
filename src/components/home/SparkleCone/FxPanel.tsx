@@ -23,6 +23,11 @@ export type FxConfig = {
     elbowXMax: number;
     elbowYMin: number;
     elbowYMax: number;
+    // Which way labels trail from their elbow (false = left, the main-layout
+    // default). And the min margin (% of box) kept between any part of a
+    // callout and the box edge.
+    trailRight: boolean;
+    edgeMargin: number;
   };
 };
 
@@ -49,6 +54,8 @@ export const defaultFx: FxConfig = {
     elbowXMax: 36,
     elbowYMin: 1,
     elbowYMax: 9,
+    trailRight: false,
+    edgeMargin: 5,
   },
 };
 
@@ -132,6 +139,7 @@ const DRAWERS: Partial<Record<LayerKey, SliderDef[]>> = {
     PCT("elbowXMax"),
     PCT("elbowYMin"),
     PCT("elbowYMax"),
+    { key: "edgeMargin", min: 0, max: 15, step: 0.5 },
   ],
 };
 
@@ -240,6 +248,17 @@ export function FxPanel({ value, onChange }: { value: FxConfig; onChange: (v: Fx
                     </label>
                   );
                 })}
+                {k === "callouts" && (
+                  <label className={styles.panelRow}>
+                    <input
+                      type="checkbox"
+                      className={styles.panelCheck}
+                      checked={value.callouts.trailRight}
+                      onChange={(e) => setLayer(k, { trailRight: e.target.checked })}
+                    />
+                    trail right
+                  </label>
+                )}
                 {colorable && (
                   <ColorPicker
                     color={(value[k] as { color: LayerColor }).color}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import styles from "./SparkleCone.module.scss";
 
 // Seconds each callout is on stage (matches the SCSS animation durations),
@@ -11,12 +11,8 @@ const GAP_S = 0.6;
 const RING_GAP = 10;
 
 // The label hangs above its elbow (translateY(-100%)), so an elbow high in the
-// scene can push the label right off the top of the page — worst on narrow
-// widths, where a small elbow % is only a few px down. Keep the elbow at least
-// this far down so the label always clears the top with a margin; the whole
-// figure (leader line + underlined label) shifts down together. Sized to cover
-// the label's own height (~20px) plus air, with headroom for the annotation
-// plane's parallax lifting it up to ~5px more.
+// scene can push the label right off the top of the page. Keep the elbow at
+// least this far down so the label always clears the top with a margin.
 const MIN_ELBOW_PX = 44;
 
 // The placement zones each endpoint maps into, as [min, max] % of the scene box.
@@ -42,18 +38,27 @@ const ENTRIES = [
 
 // Map a normalized (0–1) coordinate into its [min, max] zone.
 const lerp = (range: [number, number], t: number) => range[0] + t * (range[1] - range[0]);
+const clampN = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), Math.max(lo, hi));
 
-// One label at a time: the ring pops onto the subject, the leader line draws
-// itself out to the rule, the label fades in, holds, and the whole figure
-// fades before the next entry mounts (key remount restarts the animations).
-// The line is computed in pixel space — a percent-based viewBox stretched
-// with preserveAspectRatio="none" needs non-scaling-stroke, which breaks
-// pathLength normalization in Chrome and turns the draw-on dash into a
-// dotted line.
-export function Callouts({ color, zones }: { color: string; zones: CalloutZones }) {
+interface CalloutsProps {
+  color: string;
+  zones: CalloutZones;
+  // Which way the label trails away from its elbow. Left is the main-layout
+  // default (labels flow into the paper margin left of the cone), but it's a
+  // config so other layouts (e.g. a right-hung cone) can flip it.
+  trailRight: boolean;
+  // Minimum margin (% of the scene box) kept between the box edges and any part
+  // of the annotation — the label is width-measured and the elbow clamped so the
+  // whole figure (leader line + label) stays inside with this much air.
+  edgeMargin: number;
+}
+
+export function Callouts({ color, zones, trailRight, edgeMargin }: CalloutsProps) {
   const [idx, setIdx] = useState(0);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  const [labelW, setLabelW] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -70,16 +75,27 @@ export function Callouts({ color, zones }: { color: string; zones: CalloutZones 
     return () => clearInterval(t);
   }, []);
 
+  // Measure the current label so we can clamp it inside the edge margin. Layout
+  // effect + measured width means the clamp is applied before paint (no jump).
+  useLayoutEffect(() => {
+    if (labelRef.current) setLabelW(labelRef.current.offsetWidth);
+  }, [idx, box]);
+
   const { text, dot, elbow } = ENTRIES[idx];
-  // Resolve the normalized entry into actual scene-box % via the placement zones.
-  const dx = lerp(zones.dotX, dot[0]);
+  // Resolve the normalized entry into actual scene-box % via the placement zones,
+  // then keep every endpoint inside the edge margin.
+  const dx = clampN(lerp(zones.dotX, dot[0]), edgeMargin, 100 - edgeMargin);
   const dy = lerp(zones.dotY, dot[1]);
-  const ex = lerp(zones.elbowX, elbow[0]);
   const ey = lerp(zones.elbowY, elbow[1]);
 
+  // The label trails from the elbow by its own width, so clamp the elbow so the
+  // whole label clears the margin on the trailing side.
+  const labelWpct = box && box.w ? (labelW / box.w) * 100 : 0;
+  const ex = trailRight
+    ? clampN(lerp(zones.elbowX, elbow[0]), edgeMargin, 100 - edgeMargin - labelWpct)
+    : clampN(lerp(zones.elbowX, elbow[0]), edgeMargin + labelWpct, 100 - edgeMargin);
+
   let points = "";
-  // Falls back to the raw % until the box is measured; once measured we drive
-  // the label off the clamped pixel elbow so it can't ride off the top.
   let labelTop = `${ey}%`;
   if (box) {
     const dpx = (dx / 100) * box.w;
@@ -88,13 +104,13 @@ export function Callouts({ color, zones }: { color: string; zones: CalloutZones 
     const epy = Math.max((ey / 100) * box.h, MIN_ELBOW_PX);
     labelTop = `${epy.toFixed(1)}px`;
     const len = Math.hypot(epx - dpx, epy - dpy) || 1;
-    // Start on the marker's edge and run to the elbow; the underline the
-    // label carries (border-bottom, so it always spans exactly the text)
-    // takes over from there.
     const sx = dpx + ((epx - dpx) / len) * RING_GAP;
     const sy = dpy + ((epy - dpy) / len) * RING_GAP;
     points = `${sx.toFixed(1)},${sy.toFixed(1)} ${epx.toFixed(1)},${epy.toFixed(1)}`;
   }
+
+  // Left-trail anchors the label's right edge at the elbow; right-trail its left.
+  const labelPos = trailRight ? { left: `${ex}%` } : { right: `${100 - ex}%` };
 
   return (
     <div ref={ref} className={styles.callouts} style={{ color }}>
@@ -105,7 +121,12 @@ export function Callouts({ color, zones }: { color: string; zones: CalloutZones 
           </svg>
         )}
         <span className={styles.calloutDot} style={{ left: `${dx}%`, top: `${dy}%` }} />
-        <span className={styles.calloutLabel} style={{ right: `${100 - ex}%`, top: labelTop }}>
+        <span
+          ref={labelRef}
+          className={styles.calloutLabel}
+          data-dir={trailRight ? "right" : "left"}
+          style={{ ...labelPos, top: labelTop }}
+        >
           {text}
         </span>
       </div>

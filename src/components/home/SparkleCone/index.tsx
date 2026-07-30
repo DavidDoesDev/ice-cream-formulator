@@ -310,6 +310,8 @@ export function SparkleCone({ mobile = "backdrop" }: { mobile?: SparkleConeMobil
         {motionOK && entered && fx.callouts.on && (
           <Callouts
             color={calloutsColor}
+            trailRight={fx.callouts.trailRight}
+            edgeMargin={fx.callouts.edgeMargin}
             zones={{
               dotX: [fx.callouts.dotXMin, fx.callouts.dotXMax],
               dotY: [fx.callouts.dotYMin, fx.callouts.dotYMax],
