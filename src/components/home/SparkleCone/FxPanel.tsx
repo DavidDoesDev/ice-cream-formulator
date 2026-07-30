@@ -62,7 +62,7 @@ export const defaultFx: FxConfig = {
     trailRight: false,
     trailAuto: false,
     edgeMargin: 3.5,
-    minElbowPx: 24,
+    minElbowPx: 14,
   },
 };
 

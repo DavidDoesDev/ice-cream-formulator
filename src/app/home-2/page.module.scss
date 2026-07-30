@@ -24,10 +24,10 @@
   font-size: clamp(44px, 15vw, 120px);
   line-height: 0.9;
   letter-spacing: -0.01em;
-  // Gap ABOVE the headline (→ header) and BELOW (→ lead). Mobile values are the
-  // clamp floors, so mobile stays as tuned and only scales up on wider screens.
+  // Gap ABOVE the headline (→ header) and BELOW (→ the cone). Mobile values are
+  // the clamp floors, so mobile stays as tuned and only scales up on wider screens.
   margin-top: clamp(16px, 3.2vw, 26px);
-  margin-bottom: clamp(14px, 3.5vw, 24px);
+  margin-bottom: clamp(26px, 5.5vw, 40px);
 }
 
 // ── Lead title: the subheadline that says what the app is ──────────────────
