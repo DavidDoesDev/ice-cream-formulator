@@ -30,14 +30,27 @@
   margin-bottom: clamp(14px, 3.5vw, 24px);
 }
 
-// ── Lead: the descriptive paragraph under the headline ─────────────────────
+// ── Lead title: the subheadline that says what the app is ──────────────────
+.leadTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(21px, 6vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  max-width: 20ch;
+  // Gap BELOW the subhead → the lead paragraph. (Gap ABOVE comes from the cone.)
+  margin: 0 0 clamp(8px, 2vw, 14px);
+}
+
+// ── Lead: the descriptive paragraph under the subheadline ──────────────────
 .lead {
   max-width: 46ch;
   font-size: clamp(15px, 4.2vw, 20px);
   line-height: 1.5;
   color: var(--ink);
-  // Gap above & below the lead. Mobile floor 14px; scales up on wider screens.
-  margin: clamp(14px, 2.8vw, 22px) 0;
+  // Gap BELOW the lead → the CTA. (Gap ABOVE comes from the subhead.)
+  margin: 0 0 clamp(14px, 2.8vw, 22px);
 }
 
 // ── CTA: the "New batch" call-to-action button ─────────────────────────────

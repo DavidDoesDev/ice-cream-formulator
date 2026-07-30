@@ -31,11 +31,12 @@ export default function HomeVariant2() {
           <SparkleCone mobile="hero" />
         </div>
 
+        <h2 className={styles.leadTitle}>A recipe designer for frozen desserts</h2>
+
         <p className={styles.lead}>
-          Ice Cream Lab is a recipe designer for frozen desserts. Set how rich, how
-          sweet, and how firm you want a batch to be, and it works out the exact
-          ingredients — to the gram — and shows you how it&apos;ll scoop before you
-          churn a thing.
+          Set how rich, how sweet, and how firm you want a batch to be, and it works
+          out the exact ingredients — to the gram — and shows you how it&apos;ll scoop
+          before you churn a thing.
         </p>
 
         <div className={styles.cta}>
