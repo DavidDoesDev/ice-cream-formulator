@@ -81,10 +81,9 @@ const getServerDevPanel = () => false;
 // and placement ride on --sparkle-cone-w / --sparkle-cone-top; the parent
 // section must be position: relative.
 // `mobile` selects the phone (<900px) treatment: "backdrop" (default — faded
-// cone behind the title, callouts hidden), "beside" (full cone beside the lead
-// text, callouts shown), or "hero" (big centred cone, callouts shown). Desktop
-// is unaffected. Used to trial home-page mobile layouts.
-export type SparkleConeMobile = "backdrop" | "beside" | "hero";
+// cone behind the title, callouts hidden) or "hero" (big centred cone, callouts
+// shown). Desktop is unaffected. The home page uses "hero" on small screens.
+export type SparkleConeMobile = "backdrop" | "hero";
 
 export function SparkleCone({
   mobile = "backdrop",

@@ -4,7 +4,10 @@
   padding: 0 0 calc(90px * var(--u));
 }
 
-/* ---- hero ---- */
+/* ========================================================================= */
+/* Desktop hero (>= 900px) — the original layout: stacked title + the cone   */
+/* as a backdrop. Rendered only on desktop, so no mobile media queries here. */
+/* ========================================================================= */
 .hero {
   // Full-bleed clip container: trims the cone's entrance + overhang at the
   // viewport edge (so the entrance goes full-bleed and the page never widens),
@@ -26,15 +29,6 @@
   display: flow-root;
 }
 
-// Phone: top-align the cone scoop to the hero top with a slight margin. This
-// drives the cone's --sparkle-cone-top seam (the value maps directly to the
-// scoop-ink Y) — positioning lives here in the layout, not in the component.
-@media (max-width: 900px) {
-  .heroInner {
-    --sparkle-cone-top: 14px;
-  }
-}
-
 .heroText {
   position: relative;
   z-index: 1; // above the cone overlay
@@ -43,8 +37,7 @@
   margin: clamp(72px, 8vw, 128px) 0;
 }
 
-// display: contents so the cone behaves exactly as a direct child of .hero on
-// desktop; hidden (not clipped) on narrow screens where it would overflow.
+// display: contents so the cone behaves exactly as a direct child of .hero.
 .heroCone {
   display: contents;
 }
@@ -80,10 +73,93 @@
   flex-wrap: wrap;
 }
 
-/* ---- feature grid ---- */
+/* ========================================================================= */
+/* Mobile hero (< 900px) — the Variant-2 layout: stacked, big centred cone.  */
+/* A flex column with NO shared gap; each element owns the margin after it so */
+/* every gap is tunable on its own (flex margins don't collapse).            */
+/* ========================================================================= */
+.mHero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: clamp(20px, 4vw, 40px) 0 clamp(28px, 5vw, 52px);
+}
+
+// Headline: the "COLD HARD / SCIENCE" stretch title. Mobile values are the
+// clamp floors, so mobile stays as tuned and only scales up on wider screens.
+.mTitle {
+  font-family: var(--font-poster);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink);
+  font-size: clamp(44px, 15vw, 120px);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  // Gap ABOVE (→ header) and BELOW (→ the cone).
+  margin-top: clamp(16px, 3.2vw, 26px);
+  margin-bottom: clamp(26px, 5.5vw, 40px);
+}
+
+// Cone: big centred SparkleCone. Its top margin sets the headline→cone gap; the
+// negative bottom margin pulls the subhead up to just below where it fades out.
+.coneBox {
+  position: relative;
+  width: 74vw;
+  max-width: 460px;
+  margin: clamp(56px, 11vw, 80px) auto -16vw;
+  aspect-ratio: 720 / 1280;
+  --sparkle-cone-w: 74vw;
+  --sparkle-cone-top: 0px;
+}
+
+// Lead title: the subheadline that says what the app is.
+.leadTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(21px, 6vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  max-width: 20ch;
+  // Gap BELOW → the lead. (Gap ABOVE comes from the cone.)
+  margin: 0 0 clamp(8px, 2vw, 14px);
+}
+
+// Lead: the descriptive paragraph.
+.mLead {
+  max-width: 46ch;
+  font-size: clamp(15px, 4.2vw, 20px);
+  line-height: 1.5;
+  color: var(--ink);
+  // Gap BELOW → the CTA.
+  margin: 0 0 clamp(14px, 2.8vw, 22px);
+}
+
+// CTA: full-width New batch button (capped).
+.mCta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: clamp(18px, 3.6vw, 28px) 0;
+}
+.mCta > a {
+  width: 100%;
+  max-width: 400px;
+}
+
+@media (min-width: 640px) {
+  .coneBox {
+    width: 480px;
+    --sparkle-cone-w: 480px;
+    margin-bottom: -100px;
+  }
+}
+
+/* ---- feature grid (shared) ---- */
 .features {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
   gap: calc(16px * var(--u));
-  margin-top: calc(20px * var(--u));
+  margin-top: calc(24px * var(--u));
 }

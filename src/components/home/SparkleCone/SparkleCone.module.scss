@@ -524,14 +524,6 @@
     display: none;
   }
 
-  // --- beside: full cone beside the lead text. No mask, callouts stay on;
-  // size (--sparkle-cone-w) and top (--sparkle-cone-top) come from the page. The
-  // right-anchored entrance is dropped so it just settles in its reserved box. ---
-  .scene[data-mobile="beside"] {
-    right: calc(-0.03 * var(--w));
-    animation: none;
-  }
-
   // --- hero: big centred cone. Auto side-margins centre an absolutely
   // positioned box (width is set) without a transform, so the blend survives. ---
   .scene[data-mobile="hero"] {
