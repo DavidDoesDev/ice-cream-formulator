@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback, type ReactNode } from "react"
 import Link from "next/link";
 import { MoreHorizontal, Plus, Moon, Sun } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
+import { Button } from "@/components/ui/Button";
 import styles from "./Header.module.scss";
 
 // The app's top header: logo + wordmark linking home on the left, primary nav
@@ -107,10 +108,17 @@ export function Header({ children, revealOnScroll = false }: { children?: ReactN
               <Link href="/pricing" className={`${styles.menuItem} ${styles.overflowItem}`} onClick={() => setOpen(false)}>
                 Pricing
               </Link>
-              {/* Always in the menu — never splayed out. */}
-              <Link href="/new" className={styles.menuItem} onClick={() => setOpen(false)}>
-                <Plus size={16} strokeWidth={2} /> New batch
-              </Link>
+              {/* Always in the menu — never splayed out. The primary action. */}
+              <Button
+                hierarchy="primary"
+                size="sm"
+                icon={<Plus size={16} />}
+                href="/new"
+                className={styles.menuCta}
+                onClick={() => setOpen(false)}
+              >
+                New batch
+              </Button>
               <button
                 className={styles.menuItem}
                 type="button"

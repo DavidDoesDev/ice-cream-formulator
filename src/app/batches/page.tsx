@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { listFormulas, deleteFormula, backfillBatchNumbers, type SavedFormula } from "@/lib/persistence";
 import { equipmentInfo, normalizeEquipment } from "@/lib/equipment";
 import { getPresetById } from "@/data/mix-presets";
@@ -62,15 +63,20 @@ export default function Batches() {
       <div className={styles.head}>
         <h1 className={styles.title}>My Batches</h1>
         {hasFormulas && (
-          <div className={styles.searchbar}>
-            <Search size={18} strokeWidth={2} />
-            <input
-              className={styles.search}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search batches…"
-              aria-label="Search batches"
-            />
+          <div className={styles.tools}>
+            <div className={styles.searchbar}>
+              <Search size={18} strokeWidth={2} />
+              <input
+                className={styles.search}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search batches…"
+                aria-label="Search batches"
+              />
+            </div>
+            <Button hierarchy="primary" size="md" icon={<Plus size={18} />} href="/new">
+              New batch
+            </Button>
           </div>
         )}
       </div>

@@ -24,12 +24,23 @@
   margin: 0;
 }
 
+// Search + New batch button, right of the title.
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 260px;
+  max-width: 560px;
+  justify-content: flex-end;
+}
+
 .searchbar {
   display: flex;
   align-items: center;
   gap: 10px;
   flex: 1;
-  min-width: 220px;
+  min-width: 200px;
   max-width: 400px;
   background: var(--field-surface);
   border: 2px solid var(--field-border);

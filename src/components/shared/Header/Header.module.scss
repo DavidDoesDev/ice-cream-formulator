@@ -132,6 +132,12 @@
   background: color-mix(in oklab, var(--ink) 10%, transparent);
 }
 
+// The primary New batch action fills the menu width and sits a touch apart.
+.menuCta {
+  width: 100%;
+  margin-top: 4px;
+}
+
 .actions {
   display: flex;
   gap: 8px;
