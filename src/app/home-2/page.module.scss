@@ -75,7 +75,7 @@
   // Top gap above the cone (mobile floor 44px, scales up); centred; negative
   // bottom margin pulls the lead up to just below where the cone fades out
   // (enough to close the transparent-tip gap, not so much that they overlap).
-  margin: clamp(44px, 8.8vw, 66px) auto -12vw;
+  margin: clamp(44px, 8.8vw, 66px) auto -16vw;
   aspect-ratio: 720 / 1280;
   --sparkle-cone-w: 74vw;
   --sparkle-cone-top: 0px;
@@ -95,6 +95,6 @@
     width: 480px;
     --sparkle-cone-w: 480px;
     --sparkle-cone-top: 0px;
-    margin-bottom: -70px;
+    margin-bottom: -100px;
   }
 }
