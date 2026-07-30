@@ -27,31 +27,29 @@ export function EditorToolbar({
 }: EditorToolbarProps) {
   return (
     <div className={styles.toolbar}>
-      <Link href="/batches" className={styles.crumb}>
-        <ChevronLeft size={14} strokeWidth={2.5} />
-        My Batches
-      </Link>
-      <div className={styles.row}>
-        {editing ? (
-          <input
-            autoFocus
-            className={styles.nameInput}
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            onBlur={onEndEdit}
-            onKeyDown={(e) => e.key === "Enter" && onEndEdit()}
-          />
-        ) : (
-          <h1 className={styles.name} onClick={onStartEdit} title="Click to rename">
-            {name}
-          </h1>
-        )}
-        <div className={styles.actions}>
-          <Button hierarchy="secondary" size="sm" icon={<Settings size={15} />} onClick={onConfig}>
-            Config
-          </Button>
-        </div>
+      <div className={styles.topRow}>
+        <Link href="/batches" className={styles.crumb}>
+          <ChevronLeft size={14} strokeWidth={2.5} />
+          My Batches
+        </Link>
+        <Button hierarchy="secondary" size="sm" icon={<Settings size={15} />} onClick={onConfig}>
+          Config
+        </Button>
       </div>
+      {editing ? (
+        <input
+          autoFocus
+          className={styles.nameInput}
+          value={name}
+          onChange={(e) => onNameChange(e.target.value)}
+          onBlur={onEndEdit}
+          onKeyDown={(e) => e.key === "Enter" && onEndEdit()}
+        />
+      ) : (
+        <h1 className={styles.name} onClick={onStartEdit} title="Click to rename">
+          {name}
+        </h1>
+      )}
     </div>
   );
 }
