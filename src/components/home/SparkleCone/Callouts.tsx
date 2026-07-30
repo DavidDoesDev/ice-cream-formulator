@@ -10,11 +10,6 @@ const GAP_S = 0.6;
 // meets the ring's edge with a little air instead of piercing it.
 const RING_GAP = 10;
 
-// The label hangs above its elbow (translateY(-100%)), so an elbow high in the
-// scene can push the label right off the top of the page. Keep the elbow at
-// least this far down so the label always clears the top with a margin.
-const MIN_ELBOW_PX = 44;
-
 // The placement zones each endpoint maps into, as [min, max] % of the scene box.
 // The dot (start) and elbow/label (end) of every annotation are positioned
 // within these ranges — tune them live in the ?dev panel (callouts drawer).
@@ -43,17 +38,21 @@ const clampN = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), 
 interface CalloutsProps {
   color: string;
   zones: CalloutZones;
-  // Which way the label trails away from its elbow. Left is the main-layout
-  // default (labels flow into the paper margin left of the cone), but it's a
-  // config so other layouts (e.g. a right-hung cone) can flip it.
+  // Which way each label trails from its elbow. Left is the main-layout default
+  // (labels flow into the paper margin left of the cone); trailRight flips it.
   trailRight: boolean;
+  // Auto overrides trailRight: each label trails toward the side its dot sits on
+  // (left half → left, right half → right), so a centred cone can fan both ways.
+  trailAuto: boolean;
   // Minimum margin (% of the scene box) kept between the box edges and any part
   // of the annotation — the label is width-measured and the elbow clamped so the
   // whole figure (leader line + label) stays inside with this much air.
   edgeMargin: number;
+  // Floor (px) on the elbow depth so labels clear the top; lower = higher labels.
+  minElbowPx: number;
 }
 
-export function Callouts({ color, zones, trailRight, edgeMargin }: CalloutsProps) {
+export function Callouts({ color, zones, trailRight, trailAuto, edgeMargin, minElbowPx }: CalloutsProps) {
   const [idx, setIdx] = useState(0);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const [labelW, setLabelW] = useState(0);
@@ -88,12 +87,20 @@ export function Callouts({ color, zones, trailRight, edgeMargin }: CalloutsProps
   const dy = lerp(zones.dotY, dot[1]);
   const ey = lerp(zones.elbowY, elbow[1]);
 
-  // The label trails from the elbow by its own width, so clamp the elbow so the
-  // whole label clears the margin on the trailing side.
+  // Per-annotation direction. Auto trails toward the side the dot is on, so a
+  // centred cone fans labels out to both margins; otherwise obey trailRight.
+  const right = trailAuto ? dx >= 50 : trailRight;
+
+  // The elbow zone is left-referenced; mirror it to the right when trailing
+  // right so the elbow — and thus the whole label — sits on the trailing side.
+  // Then clamp for the label's own width so it hugs that edge and never reaches
+  // into the middle: a left annotation ends on the left, a right one on the right.
   const labelWpct = box && box.w ? (labelW / box.w) * 100 : 0;
-  const ex = trailRight
-    ? clampN(lerp(zones.elbowX, elbow[0]), edgeMargin, 100 - edgeMargin - labelWpct)
-    : clampN(lerp(zones.elbowX, elbow[0]), edgeMargin + labelWpct, 100 - edgeMargin);
+  const rawEx = lerp(zones.elbowX, elbow[0]);
+  const sideEx = right ? 100 - rawEx : rawEx;
+  const ex = right
+    ? clampN(sideEx, edgeMargin, 100 - edgeMargin - labelWpct)
+    : clampN(sideEx, edgeMargin + labelWpct, 100 - edgeMargin);
 
   let points = "";
   let labelTop = `${ey}%`;
@@ -101,7 +108,7 @@ export function Callouts({ color, zones, trailRight, edgeMargin }: CalloutsProps
     const dpx = (dx / 100) * box.w;
     const dpy = (dy / 100) * box.h;
     const epx = (ex / 100) * box.w;
-    const epy = Math.max((ey / 100) * box.h, MIN_ELBOW_PX);
+    const epy = Math.max((ey / 100) * box.h, minElbowPx);
     labelTop = `${epy.toFixed(1)}px`;
     const len = Math.hypot(epx - dpx, epy - dpy) || 1;
     const sx = dpx + ((epx - dpx) / len) * RING_GAP;
@@ -110,7 +117,7 @@ export function Callouts({ color, zones, trailRight, edgeMargin }: CalloutsProps
   }
 
   // Left-trail anchors the label's right edge at the elbow; right-trail its left.
-  const labelPos = trailRight ? { left: `${ex}%` } : { right: `${100 - ex}%` };
+  const labelPos = right ? { left: `${ex}%` } : { right: `${100 - ex}%` };
 
   return (
     <div ref={ref} className={styles.callouts} style={{ color }}>
@@ -124,7 +131,7 @@ export function Callouts({ color, zones, trailRight, edgeMargin }: CalloutsProps
         <span
           ref={labelRef}
           className={styles.calloutLabel}
-          data-dir={trailRight ? "right" : "left"}
+          data-dir={right ? "right" : "left"}
           style={{ ...labelPos, top: labelTop }}
         >
           {text}

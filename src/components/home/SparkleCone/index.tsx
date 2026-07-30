@@ -6,7 +6,7 @@ import { Atoms } from "./Atoms";
 import { Callouts } from "./Callouts";
 import { Notation } from "./Notation";
 import { Structures } from "./Structures";
-import { FxPanel, getFx, getServerFx, setFx, subscribeFx } from "./FxPanel";
+import { FxPanel, getFx, getServerFx, setFx, subscribeFx, type FxConfig } from "./FxPanel";
 import {
   ConeFitPanel,
   layerStyle,
@@ -86,7 +86,10 @@ const getServerDevPanel = () => false;
 // is unaffected. Used to trial home-page mobile layouts.
 export type SparkleConeMobile = "backdrop" | "beside" | "hero";
 
-export function SparkleCone({ mobile = "backdrop" }: { mobile?: SparkleConeMobile } = {}) {
+export function SparkleCone({
+  mobile = "backdrop",
+  calloutOverride,
+}: { mobile?: SparkleConeMobile; calloutOverride?: Partial<FxConfig["callouts"]> } = {}) {
   const sceneRef = useRef<HTMLDivElement>(null);
   const coneRef = useRef<HTMLVideoElement>(null);
   const sparkRef = useRef<HTMLDivElement>(null);
@@ -234,7 +237,10 @@ export function SparkleCone({ mobile = "backdrop" }: { mobile?: SparkleConeMobil
   const atomsColor = atoms.color.on ? ramp(atoms.color.t) : "var(--ink)";
   const notationColor = notation.color.on ? ramp(notation.color.t) : "var(--ink)";
   const structuresColor = structures.color.on ? ramp(structures.color.t) : "var(--ink)";
-  const calloutsColor = fx.callouts.color.on ? ramp(fx.callouts.color.t) : "var(--ink)";
+  // Per-instance callout overrides (e.g. a page turning on auto-trail) layer over
+  // the global fx config; the dev panel still edits the global default.
+  const cc: FxConfig["callouts"] = calloutOverride ? { ...fx.callouts, ...calloutOverride } : fx.callouts;
+  const calloutsColor = cc.color.on ? ramp(cc.color.t) : "var(--ink)";
 
   return (
     <div
@@ -307,16 +313,18 @@ export function SparkleCone({ mobile = "backdrop" }: { mobile?: SparkleConeMobil
         )}
       </div>
       <div ref={annoRef} className={styles.annoPlane}>
-        {motionOK && entered && fx.callouts.on && (
+        {motionOK && entered && cc.on && (
           <Callouts
             color={calloutsColor}
-            trailRight={fx.callouts.trailRight}
-            edgeMargin={fx.callouts.edgeMargin}
+            trailRight={cc.trailRight}
+            trailAuto={cc.trailAuto}
+            edgeMargin={cc.edgeMargin}
+            minElbowPx={cc.minElbowPx}
             zones={{
-              dotX: [fx.callouts.dotXMin, fx.callouts.dotXMax],
-              dotY: [fx.callouts.dotYMin, fx.callouts.dotYMax],
-              elbowX: [fx.callouts.elbowXMin, fx.callouts.elbowXMax],
-              elbowY: [fx.callouts.elbowYMin, fx.callouts.elbowYMax],
+              dotX: [cc.dotXMin, cc.dotXMax],
+              dotY: [cc.dotYMin, cc.dotYMax],
+              elbowX: [cc.elbowXMin, cc.elbowXMax],
+              elbowY: [cc.elbowYMin, cc.elbowYMax],
             }}
           />
         )}

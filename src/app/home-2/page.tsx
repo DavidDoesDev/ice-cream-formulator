@@ -28,7 +28,8 @@ export default function HomeVariant2() {
         <StretchTitle className={styles.title} />
 
         <div className={styles.coneBox} aria-hidden>
-          <SparkleCone mobile="hero" />
+          {/* Centred cone: let callouts fan to whichever side each dot sits on. */}
+          <SparkleCone mobile="hero" calloutOverride={{ trailAuto: true }} />
         </div>
 
         <h2 className={styles.leadTitle}>A recipe designer for frozen desserts</h2>

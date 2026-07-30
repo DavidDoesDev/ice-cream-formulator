@@ -23,11 +23,16 @@ export type FxConfig = {
     elbowXMax: number;
     elbowYMin: number;
     elbowYMax: number;
-    // Which way labels trail from their elbow (false = left, the main-layout
-    // default). And the min margin (% of box) kept between any part of a
-    // callout and the box edge.
+    // Label trail direction: trailRight flips left→right; trailAuto overrides it
+    // to trail per-annotation toward the side its dot is on. And the min margin
+    // (% of box) kept between any part of a callout and the box edge.
     trailRight: boolean;
+    trailAuto: boolean;
     edgeMargin: number;
+    // Floor (px) on how far down the elbow/label sits — keeps labels clear of
+    // the top edge on layouts where the cone starts near the top. Lower it to
+    // raise the labels higher over the ice cream.
+    minElbowPx: number;
   };
 };
 
@@ -52,10 +57,12 @@ export const defaultFx: FxConfig = {
     dotYMax: 28,
     elbowXMin: 28,
     elbowXMax: 36,
-    elbowYMin: 1,
-    elbowYMax: 9,
+    elbowYMin: 0,
+    elbowYMax: 5,
     trailRight: false,
+    trailAuto: false,
     edgeMargin: 5,
+    minElbowPx: 24,
   },
 };
 
@@ -140,6 +147,7 @@ const DRAWERS: Partial<Record<LayerKey, SliderDef[]>> = {
     PCT("elbowYMin"),
     PCT("elbowYMax"),
     { key: "edgeMargin", min: 0, max: 15, step: 0.5 },
+    { key: "minElbowPx", min: 0, max: 80, step: 1 },
   ],
 };
 
@@ -249,15 +257,26 @@ export function FxPanel({ value, onChange }: { value: FxConfig; onChange: (v: Fx
                   );
                 })}
                 {k === "callouts" && (
-                  <label className={styles.panelRow}>
-                    <input
-                      type="checkbox"
-                      className={styles.panelCheck}
-                      checked={value.callouts.trailRight}
-                      onChange={(e) => setLayer(k, { trailRight: e.target.checked })}
-                    />
-                    trail right
-                  </label>
+                  <>
+                    <label className={styles.panelRow}>
+                      <input
+                        type="checkbox"
+                        className={styles.panelCheck}
+                        checked={value.callouts.trailRight}
+                        onChange={(e) => setLayer(k, { trailRight: e.target.checked })}
+                      />
+                      trail right
+                    </label>
+                    <label className={styles.panelRow}>
+                      <input
+                        type="checkbox"
+                        className={styles.panelCheck}
+                        checked={value.callouts.trailAuto}
+                        onChange={(e) => setLayer(k, { trailAuto: e.target.checked })}
+                      />
+                      trail auto (per-dot)
+                    </label>
+                  </>
                 )}
                 {colorable && (
                   <ColorPicker
