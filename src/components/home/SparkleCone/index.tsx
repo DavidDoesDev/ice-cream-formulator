@@ -7,14 +7,6 @@ import { Callouts } from "./Callouts";
 import { Notation } from "./Notation";
 import { Structures } from "./Structures";
 import { FxPanel, getFx, getServerFx, setFx, subscribeFx, type FxConfig } from "./FxPanel";
-import {
-  ConeFitPanel,
-  layerStyle,
-  getConeFit,
-  getServerConeFit,
-  setConeFit,
-  subscribeConeFit,
-} from "./ConeFitPanel";
 import { ramp } from "./palette";
 
 // Sprite-sheet geometry: 180 frames at 30fps in an 8×23 grid (last row holds
@@ -99,7 +91,6 @@ export function SparkleCone({
   // each atom can add its own dome-depth parallax on top of the plane drift.
   const pointerRef = useRef({ x: 0, y: 0 });
   const fx = useSyncExternalStore(subscribeFx, getFx, getServerFx);
-  const coneFit = useSyncExternalStore(subscribeConeFit, getConeFit, getServerConeFit);
   const motionOK = useSyncExternalStore(subscribeMotion, getMotionOK, getServerMotionOK);
   const devPanel = useSyncExternalStore(subscribeDev, getDevPanel, getServerDevPanel);
 
@@ -120,11 +111,11 @@ export function SparkleCone({
   const [videoReady, setVideoReady] = useState(false);
 
   // The footage is keyed by blend mode, which is theme-dependent: the
-  // white-background cut multiplies into the light paper, but on the dark
-  // theme a light background is needed to screen out. So we carry a
-  // black-background cut + screen blend for dark, swapping the source here and
-  // the blend in CSS off <html data-theme>. Init to "light" (matches SSR and
-  // the default :root theme) and sync after mount to avoid a hydration mismatch.
+  // white-background cut multiplies into the light paper; the dark theme swaps
+  // to a black-background cut and screens it out so the cone stays lit. Both
+  // cuts share the same framing, so only the source + blend change off
+  // <html data-theme>. Init to "light" (matches SSR and the default :root
+  // theme) and sync after mount to avoid a hydration mismatch.
   const [theme, setTheme] = useState<"light" | "dark">("light");
   useEffect(() => {
     const root = document.documentElement;
@@ -247,8 +238,6 @@ export function SparkleCone({
       className={styles.scene}
       data-mobile={mobile}
       aria-hidden
-      // Dev bounds outline (?dev + border toggle) so the component box is visible.
-      style={devPanel && coneFit.border ? { outline: "2px solid #ff2d9b" } : undefined}
     >
       <div ref={backRef} className={styles.fxPlane}>
         {motionOK && atoms.on && (
@@ -274,31 +263,17 @@ export function SparkleCone({
         key={theme}
         ref={coneRef}
         className={styles.cone}
-        // Dark cut: original landscape footage masked into the portrait slot.
-        // Crop/alignment/scale/blend are dialed in via the ConeFit tuner (?dev)
-        // and applied inline (these props compose with the parallax transform).
-        style={dark ? layerStyle(coneFit.video, coneFit.blend) : undefined}
+        // Same framing as the light cut; the dark theme just screens the
+        // black-background footage out instead of multiplying (blend inline so
+        // it composes with the .cone parallax transform).
+        style={dark ? { mixBlendMode: "screen" } : undefined}
         src={dark ? "/home/sparkle-cone-dark.mp4" : "/home/sparkle-cone.mp4"}
-        poster={dark ? "/home/cone-placeholder-dark.webp" : undefined}
         autoPlay
         muted
         loop
         playsInline
         onLoadedData={() => setVideoReady(true)}
       />
-      {/* Dev alignment aid: an independent reference overlay (light or dark
-          cone) with its own transform, so the dark video can be aligned to
-          where light-mode's cone sits. Normal blend so its silhouette reads. */}
-      {devPanel && dark && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          className={styles.cone}
-          src={coneFit.imgSrc === "dark" ? "/home/cone-placeholder-dark.webp" : "/home/cone-ref-light.webp"}
-          alt=""
-          aria-hidden
-          style={{ ...layerStyle(coneFit.image), mixBlendMode: "normal" }}
-        />
-      )}
       <div ref={frontRef} className={styles.fxPlane}>
         {fx.sparkles.on && <div ref={sparkRef} className={styles.sparkles} />}
         {motionOK && atoms.on && (
@@ -329,7 +304,6 @@ export function SparkleCone({
         )}
       </div>
       {devPanel && <FxPanel value={fx} onChange={setFx} />}
-      {devPanel && <ConeFitPanel value={coneFit} onChange={setConeFit} />}
     </div>
   );
 }

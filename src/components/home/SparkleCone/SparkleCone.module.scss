@@ -55,10 +55,9 @@
   width: 100%;
   height: 100%;
   // Melts the footage's white background into the paper. The dark theme swaps
-  // to a black-background cut (see index.tsx) and screens it out instead, so
-  // the cone stays lit against the dark ground rather than sinking into it.
-  // Dark's blend + object-fit/position/scale come inline from the ConeFit
-  // tuner (?dev), which composes with the parallax transform.
+  // to a black-background cut (see index.tsx) and screens it out instead (blend
+  // set inline), so the cone stays lit against the dark ground rather than
+  // sinking into it.
   mix-blend-mode: multiply;
   will-change: transform;
 }
