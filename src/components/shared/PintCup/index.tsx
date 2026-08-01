@@ -273,13 +273,15 @@ function PintCupImpl({ ratios, size = "full", width, ref }: PintCupProps) {
           )}
         </g>
 
-        {/* Cup outline drawn on top — press ink stroke */}
+        {/* Cup outline drawn on top — press ink stroke. non-scaling-stroke
+            pins the width to ~2 screen px regardless of the cup's render size. */}
         <path
           d={CUP_PATH}
           fill="none"
           stroke="var(--ink)"
-          strokeWidth="2.5"
+          strokeWidth="2"
           strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
         />
 
         {/* Lid — wider than the cup with a gap above the rim */}
@@ -291,8 +293,9 @@ function PintCupImpl({ ratios, size = "full", width, ref }: PintCupProps) {
           rx={CORNER_R}
           fill="none"
           stroke="var(--ink)"
-          strokeWidth="2.5"
+          strokeWidth="2"
           strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
         />
       </svg>
     </div>
