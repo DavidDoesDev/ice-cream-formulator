@@ -5,7 +5,7 @@ export const manifest: ComponentManifest = {
   tier: "primitive",
   description: "A generic surface. Renders <a> when href is set; `selected` draws the accent border.",
   props: {
-    elevation: { control: "enum", options: ["flat", "raised", "outlined"], default: "outlined" },
+    elevation: { control: "enum", options: ["flat", "outlined"], default: "outlined" },
     padding: { control: "enum", options: ["none", "sm", "md", "lg"], default: "md" },
     tone: { control: "enum", options: ["normal", "critical", "neutral", "ok"], default: "normal" },
     selected: { control: "boolean", default: false },

@@ -1,6 +1,6 @@
-// Default is border-delineated on the base surface (containers read as outlines,
-// not fills) — raised fill is reserved for fields and selected states. Opt into a
-// filled/elevated card with elevation="raised".
+// Containers read as outlines, not fills: border-delineated on the base surface,
+// no drop shadow. Raised fill is reserved for fields and selected states — cards
+// never "lift" off the page. Only flat (borderless) and outlined are offered.
 .card {
   --card-accent: color-mix(in oklab, var(--ink) 30%, transparent);
   display: block;
@@ -24,11 +24,6 @@
 
 .card[data-elevation="flat"] {
   background: transparent;
-  border-color: transparent;
-}
-.card[data-elevation="raised"] {
-  background: var(--paper-2);
-  box-shadow: var(--sh);
   border-color: transparent;
 }
 

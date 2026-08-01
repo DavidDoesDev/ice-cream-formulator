@@ -1,7 +1,7 @@
 import type { HTMLAttributes, AnchorHTMLAttributes, ReactNode } from "react";
 import styles from "./Card.module.scss";
 
-export type CardElevation = "flat" | "raised" | "outlined";
+export type CardElevation = "flat" | "outlined";
 export type CardPadding = "none" | "sm" | "md" | "lg";
 export type CardTone = "normal" | "critical" | "neutral" | "ok";
 

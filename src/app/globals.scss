@@ -85,9 +85,6 @@
   --text: #0f1018;
   --muted: color-mix(in oklab, var(--ink) 50%, var(--paper));
   --line: color-mix(in oklab, var(--ink) 18%, transparent);
-  --shadow-color: var(--ink);
-  --sh: 6px 6px 0 var(--shadow-color);
-  --sh-h: 10px 10px 0 var(--shadow-color);
   --grain: 0.5;
 
   // Light mode uses the BLUE (the "Science" indigo) as the action accent; dark
@@ -113,7 +110,6 @@
   --text: #f7efdd;
   --muted: color-mix(in oklab, #f7efdd 55%, var(--paper));
   --line: rgba(247, 239, 221, 0.22);
-  --shadow-color: rgba(6, 8, 16, 0.5);
   --grain: 0.35;
 
   // Dark mode keeps the yellow as the action accent (overrides the light default).

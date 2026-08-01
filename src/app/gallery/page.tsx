@@ -113,7 +113,6 @@ export default function Gallery() {
       <Section manifest={cardManifest}>
         <Row label="elevation">
           <Card elevation="outlined">Outlined</Card>
-          <Card elevation="raised">Raised</Card>
           <Card elevation="flat">Flat</Card>
         </Row>
         <Row label="state / tone">
