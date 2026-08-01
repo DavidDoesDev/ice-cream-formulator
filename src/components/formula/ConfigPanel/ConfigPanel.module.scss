@@ -10,6 +10,22 @@
   gap: var(--space-3);
 }
 
+// Equipment tiles use cut-out product photos (transparent background) in place
+// of line icons. Stretch the icon cell to the tile's full height so the machine
+// spans top to bottom; !important beats SelectableTile's own align-items: start
+// across the module boundary.
+.equipmentTile {
+  align-items: stretch !important;
+}
+// Fill the tile height; width follows each shot's aspect ratio (the near-square
+// churn ends up wider than the tall machines — no cap, so nothing shrinks below
+// full height).
+.equipmentImg {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
 // Descriptive line under a section header ("Select a recipe type…") — full ink.
 .sectionNote {
   font-family: var(--font-body);

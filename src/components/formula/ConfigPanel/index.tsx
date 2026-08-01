@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Milk, GlassWater, Wine, Candy, Atom, Droplets, IceCreamCone, IceCreamBowl, Snowflake, Factory } from "lucide-react";
+import { Milk, GlassWater, Wine, Candy, Atom, Droplets, IceCreamCone } from "lucide-react";
 import type { StyleCategory, SmartMixKind, Recipe, MixPreset, EquipmentProfile } from "@/data/types";
 import { DEFAULT_EQUIPMENT } from "@/data/types";
 import type { Ingredient } from "@/lib/formula-engine";
@@ -25,10 +25,11 @@ const STYLE_OPTIONS: { value: StyleCategory; label: string; blurb: string }[] = 
   { value: "vegan", label: "Vegan", blurb: "Plant milks — no dairy or eggs." },
 ];
 
-const EQUIPMENT_ICON: Record<EquipmentProfile, LucideIcon> = {
-  "home-dasher": IceCreamBowl,
-  "spin-frozen": Snowflake,
-  "commercial-batch": Factory,
+// Cut-out product photos replace the line icons.
+const EQUIPMENT_IMAGE: Record<EquipmentProfile, string> = {
+  "home-dasher": "/equipment/churn.webp",
+  "spin-frozen": "/equipment/press.webp",
+  "commercial-batch": "/equipment/batch.webp",
 };
 
 const MIX_CONFIG_KINDS: {
@@ -186,13 +187,13 @@ export function ConfigPanel({
         <div className={styles.tileGrid}>
           {EQUIPMENT_ORDER.map((profile) => {
             const info = equipmentInfo(profile);
-            const Icon = EQUIPMENT_ICON[profile];
             return (
               <SelectableTile
                 key={profile}
+                className={styles.equipmentTile}
                 name={info.label}
                 blurb={info.blurb}
-                icon={<Icon size={40} strokeWidth={1.75} />}
+                icon={<img className={styles.equipmentImg} src={EQUIPMENT_IMAGE[profile]} alt="" aria-hidden />}
                 selected={equipment === profile}
                 onClick={() => handleEquipmentChange(profile)}
               />
