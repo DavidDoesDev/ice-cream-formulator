@@ -21,6 +21,27 @@
   // Light touch — the background stays legible behind the modal, not smeared.
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  animation: modalScrimIn 0.2s ease both;
+}
+
+// Parallax on open: the page recedes (see .app-shell, scale 0.99) while the
+// sheet eases the other way — rising and settling forward — so the two depth
+// planes separate. Same easing/timing as the shell so they move as one system.
+@keyframes modalScrimIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modalSheetIn {
+  from {
+    transform: scale(0.99);
+  }
+  to {
+    transform: none;
+  }
 }
 
 .sheet {
@@ -33,6 +54,7 @@
   border: 2px solid var(--line);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  animation: modalSheetIn 0.5s cubic-bezier(0.33, 1, 0.68, 1) both;
 }
 .root[data-placement="center"] .sheet[data-size="sm"] {
   max-width: 440px;
@@ -113,6 +135,13 @@
   justify-content: flex-end;
   gap: var(--space-3);
   flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .sheet {
+    animation: none;
+  }
 }
 
 @media (max-width: 640px) {

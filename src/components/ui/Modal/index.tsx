@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import styles from "./Modal.module.scss";
 
@@ -24,6 +25,8 @@ function lockScroll() {
     b.style.right = "0";
     b.style.width = "100%";
     if (gap > 0) b.style.paddingRight = `${gap}px`;
+    // Recede the page shell behind the scrim (see .app-shell in globals).
+    document.documentElement.setAttribute("data-modal-open", "");
   }
   scrollLockCount += 1;
 }
@@ -37,6 +40,7 @@ function unlockScroll() {
     b.style.right = "";
     b.style.width = "";
     b.style.paddingRight = "";
+    document.documentElement.removeAttribute("data-modal-open");
     window.scrollTo(0, lockedScrollY);
   }
 }
@@ -87,10 +91,13 @@ export function Modal({
     return unlockScroll;
   }, [open]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
   const showDefaultHead = !header && (title != null || dismissable);
 
-  return (
+  // Portal to <body> so the overlay sits outside .app-shell — otherwise the
+  // shell's recede transform would scale the modal too (and break its fixed
+  // positioning, since a transformed ancestor becomes the containing block).
+  return createPortal(
     <div
       className={styles.root}
       data-placement={placement}
@@ -114,6 +121,7 @@ export function Modal({
         <div className={styles.body}>{children}</div>
         {footer && <div className={styles.footer}>{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

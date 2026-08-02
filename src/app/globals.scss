@@ -166,6 +166,26 @@ body {
   overflow-x: clip;
 }
 
+// When a modal is open the page recedes into z-space a touch — a graceful
+// "dolly back" behind the scrim. The Modal toggles data-modal-open on <html>
+// via its ref-counted scroll lock; the modal itself is portaled to <body>,
+// outside this shell, so it stays put while everything behind it sinks.
+.app-shell {
+  transform-origin: 50% 50%;
+  transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+}
+:root[data-modal-open] .app-shell {
+  transform: scale(0.995);
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell {
+    transition: none;
+  }
+  :root[data-modal-open] .app-shell {
+    transform: none;
+  }
+}
+
 a {
   color: var(--accent);
 }

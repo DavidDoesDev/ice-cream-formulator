@@ -51,7 +51,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {children}
+        {/* Page content lives in its own shell so it can recede into z-space
+            when a modal opens. The Modal portals to <body>, outside this shell,
+            so it stays crisp while everything behind it sinks back. */}
+        <div className="app-shell">{children}</div>
         <div className="grain" aria-hidden />
         <DevTools />
       </body>
